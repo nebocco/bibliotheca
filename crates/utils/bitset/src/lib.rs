@@ -5,7 +5,7 @@ pub struct Bitset {
 
 impl Bitset {
     pub fn new(size: usize) -> Self {
-        let data = vec![0; (size + 7) / 8];
+        let data = vec![0; size / 8 + 1];
         Bitset{ data, size }
     }
 
@@ -23,6 +23,20 @@ impl Bitset {
         } else {
             self.data[pos >> 3] &= !(1 << (pos & 7));
         }
+    }
+
+    pub fn flip(&mut self, pos: usize) {
+        self.data[pos >> 3] ^= 1 << (pos & 7);
+    }
+
+    pub fn collect(&self) -> Vec<u64> {
+        let mut ret = Vec::new();
+        for i in 0..self.size+1 {
+            if self.access(i) {
+                ret.push(i as u64);
+            }
+        }
+        ret
     }
 }
 
