@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+	# 'crates/algorithms/*',
+	# 'crates/utils/*',
+	'crates/data_structures/*',
+	# 'crates/test_utils/*',
+]
