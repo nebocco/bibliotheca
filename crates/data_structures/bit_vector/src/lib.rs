@@ -1,6 +1,6 @@
 #![allow(unused_variables, dead_code, non_snake_case, non_upper_case_globals)]
 
-struct BitVector {
+pub struct BitVector {
 	length: usize,
 	cnum: usize,
 	bnum: usize,
@@ -15,7 +15,7 @@ impl BitVector {
 	const cw: usize = 256;
 	const bw: usize = 8;
 
-	fn new(length: usize) -> Self {
+	pub fn new(length: usize) -> Self {
 		let cnum = (length + Self::cw - 1) / Self::cw;
 		let bnum = Self::cw / Self::bw;
         let bit = vec![0; cnum * bnum];
@@ -28,7 +28,7 @@ impl BitVector {
         }
     }
 
-    fn set(&mut self, pos: usize, b: u8) {
+    pub fn set(&mut self, pos: usize, b: u8) {
         let bpos = pos / self.bw;
         let offset = pos % self.bw;
         if b == 0 {
@@ -39,7 +39,7 @@ impl BitVector {
         println!("{} {} {}", bpos, offset, self.bit[bpos]);
     }
 
-    fn access(&self, pos:usize) -> u8 {
+    pub fn access(&self, pos:usize) -> u8 {
         let bpos = pos / self.bw;
         let offset = pos % self.bw;
         self.bit[bpos] >> offset & 1
@@ -49,7 +49,7 @@ impl BitVector {
         num.count_ones() as u8
     }
 
-    fn build(&mut self) {
+    pub fn build(&mut self) {
         for i in 0..self.cnum {
             for j in 1..self.bnum {
                 self.blocks[i][j] = self.blocks[i][j-1] + Self::popcount(self.bit[i * self.bnum + j - 1]);
@@ -59,7 +59,7 @@ impl BitVector {
         }
     }
 
-    fn rank(&self, pos:usize) -> u16 {
+    pub fn rank(&self, pos:usize) -> u16 {
         let cpos = pos / self.cw;
         let bpos = pos % self.cw / self.bw;
         let offset = pos % self.bw;
@@ -67,7 +67,7 @@ impl BitVector {
         self.chunk[cpos] + (self.blocks[cpos][bpos] + Self::popcount(masked)) as u16
     }
 
-    fn select(&self, num: u16) -> Result<usize, &str> {
+    pub fn select(&self, num: u16) -> Result<usize, &str> {
         if num == 0 {
             return Ok(0);
         } else if self.rank(self.length) < num {
@@ -95,7 +95,6 @@ mod tests {
         for i in 0..200 {
             assert_eq!(super::BitVector::popcount(i), i.count_ones() as u8)
         }
-        // passed!
     }
 
     #[test]
