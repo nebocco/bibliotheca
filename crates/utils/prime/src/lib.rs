@@ -53,6 +53,47 @@ fn atkin_sieve(n: usize) -> Vec<u64> {
     sieve.collect()
 }
 
+
+fn factorize(x: u64) -> Vec<(u64, usize)> {
+    let mut y = x;
+    let mut res = Vec::new();
+    for i in 2..x+1 {
+        if i * i > x { break; }
+        if y % i == 0 {
+            let mut cnt = 0;
+            while y % i == 0 {
+                y /= i;
+                cnt += 1;
+            }
+            res.push((i, cnt));
+        }
+    }
+    if y > 1 { res.push((y, 1)); }
+    res
+}
+
+fn divisor(x: u64) -> Vec<u64> {
+    let mut res = Vec::new();
+    for i in 1..x+1 {
+        if i * i > x { break; }
+        if x % i == 0 {
+            res.push(i);
+            if i * i < x {
+                res.push(x / i);
+            }
+        }
+    }
+    res
+}
+
+fn totient(x: u64) -> u64 {
+    let mut res = x;
+    for &(i, _) in factorize(x).iter() {
+        res = res * (i - 1) / i;
+    }
+    res
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
