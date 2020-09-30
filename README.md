@@ -1,1 +1,1 @@
-# bibliotheca
+主にAtCoder向けのライブラリ、作っちゃうわよ
