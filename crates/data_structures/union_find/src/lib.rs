@@ -2,7 +2,7 @@
 // * というかほぼそのままです
 // * https://github.com/ngtkana/ac-adapter-rs/blob/master/crates/algolib/union_find/src/lib.rs
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 enum PatentOrSize {
     Parent(usize),
     Size(usize),
@@ -12,8 +12,8 @@ enum PatentOrSize {
 pub struct UnionFind(Vec<PatentOrSize>);
 
 impl UnionFind {
-    pub fn new(N: usize) -> Self {
-        Self(vec![PatentOrSize::Size(1); N])
+    pub fn new(len: usize) -> Self {
+        Self(vec![PatentOrSize::Size(1); len])
     }
 
     pub fn is_empty(&self) -> bool {
@@ -32,16 +32,17 @@ impl UnionFind {
         self._climb(i).1
     }
 
-    pub fn unite(&mut self, u: usize, v: usize) -> Result<_, _> {
+    // TODO: use Result instead of bool
+    pub fn unite(&mut self, u: usize, v: usize) -> bool {
         let (mut u, su) = self._climb(u);
         let (mut v, sv) = self._climb(v);
-        if u == v { return Err(); }
+        if u == v { return false; }
         if su < sv {
             std::mem::swap(&mut u, &mut v);
         }
         self.0[u] = PatentOrSize::Size(su + sv);
         self.0[v] = PatentOrSize::Parent(u);
-        Ok()
+        true
     }
 
     pub fn same(&mut self, u: usize, v:usize) -> bool {
