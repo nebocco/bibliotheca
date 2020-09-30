@@ -2,6 +2,6 @@
 
 members = [
 	'crates/algorithms/*',
-	# 'crates/utils/*',
+	'crates/utils/*',
 	'crates/data_structures/*',
 ]
