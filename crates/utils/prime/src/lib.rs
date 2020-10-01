@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use bitset::Bitset;
+use math::*;
 
 fn atkin_sieve(n: usize) -> Vec<u64> {
     let mut sieve = Bitset::new(n);
@@ -92,6 +93,52 @@ fn totient(x: u64) -> u64 {
         res = res * (i - 1) / i;
     }
     res
+}
+
+pub fn pollard_rho(v: u64, seed: u64) -> u64 {
+    if v == 0 { return 1;}
+    let seed = seed.wrapping_mul(v);
+    let c = seed & 0xff;
+    let u = c & 0x7f;
+    let mut r: u64 = 1;
+    let mut q: u64 = 1;
+    let mut y: u64 = u & 0x0f;
+    let mut fac: u64 = 1;
+    let mut y_old: u64 = 0;
+    let mut x: u64 = 0;
+    let func = |x: u64| (x.wrapping_mul(x) + c) % v;
+    while fac == 1 {
+        x = y;
+        for _ in 0..r {
+            y = func(y);
+        }
+        let mut k = 0;
+        while k < r && fac == 1 {
+            y_old = y;
+            for _ in 0..std::cmp::min(u, r - k) {
+                y = func(y);
+
+                if x > y {
+                    q = q.wrapping_mul(x - y) % v;
+                } else {
+                    q = q.wrapping_mul(y - x) % v;
+                }
+            }
+            fac = gcd(q, v);
+            k += u;
+        }
+        r <<= 1;
+    }
+    while fac == v || fac <= 1 {
+        y_old = func(y_old);
+
+        if x > y_old {
+            q = q.wrapping_mul(x - y_old) % v;
+        } else {
+            q = q.wrapping_mul(y_old - x) % v;
+        }
+    }
+    fac
 }
 
 #[cfg(test)]
