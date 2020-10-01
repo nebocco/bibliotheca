@@ -4,7 +4,7 @@ pub struct Fenwick(Vec<i64>);
 
 impl Fenwick {
     pub fn new(len: usize) -> Self {
-        Fenwick(vec![0; len])
+        Fenwick(vec![0; len + 1])
     }
 
     pub fn build_from_slice(src: &[i64]) -> Self {
@@ -94,11 +94,43 @@ fn lsb(x: usize) -> usize {
 //     }
 // }
 
-// TODO: create tests
 #[cfg(test)]
 mod tests {
+    use super::Fenwick;
+
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    fn test_0() {
+        let mut bit = Fenwick::new(5);
+        bit.add(0, 1);
+        bit.add(1, 2);
+        assert_eq!(bit.prefix_sum(1), 1);
+        assert_eq!(bit.prefix_sum(2), 3);
+        assert_eq!(bit.prefix_sum(3), 3);
+        bit.add(2, 4);
+        bit.add(3, 8);
+        bit.add(4, 16);
+        assert_eq!(bit.prefix_sum(5), 31);
+        bit.set(0, 5);
+        assert_eq!(bit.prefix_sum(3), 11);
+        assert_eq!(bit.access(0), 5);
+        assert_eq!(bit.access(1), 2);
+        assert_eq!(bit.access(2), 4);
+        assert_eq!(bit.access(3), 8);
+        assert_eq!(bit.access(4), 16);
+    }
+
+    #[test]
+    fn test_1() {
+        let a = vec![3, 1, 4, 1, 5, 9, 2, 6, 5];
+        let bit = Fenwick::build_from_slice(&a);
+        for i in 0..9 {
+            assert_eq!(bit.prefix_sum(i), a[..i].iter().sum::<i64>())
+        }
+
+        assert_eq!(bit.lower_bound(7), 2);
+        assert_eq!(bit.lower_bound(10), 4);
+        assert_eq!(bit.lower_bound(14), 4);
+        assert_eq!(bit.upper_bound(14), 5);
+        assert_eq!(bit.lower_bound(15), 5);
     }
 }
