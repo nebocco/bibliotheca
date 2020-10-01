@@ -14,6 +14,19 @@ pub fn lcm(a: u64, b:u64) -> u64 {
     }
 }
 
+pub fn modpow(x: u64, mut y: u64, modulo:u64) -> u64 {
+    let mut ret = 1;
+    let mut cur = x;
+    while y > 0 {
+        if y & 1 > 0 {
+            ret = ret * cur % modulo;
+        }
+        cur = cur * cur % modulo;
+        y >>= 1;
+    }
+    ret
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
