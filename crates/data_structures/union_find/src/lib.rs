@@ -32,17 +32,16 @@ impl UnionFind {
         self._climb(i).1
     }
 
-    // TODO: use Result instead of bool
-    pub fn unite(&mut self, u: usize, v: usize) -> bool {
+    pub fn unite(&mut self, u: usize, v: usize) -> Result<(), ()> {
         let (mut u, su) = self._climb(u);
         let (mut v, sv) = self._climb(v);
-        if u == v { return false; }
+        if u == v { return Err(()); }
         if su < sv {
             std::mem::swap(&mut u, &mut v);
         }
         self.0[u] = PatentOrSize::Size(su + sv);
         self.0[v] = PatentOrSize::Parent(u);
-        true
+        Ok(())
     }
 
     pub fn same(&mut self, u: usize, v:usize) -> bool {
@@ -62,11 +61,24 @@ impl UnionFind {
     }
 }
 
-// TODO: create tests
+
 #[cfg(test)]
 mod tests {
+    use super::UnionFind;
+
     #[test]
     fn it_works() {
-        assert_eq!(2 + 2, 4);
+        let mut uf = UnionFind::new(6);
+        assert_eq!(uf.size(2), 1);
+        assert_eq!(uf.find(5), 5);
+        uf.unite(0, 4).ok();
+        uf.unite(2, 3).ok();
+        uf.unite(1, 4).ok();
+        uf.unite(1, 0).ok();
+        assert_eq!(uf.find(5), 5);
+        assert_eq!(uf.find(2), uf.find(3));
+        assert_eq!(uf.size(0), 3);
+        assert_ne!(uf.find(5), uf.find(0));
+        assert!(uf.same(1, 4));
     }
 }
