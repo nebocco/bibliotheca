@@ -1,5 +1,5 @@
 [package]
-name = "z_algorithm"
+name = "str_algorithms"
 version = "0.1.0"
 authors = ["Whitedwarf137 <whitedwarf137@gmail.com>"]
 edition = "2018"
