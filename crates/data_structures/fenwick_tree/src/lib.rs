@@ -63,7 +63,7 @@ impl Fenwick {
     }
 
     pub fn access(&self, i: usize) -> i64 {
-        assert!(i < self.0.len() - 1, "index out of range");
+        assert!(i < self.0.len() - 1, "index out of range: vector length is {}, but got index {}", self.0.len() - 1, i );
         self.prefix_sum(i + 1) - self.prefix_sum(i)
     }
 
