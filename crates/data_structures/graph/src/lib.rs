@@ -1,15 +1,17 @@
+#![allow(dead_code)]
+
 use std::cmp::Ordering;
 
 #[derive(Copy, Clone)]
 pub struct Edge {
-    to: usize,
-    cost: usize
+    pub to: usize,
+    pub cost: i64
 }
 
 #[derive(Copy, Clone)]
 pub struct State {
-    cost: usize,
-    position: usize
+    pub cost: i64,
+    pub position: usize
 }
 
 impl Ord for State {
@@ -32,27 +34,32 @@ impl PartialEq for State {
 
 impl Eq for State {}
 
-pub struct Graph {
-    size: usize,
-    graph: Vec<Vec<Edge>>
-}
+pub struct Graph(Vec<Vec<Edge>>);
 
 impl Graph {
     pub fn new(size: usize) -> Self {
-        Graph { size, graph: vec![Vec::<Edge>::new(); size] }
+        Graph(vec![Vec::<Edge>::new(); size])
     }
 
     pub fn build(&mut self, graph:Vec<Vec<Edge>>) {
-        self.graph = graph;
+        self.0 = graph;
     }
 
-    pub fn add_edge_directed(&mut self, fr: usize, to: usize, cost: usize) {
-        self.graph[fr].push(Edge{ to, cost });
+    pub fn size(&self) -> usize {
+        self.0.len()
     }
 
-    pub fn add_edge_undirected(&mut self, u: usize, v: usize, cost: usize) {
-        self.graph[u].push(Edge{ to: v, cost });
-        self.graph[v].push(Edge{ to: u, cost });
+    pub fn add_edge_directed(&mut self, fr: usize, to: usize, cost: i64) {
+        self.0[fr].push(Edge{ to, cost });
+    }
+
+    pub fn add_edge_undirected(&mut self, u: usize, v: usize, cost: i64) {
+        self.0[u].push(Edge{ to: v, cost });
+        self.0[v].push(Edge{ to: u, cost });
+    }
+
+    pub fn edges_from(&self, v: usize) -> std::slice::Iter<Edge> {
+        self.0[v].iter()
     }
 }
 

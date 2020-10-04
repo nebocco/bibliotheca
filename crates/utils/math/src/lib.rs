@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub fn gcd(mut a: u64, mut b: u64) -> u64 {
     while b > 0 {
         a %= b;
@@ -28,25 +30,25 @@ pub fn modpow(x: u64, mut y: u64, modulo:u64) -> u64 {
 }
 
 struct Combination {
-    MOD: u64,
+    modulo: u64,
     size: usize,
     fact: Vec<u64>,
     inv_fact: Vec<u64>
 }
 
 impl Combination {
-    fn new(size: usize, MOD: u64) -> Self {
+    fn new(size: usize, modulo: u64) -> Self {
         let mut fact = vec![1; size + 1];
         let mut inv_fact = vec![1; size + 1];
         for i in 1..size+1 {
-            fact[i] = fact[i-1] * i as u64 % MOD;
+            fact[i] = fact[i-1] * i as u64 % modulo;
         }
-        inv_fact[size] = Self::modpow(fact[size], MOD-2, MOD);
+        inv_fact[size] = Self::modpow(fact[size], modulo-2, modulo);
         for i in (1..size+1).rev() {
-            inv_fact[i-1] = inv_fact[i] * i as u64 % MOD;
+            inv_fact[i-1] = inv_fact[i] * i as u64 % modulo;
         }
         Combination {
-            MOD, size,
+            modulo, size,
             fact, inv_fact
         }
     }
@@ -69,11 +71,11 @@ impl Combination {
 
     fn nPr (&self, n:usize, r:usize) -> u64 {
         if n < r { return 0 };
-        self.fact[n] * self.inv_fact[n-r] % self.MOD
+        self.fact[n] * self.inv_fact[n-r] % self.modulo
     }
     fn nCr (&self, n:usize, r:usize) -> u64 {
         if n < r { return 0 };
-        self.fact[n] * self.inv_fact[r] % self.MOD * self.inv_fact[n-r] % self.MOD
+        self.fact[n] * self.inv_fact[r] % self.modulo * self.inv_fact[n-r] % self.modulo
     }
 }
 
