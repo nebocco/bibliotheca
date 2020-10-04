@@ -1,7 +1,8 @@
+#![allow(dead_code)]
+
 use std::collections::BinaryHeap;
 use graph::{Edge, State, Graph};
 
-// ! cannot define inherent `impl` for a type outside of the crate where the type is defined
 
 fn dijkstra(graph: &Graph, start: usize, goal: usize) -> i64 {
     let mut dist = vec![std::i64::MAX; graph.size()];

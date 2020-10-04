@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+#![allow(dead_code, non_snake_case)]
 
 pub fn gcd(mut a: u64, mut b: u64) -> u64 {
     while b > 0 {
