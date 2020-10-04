@@ -57,6 +57,27 @@ pub fn kmp_search<T: Ord>(pattern: &[T], target: &[T]) -> Option<usize> {
     }
 }
 
+pub fn runlength(s: &String) -> Vec<(char, usize)> {
+    let mut res = Vec::new();
+    let mut cur: char = '$';
+    let mut cnt = 0;
+    for x in s.chars() {
+        if x != cur {
+            if cnt > 0 {
+                res.push((cur, cnt));
+            }
+            cur = x;
+            cnt = 1;
+        } else {
+            cnt += 1;
+        }
+    }
+    if cnt > 0 {
+        res.push((cur, cnt));
+    }
+    res
+}
+
 
 
 #[cfg(test)]
