@@ -27,10 +27,64 @@ pub fn modpow(x: u64, mut y: u64, modulo:u64) -> u64 {
     ret
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+struct Combination {
+    MOD: u64,
+    size: usize,
+    fact: Vec<u64>,
+    inv_fact: Vec<u64>
+}
+
+impl Combination {
+    fn new(size: usize, MOD: u64) -> Self {
+        let mut fact = vec![1; size + 1];
+        let mut inv_fact = vec![1; size + 1];
+        for i in 1..size+1 {
+            fact[i] = fact[i-1] * i as u64 % MOD;
+        }
+        inv_fact[size] = Self::modpow(fact[size], MOD-2, MOD);
+        for i in (1..size+1).rev() {
+            inv_fact[i-1] = inv_fact[i] * i as u64 % MOD;
+        }
+        Combination {
+            MOD, size,
+            fact, inv_fact
+        }
     }
+
+    fn modpow(mut x:u64, mut y:u64, m:u64) -> u64 {
+        let mut res: u64 = 1;
+        while y > 0 {
+            if y & 1 > 0 {
+                res = res * x % m;
+            }
+            x = x * x % m;
+            y >>= 1;
+        }
+        res
+    }
+
+    fn modinv(x: u64, m:u64) -> u64 {
+        Self::modpow(x, m-2, m)
+    }
+
+    fn nPr (&self, n:usize, r:usize) -> u64 {
+        if n < r { return 0 };
+        self.fact[n] * self.inv_fact[n-r] % self.MOD
+    }
+    fn nCr (&self, n:usize, r:usize) -> u64 {
+        if n < r { return 0 };
+        self.fact[n] * self.inv_fact[r] % self.MOD * self.inv_fact[n-r] % self.MOD
+    }
+}
+
+#[test]
+fn test() {
+    let n: usize = 100_000;
+    const MOD: u64 = 1_000_000_007;
+    let nCr = Combination::new(n, MOD);
+    let mut ans = 0;
+    for i in 0..n+1 {
+        ans = (ans + nCr.nCr(n, i)) % MOD;
+    }
+    println!("{}", ans);
 }
