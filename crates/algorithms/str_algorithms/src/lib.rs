@@ -79,7 +79,6 @@ pub fn runlength(s: &String) -> Vec<(char, usize)> {
 }
 
 
-
 #[cfg(test)]
 mod tests {
     use super::z_algorithm;
