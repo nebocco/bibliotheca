@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use std::collections::BinaryHeap;
-use graph::{Edge, State, Graph};
+use crate::data_structures::graph::{Edge, State, Graph};
 
 
 fn dijkstra(graph: &Graph, start: usize, goal: usize) -> i64 {

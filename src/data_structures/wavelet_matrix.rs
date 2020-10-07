@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use bit_vector::BitVector;
+use crate::data_structures::bit_vector::BitVector;
 
 struct WaveletMatrix {
     table: BitVector
@@ -17,7 +17,7 @@ mod tests {
     use super::WaveletMatrix;
     #[test]
     fn it_works() {
-        let wm = WaveletMatrix::new();
+        let _wm = WaveletMatrix::new();
         assert_eq!(2 + 2, 4);
     }
 }

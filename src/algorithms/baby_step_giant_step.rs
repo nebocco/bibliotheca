@@ -1,6 +1,6 @@
 //! solve k s.t. x.pow(k) === y (mod M)
 use std::collections::HashMap;
-use math::modpow;
+use crate::utils::math::modpow;
 
 pub fn baby_giant(x: u64, y: u64, modulo: u64) -> Option<u64> {
     let mut dic: HashMap<u64, u64> = HashMap::new();

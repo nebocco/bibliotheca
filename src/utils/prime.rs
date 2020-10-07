@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
-use bitset::Bitset;
-use math::*;
+use crate::utils::bitset::Bitset;
+use crate::utils::math::*;
 
 fn atkin_sieve(n: usize) -> Vec<u64> {
     let mut sieve = Bitset::new(n);

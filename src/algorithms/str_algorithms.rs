@@ -84,7 +84,6 @@ mod tests {
     use super::z_algorithm;
     use std::iter;
     use rand::prelude::*;
-    use test_case::test_case;
 
     fn z_brute<T: Ord>(s: &[T]) -> Vec<usize> {
         let n = s.len();
@@ -95,11 +94,12 @@ mod tests {
         }).collect()
     }
 
-    #[test_case("abcabca")]
-    #[test_case("abracadabra")]
-    #[test_case("mississippi")]
-    fn test_z_hand(s: &str) {
-        assert_eq!(z_brute(s.as_bytes()), z_algorithm(s.as_bytes()));
+    #[test]
+    fn test_z_hand() {
+        let cases = ["abcabca", "abracadabra", "mississippi"];
+        for &s in &cases {
+            assert_eq!(z_brute(s.as_bytes()), z_algorithm(s.as_bytes()));
+        }
     }
 
     #[test]
