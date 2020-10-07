@@ -3,6 +3,10 @@ use std::marker::Sized;
 use num_traits::{One, Zero};
 use std::ops::{Add, Sub, Mul, Div, Neg, AddAssign, SubAssign, MulAssign, DivAssign};
 
+/// 元
+trait Element: Sized + Clone + PartialEq {}
+impl<T: Sized + Clone + PartialEq> Element for T {}
+
 /// 結合性
 trait Associative: Magma {}
 
@@ -14,12 +18,8 @@ trait Invertible: Magma {
     fn inverse(&self) -> Self;
 }
 
-/// 元
-trait Element: Sized + Clone + PartialEq {}
-impl<T: Sized + Clone + PartialEq> Element for T {}
-
 /// マグマ
-trait Magma: Element + Add<Output = Self> + AddAssign {}
+trait Magma: Element + Add<Output=Self> + AddAssign {}
 impl<T: Element + Add + AddAssign> Magma for T {}
 
 /// 半群
@@ -41,17 +41,19 @@ trait ComGroup: Group + Commutative {}
 impl<T: Group + Commutative> ComGroup for T {}
 
 /// 半環
-trait SemiRing
+trait SemiRing: ComMonoid + Mul<Output=Self> + MulAssign + One {}
+impl<T: ComMonoid + Mul + MulAssign + One> Semiring for T {}
 
 /// 環
-trait Ring: Element + Zero + One + Sub<Output=Self> + SubAssign + Neg {}
-impl<T: Element + Zero + One + Sub<Output=Self> + SubAssign + Neg> Ring for T {}
+trait Ring {}
+impl<T> Ring for T {}
 
-trait ComRing: Ring + Commutative {}
-impl<T: Ring + Commutative> ComRing for T {}
+trait ComRing {}
+impl<T> ComRing for T {}
 
 /// 体
 trait Field: Ring + Div<Output=Self> + DivAssign {}
+impl<T: Ring + Div + DivAssign> Field for T {}
 
 #[cfg(test)]
 mod tests {
