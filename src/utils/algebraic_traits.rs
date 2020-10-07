@@ -62,3 +62,12 @@ impl<T: Ring + Commutative> ComRing for T {}
 
 /// 体
 trait Field: Ring + Div<Output=Self> + DivAssign {}
+
+#[cfg(test)]
+mod tests {
+    // TODO: make tests
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
+}

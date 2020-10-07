@@ -1,4 +1,4 @@
-#![allow(dead_code, non_snake_case)]
+#![allow(dead_code)]
 
 pub fn gcd(mut a: u64, mut b: u64) -> u64 {
     while b > 0 {
@@ -29,14 +29,14 @@ pub fn modpow(x: u64, mut y: u64, modulo:u64) -> u64 {
     ret
 }
 
-struct Combination {
+struct Fact {
     modulo: u64,
     size: usize,
     fact: Vec<u64>,
     inv_fact: Vec<u64>
 }
 
-impl Combination {
+impl Fact {
     fn new(size: usize, modulo: u64) -> Self {
         let mut fact = vec![1; size + 1];
         let mut inv_fact = vec![1; size + 1];
@@ -47,7 +47,7 @@ impl Combination {
         for i in (1..size+1).rev() {
             inv_fact[i-1] = inv_fact[i] * i as u64 % modulo;
         }
-        Combination {
+        Fact {
             modulo, size,
             fact, inv_fact
         }
@@ -69,24 +69,21 @@ impl Combination {
         Self::modpow(x, m-2, m)
     }
 
-    fn nPr (&self, n:usize, r:usize) -> u64 {
+    fn permutation (&self, n:usize, r:usize) -> u64 {
         if n < r { return 0 };
         self.fact[n] * self.inv_fact[n-r] % self.modulo
     }
-    fn nCr (&self, n:usize, r:usize) -> u64 {
+    fn combination (&self, n:usize, r:usize) -> u64 {
         if n < r { return 0 };
         self.fact[n] * self.inv_fact[r] % self.modulo * self.inv_fact[n-r] % self.modulo
     }
 }
 
-#[test]
-fn test() {
-    let n: usize = 100_000;
-    const MOD: u64 = 1_000_000_007;
-    let nCr = Combination::new(n, MOD);
-    let mut ans = 0;
-    for i in 0..n+1 {
-        ans = (ans + nCr.nCr(n, i)) % MOD;
+#[cfg(test)]
+mod tests {
+    // TODO: make tests
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
     }
-    println!("{}", ans);
 }

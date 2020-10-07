@@ -14,10 +14,9 @@ impl WaveletMatrix {
 
 #[cfg(test)]
 mod tests {
-    use super::WaveletMatrix;
+    // TODO: make tests
     #[test]
     fn it_works() {
-        let _wm = WaveletMatrix::new();
         assert_eq!(2 + 2, 4);
     }
 }

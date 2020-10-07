@@ -31,10 +31,10 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let x = 3;
-        let y = 193;
-        let modulo = 1_000_000_007;
-        let r = baby_giant(x, y, modulo).unwrap_or(0);
-        assert_eq!(modpow(x, r, modulo), y);
+        let x: u64 = 3;
+        let y: u64 = 193;
+        const MOD: u64 = 1_000_000_007;
+        let r = baby_giant(x, y, MOD).unwrap_or(0);
+        assert_eq!(modpow(x, r, MOD), y);
     }
 }
