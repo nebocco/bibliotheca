@@ -21,3 +21,12 @@ pub fn speed_up<F: Monge>(init: &[F::Output], f: &F) -> Vec<Vec<Option<F::Output
 	}
 	dp
 }
+
+#[cfg(test)]
+mod tests {
+    // TODO: make tests
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
+}

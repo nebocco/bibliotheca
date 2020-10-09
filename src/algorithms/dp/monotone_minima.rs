@@ -23,3 +23,12 @@ fn _monotone_minima<F: Monotone>(f: &F, dp: &mut Vec<Option<(usize, F::Output)>>
     _monotone_minima(f, dp, xr.start..m, yr.start..mi + 1);
     _monotone_minima(f, dp, m + 1..xr.end, mi..yr.end);
 }
+
+#[cfg(test)]
+mod tests {
+    // TODO: make tests
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
+}
