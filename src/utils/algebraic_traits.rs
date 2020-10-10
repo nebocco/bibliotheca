@@ -33,11 +33,11 @@ impl<T: Group + ComMonoid> ComGroup for T {}
 
 /// 半環
 pub trait SemiRing: ComMonoid + Mul<Output=Self> + One {}
-impl<T: ComMonoid + Mul + One> SemiRing for T {}
+impl<T: ComMonoid + Mul<Output=Self> + One> SemiRing for T {}
 
 /// 環
-pub trait Ring: ComMonoid + Group {}
-impl<T: ComMonoid + Group> Ring for T {}
+pub trait Ring: ComGroup + SemiRing {}
+impl<T: ComGroup + SemiRing> Ring for T {}
 
 pub trait ComRing: Ring + MulAssign {}
 impl<T: Ring + MulAssign> ComRing for T {}
@@ -51,6 +51,5 @@ mod tests {
     // TODO: make tests
     #[test]
     fn it_works() {
-        assert_eq!(2 + 2, 4);
     }
 }
