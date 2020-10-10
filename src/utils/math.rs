@@ -79,27 +79,27 @@ impl Fact {
     }
 }
 
-fn sum_of_floor(mut N:i64, mut M:i64, mut A:i64, mut B:i64) -> i64 {
-    // return sum_{i=0}^{N-1} (A*i+B)/M
-    let mut S = 0;
-    while N > 0 {
-        let q = A / M;
-        A %= M;
-        S += N * (N - 1) / 2 * q;
-        let q = B / M;
-        B %= M;
-        S += N * q;
-        if A == 0 {
+fn sum_of_floor(mut n:i64, mut m:i64, mut a:i64, mut b:i64) -> i64 {
+    // return sum_{i=0}^{n-1} (a*i+b)/m
+    let mut s = 0;
+    while n > 0 {
+        let q = a / m;
+        a %= m;
+        s += n * (n - 1) / 2 * q;
+        let q = b / m;
+        b %= m;
+        s += n * q;
+        if a == 0 {
             break;
         }
-        let y = (A * N + B) / M;
-        let x = M * y - B;
-        S += (N - (x + A - 1) / A) * y;
-        N = y;
-        B = (A - x % A) % A;
-        std::mem::swap(&mut M, &mut A);
+        let y = (a * n + b) / m;
+        let x = m * y - b;
+        s += (n - (x + a - 1) / a) * y;
+        n = y;
+        b = (a - x % a) % a;
+        std::mem::swap(&mut m, &mut a);
     }
-    S
+    s
 }
 
 #[cfg(test)]
