@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 
 use std::collections::BinaryHeap;
-use crate::data_structures::graph::{Edge, State, Graph};
+use crate::utils::graph::{Edge, State, Graph};
 
 
-fn dijkstra(graph: &Graph, start: usize, goal: usize) -> i64 {
+fn dijkstra<T: Graph>(graph: &T, start: usize, goal: usize) -> i64 {
     let mut dist = vec![std::i64::MAX; graph.size()];
     dist[start] = 0;
     let mut que: BinaryHeap<State> = BinaryHeap::new();

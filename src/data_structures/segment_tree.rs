@@ -139,3 +139,12 @@ impl<T, F> SegmentTree2<T, F> where
 		vl + vr
 	}
 }
+
+#[cfg(test)]
+mod tests {
+    // TODO: make tests
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
+}

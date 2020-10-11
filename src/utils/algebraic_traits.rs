@@ -11,7 +11,7 @@ pub trait Associative: Magma {}
 
 /// マグマ
 pub trait Magma: Element + Add<Output=Self> {}
-impl<T: Element + Add<Output=Self> + AddAssign> Magma for T {}
+impl<T: Element + Add<Output=Self>> Magma for T {}
 
 /// 半群
 pub trait SemiGroup: Magma + Associative {}
@@ -48,8 +48,23 @@ impl<T: ComRing + Div<Output=Self> + DivAssign> Field for T {}
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     // TODO: make tests
     #[test]
     fn it_works() {
+        #[derive(Debug, Clone, PartialEq)]
+        struct Ele(usize);
+        impl Associative for Ele {}
+        impl Add for Ele {
+            type Output = Ele;
+            fn add(self, rhs: Self) -> Self::Output {
+                Self(std::cmp::max(self.0, rhs.0))
+            }
+        }
+        impl Zero for Ele {
+            fn zero() -> Self { Self(0) }
+
+            fn is_zero(&self) -> bool { self.0 == 0 }
+        }
     }
 }
