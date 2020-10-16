@@ -4,6 +4,7 @@ use crate::utils::algebraic_traits::ComMonoid;
 pub struct Fenwick(Vec<i64>);
 
 impl Fenwick {
+    #[inline]
     fn lsb(x: usize) -> usize {
         x & x.wrapping_neg()
     }
@@ -84,6 +85,7 @@ pub struct FenwickTree<T>(Vec<T>);
 impl<T> FenwickTree<T> where
     T: ComMonoid
 {
+    #[inline]
     fn lsb(x: usize) -> usize {
         x & x.wrapping_neg()
     }
