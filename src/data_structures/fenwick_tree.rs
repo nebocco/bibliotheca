@@ -127,7 +127,7 @@ impl<T> FenwickTree<T> where
 
 #[cfg(test)]
 mod tests {
-    use super::Fenwick;
+    use super::*;
 
     #[test]
     fn test_0() {
@@ -148,6 +148,24 @@ mod tests {
         assert_eq!(bit.access(2), 4);
         assert_eq!(bit.access(3), 8);
         assert_eq!(bit.access(4), 16);
+    }
+
+    #[test]
+    fn test_abst() {
+        use crate::utils::algebraic_traits::Associative;
+        impl Associative for i32 {}
+        let mut bit = FenwickTree::<i32>::new(5);
+        bit.add(0, 0);
+        bit.add(1, 1);
+        bit.add(2, 10);
+        bit.add(3, 100);
+        bit.add(4, 1000);
+        assert_eq!(bit.prefix_sum(0), 0);
+        assert_eq!(bit.prefix_sum(1), 0);
+        assert_eq!(bit.prefix_sum(2), 1);
+        assert_eq!(bit.prefix_sum(3), 11);
+        assert_eq!(bit.prefix_sum(4), 111);
+        assert_eq!(bit.prefix_sum(5), 1111);
     }
 
     #[test]
