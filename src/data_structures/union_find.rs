@@ -65,7 +65,7 @@ impl UnionFind {
 #[cfg(test)]
 mod tests {
     use super::UnionFind;
-
+    // * verified at https://judge.yosupo.jp/submission/26460
     #[test]
     fn it_works() {
         let mut uf = UnionFind::new(6);

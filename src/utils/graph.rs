@@ -88,6 +88,15 @@ impl Graph for DirectedGraph {
     }
 }
 
+impl DirectedGraph {
+    pub fn reverse(&self) -> Self {
+        Self {
+            forward: self.backward.clone(),
+            backward: self.forward.clone(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     // TODO: make tests
