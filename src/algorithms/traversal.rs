@@ -7,17 +7,17 @@ pub struct Traversal {
 }
 
 impl Traversal {
-    pub fn pre_order<T: Graph>(graph: &T) -> Self {
-        fn _dfs<T: Graph>(graph: &T, x: usize, res: &mut PermutationBuilder) {
+    pub fn pre_order(graph: &[Vec<Edge>]) -> Self {
+        fn _dfs(graph: &[Vec<Edge>], x: usize, res: &mut PermutationBuilder) {
             res.visit(x);
-            for &y in graph.edges_from(x) {
+            for &y in graph[x].iter() {
                 if !res.on_stack(y.to) {
                     _dfs(graph, y.to, res);
                 }
             }
         }
 
-        let n = graph.size();
+        let n = graph.len();
         let mut res = PermutationBuilder::new(n);
         for i in 0..n {
             if !res.on_stack(i) {
@@ -27,9 +27,9 @@ impl Traversal {
         res.build()
     }
 
-    pub fn post_order<T: Graph>(graph: &T) -> Self {
-        fn _dfs<T: Graph>(graph: &T, x: usize, ckd: &mut [bool], res: &mut PermutationBuilder) {
-            for y in graph.edges_from(x) {
+    pub fn post_order(graph: &[Vec<Edge>]) -> Self {
+        fn _dfs(graph: &[Vec<Edge>], x: usize, ckd: &mut [bool], res: &mut PermutationBuilder) {
+            for &y in graph[x].iter() {
                 if !std::mem::replace(&mut ckd[y.to], true) {
                     _dfs(graph, y.to, ckd, res);
                 }
@@ -37,7 +37,7 @@ impl Traversal {
             res.visit(x);
         }
 
-        let n = graph.size();
+        let n = graph.len();
         let mut ckd = vec![false; n];
         let mut res = PermutationBuilder::new(n);
         for i in 0..n {
