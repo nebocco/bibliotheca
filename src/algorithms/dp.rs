@@ -2,6 +2,8 @@ use std::ops::Range;
 use crate::utils::algebraic_traits::{Element};
 
 pub mod knuth_yao;
+// pub mod monotone_minima;
+pub mod smawk;
 
 pub trait RangeFunc {
 	type Output: Element + Ord;
