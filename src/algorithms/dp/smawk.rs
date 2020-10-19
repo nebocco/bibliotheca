@@ -151,5 +151,4 @@ mod tests {
         assert_eq!(smawk_row_minima(&matrix), vec![1, 1, 1, 1, 3]);
         assert_eq!(smawk_column_minima(&matrix), vec![1, 1, 4, 4, 4]);
     }
-
 }
