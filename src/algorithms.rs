@@ -4,3 +4,4 @@ pub mod dp;
 pub mod scc;
 pub mod str_algorithms;
 pub mod traversal;
+pub mod zeta_mobius;
