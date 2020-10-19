@@ -28,12 +28,17 @@ pub fn smawk_column_minima<T: Element, M: Monge<T>>(matrix: &M) -> Vec<usize> {
 }
 
 fn smawk_inner<T: Element, F: Fn(usize, usize) -> T>(
-	mat: &F,
+	matrix: &F,
 	rows: Range<usize>,
 	cols: Range<usize>,
 	mut minima: &mut[usize]
 ) {
-	0;
+	if cols.start == cols.end {
+		return;
+	}
+	let mut stack = Vec::<usize>::with_capacity(rows.len());
+	for c in cols {
+	}
 }
 
 #[cfg(test)]
