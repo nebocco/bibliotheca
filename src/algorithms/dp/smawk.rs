@@ -3,7 +3,7 @@ use crate::algorithms::dp::Monge;
 
 pub fn smawk_row_minima<T: Element + Ord, M: Monge<T>>(matrix: &M) -> Vec<usize> {
 	let (n, m) = matrix.size();
-	let mut res = vec![0; m];
+	let mut res = vec![0; n];
 	smawk_inner(
 		&|i, j| matrix.index(i, j),
 		&(0..n).collect::<Vec<usize>>(),
@@ -15,7 +15,7 @@ pub fn smawk_row_minima<T: Element + Ord, M: Monge<T>>(matrix: &M) -> Vec<usize>
 
 pub fn smawk_column_minima<T: Element + Ord, M: Monge<T>>(matrix: &M) -> Vec<usize> {
 	let (n, m) = matrix.size();
-	let mut res = vec![0; n];
+	let mut res = vec![0; m];
 	smawk_inner(
 		&|j, i| matrix.index(i, j),
 		&(0..m).collect::<Vec<usize>>(),
@@ -75,11 +75,81 @@ fn smawk_inner<T: Element + Ord, F: Fn(usize, usize) -> T>(
 	}
 }
 
+// TODO: write fn online_row/column_minima
+
 #[cfg(test)]
 mod tests {
-    // TODO: make tests
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+	use super::*;
+	impl<T: Element> Monge<T> for Vec<Vec<T>> {}
+
+	#[test]
+    fn smawk_1x1() {
+        let matrix = vec![vec![2]];
+        assert_eq!(smawk_row_minima(&matrix), vec![0]);
+        assert_eq!(smawk_column_minima(&matrix), vec![0]);
     }
+
+    #[test]
+    fn smawk_2x1() {
+        let matrix = vec![
+            vec![3], //
+            vec![2],
+        ];
+        assert_eq!(smawk_row_minima(&matrix), vec![0, 0]);
+        assert_eq!(smawk_column_minima(&matrix), vec![1]);
+    }
+
+    #[test]
+    fn smawk_1x2() {
+        let matrix = vec![vec![2, 1]];
+        assert_eq!(smawk_row_minima(&matrix), vec![1]);
+        assert_eq!(smawk_column_minima(&matrix), vec![0, 0]);
+    }
+
+    #[test]
+    fn smawk_2x2() {
+        let matrix = vec![
+            vec![3, 2], //
+            vec![2, 1],
+        ];
+        assert_eq!(smawk_row_minima(&matrix), vec![1, 1]);
+        assert_eq!(smawk_column_minima(&matrix), vec![1, 1]);
+    }
+
+    #[test]
+    fn smawk_3x3() {
+        let matrix = vec![
+            vec![3, 4, 4], //
+            vec![3, 4, 4],
+            vec![2, 3, 3],
+        ];
+        assert_eq!(smawk_row_minima(&matrix), vec![0, 0, 0]);
+        assert_eq!(smawk_column_minima(&matrix), vec![2, 2, 2]);
+    }
+
+    #[test]
+    fn smawk_4x4() {
+        let matrix = vec![
+            vec![4, 5, 5, 5], //
+            vec![2, 3, 3, 3],
+            vec![2, 3, 3, 3],
+            vec![2, 2, 2, 2],
+        ];
+        assert_eq!(smawk_row_minima(&matrix), vec![0, 0, 0, 0]);
+        assert_eq!(smawk_column_minima(&matrix), vec![1, 3, 3, 3]);
+    }
+
+    #[test]
+    fn smawk_5x5() {
+        let matrix = vec![
+            vec![3, 2, 4, 5, 6],
+            vec![2, 1, 3, 3, 4],
+            vec![2, 1, 3, 3, 4],
+            vec![3, 2, 4, 3, 4],
+            vec![4, 3, 2, 1, 1],
+        ];
+        assert_eq!(smawk_row_minima(&matrix), vec![1, 1, 1, 1, 3]);
+        assert_eq!(smawk_column_minima(&matrix), vec![1, 1, 4, 4, 4]);
+    }
+
 }

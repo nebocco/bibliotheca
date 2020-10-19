@@ -23,6 +23,6 @@ impl<T: Element> Matrix<T> for Vec<Vec<T>> {
 	}
 
 	fn index(&self, row: usize, col: usize) -> T {
-		self[col][row].clone()
+		self[row][col].clone()
 	}
 }
