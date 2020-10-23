@@ -13,6 +13,27 @@ pub struct SparseTableArgmin<T> {
     seq: Vec<T>,
 }
 
+impl<T> SparseTableArgmin<T> {
+	fn convert_to_range<U>(len: usize, range_bound: U) -> ops::Range<usize>
+	where
+		U: ops::RangeBounds<usize>,
+	{
+		use ops::Bound::*;
+		ops::Range {
+			start: match range_bound.start_bound() {
+				Excluded(&x) => x + 1,
+				Included(&x) => x,
+				Unbounded => 0,
+			},
+			end: match range_bound.end_bound() {
+				Excluded(&x) => x,
+				Included(&x) => x + 1,
+				Unbounded => len,
+			},
+		}
+	}
+}
+
 impl<T: Ord> SparseTableArgmin<T> {
     pub fn from_vec(seq: Vec<T>) -> Self {
         let n = seq.len();
@@ -33,7 +54,7 @@ impl<T: Ord> SparseTableArgmin<T> {
     }
 
     pub fn query(&self, range: impl ops::RangeBounds<usize>) -> Option<usize> {
-        let ops::Range { start, end } = convert_to_range(self.seq.len(), range);
+        let ops::Range { start, end } = Self::convert_to_range(self.seq.len(), range);
         assert!(start <= end);
         if start == end {
             None
@@ -52,7 +73,7 @@ impl<T: Ord> SparseTableArgmin<T> {
                 }
             })
         }
-    }
+	}
 
     #[inline]
     pub fn min(&self, range: impl ops::RangeBounds<usize>) -> Option<&T> {
@@ -80,24 +101,7 @@ where
     }
 }
 
-fn convert_to_range<T>(len: usize, range_bound: T) -> ops::Range<usize>
-where
-    T: ops::RangeBounds<usize>,
-{
-    use ops::Bound::*;
-    ops::Range {
-        start: match range_bound.start_bound() {
-            Excluded(&x) => x + 1,
-            Included(&x) => x,
-            Unbounded => 0,
-        },
-        end: match range_bound.end_bound() {
-            Excluded(&x) => x,
-            Included(&x) => x + 1,
-            Unbounded => len,
-        },
-    }
-}
+
 
 #[cfg(test)]
 mod tests {
