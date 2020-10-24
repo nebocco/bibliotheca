@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 struct Rerooting<Edge, Value, Func> {
     size: usize,
     edge: Vec<(usize, usize, Edge)>,

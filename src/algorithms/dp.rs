@@ -1,18 +1,28 @@
-use std::ops::Range;
 use crate::utils::algebraic_traits::{Element};
 
-pub mod knuth_yao;
+// pub mod knuth_yao;
+// pub mod monotone_minima;
+pub mod smawk;
 
-pub trait RangeFunc {
-	type Output: Element + Ord;
-	fn len(&self) -> usize;
-	fn func(&self, ran: Range<usize>) -> Self::Output;
+pub trait Monge<T: Element>: Matrix<T> {}
+
+pub trait TotallyMonotone<T: Element> {}
+impl<T: Element, M: Monge<T>> TotallyMonotone<T> for M {}
+
+pub trait Monotone<T: Element> {}
+impl<T: Element, M: TotallyMonotone<T>> Monotone<T> for M {}
+
+pub trait Matrix<T: Element> {
+	fn size(&self) -> (usize, usize);
+	fn index(&self, row: usize, col: usize) -> T;
 }
 
-pub trait Monge: RangeFunc {}
+impl<T: Element> Matrix<T> for Vec<Vec<T>> {
+	fn size(&self) -> (usize, usize) {
+		(self.len(), self[0].len())
+	}
 
-pub trait TotallyMonotone {}
-impl<T: Monge> TotallyMonotone for T {}
-
-pub trait Monotone {}
-impl<T: TotallyMonotone> Monotone for T {}
+	fn index(&self, row: usize, col: usize) -> T {
+		self[row][col].clone()
+	}
+}
