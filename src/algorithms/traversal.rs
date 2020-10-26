@@ -10,7 +10,7 @@ impl Traversal {
     pub fn pre_order(graph: &[Vec<Edge>]) -> Self {
         fn _dfs(graph: &[Vec<Edge>], x: usize, res: &mut PermutationBuilder) {
             res.visit(x);
-            for &y in &graph[x] {
+            for &y in graph[x].iter() {
                 if !res.on_stack(y.to) {
                     _dfs(graph, y.to, res);
                 }
@@ -29,7 +29,7 @@ impl Traversal {
 
     pub fn post_order(graph: &[Vec<Edge>]) -> Self {
         fn _dfs(graph: &[Vec<Edge>], x: usize, ckd: &mut [bool], res: &mut PermutationBuilder) {
-            for &y in &graph[x] {
+            for &y in graph[x].iter() {
                 if !std::mem::replace(&mut ckd[y.to], true) {
                     _dfs(graph, y.to, ckd, res);
                 }
