@@ -208,4 +208,6 @@ mod tests {
         assert_ne!(uf.find(5), uf.find(0));
         assert!(uf.is_same(1, 4));
     }
+
+    // TODO: add test
 }
