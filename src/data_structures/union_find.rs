@@ -1,7 +1,3 @@
-// * ngtkanaさんのac-adapterでの実装を大いに参考にしています
-// * というかほぼそのままです
-// * https://github.com/ngtkana/ac-adapter-rs/blob/master/crates/algolib/union_find/src/lib.rs
-
 use crate::utils::algebraic_traits::ComGroup;
 
 #[derive(Clone, Copy, Debug)]
