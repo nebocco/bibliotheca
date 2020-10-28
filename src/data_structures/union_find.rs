@@ -1,5 +1,7 @@
 use crate::utils::algebraic_traits::ComGroup;
 
+/*
+
 #[derive(Clone, Copy, Debug)]
 enum PatentOrSize {
     Parent(usize),
@@ -51,16 +53,68 @@ impl UnionFind {
     }
 }
 
+*/
+
 #[derive(Clone, Debug)]
-pub struct WeighedUnionFind<T: ComGroup>{
-    data: Vec<PatentOrSize>,
+pub struct UnionFind(Vec<isize>);
+
+impl UnionFind {
+    pub fn new(len: usize) -> Self {
+        Self(vec![-1; len])
+    }
+
+    pub fn find(&mut self, i: usize) -> usize {
+        self._climb(i).0
+    }
+
+    pub fn size(&mut self, i: usize) -> usize {
+        self._climb(i).1
+    }
+
+    pub fn unite(&mut self, u: usize, v: usize) -> Result<(), ()> {
+        let (mut u, su) = self._climb(u);
+        let (mut v, sv) = self._climb(v);
+        if u == v { return Err(()); }
+        if su < sv {
+            std::mem::swap(&mut u, &mut v);
+        }
+        self.0[u] += self.0[v];
+        self.0[v] = u as isize;
+        Ok(())
+    }
+
+    pub fn is_same(&mut self, u: usize, v:usize) -> bool {
+        self.find(u) == self.find(v)
+    }
+
+    fn _climb(&mut self, i: usize) -> (usize, usize) {
+        assert!(i < self.0.len());
+        let mut v = i;
+        while self.0[v] >= 0 {
+            let p = self.0[v] as usize;
+            if self.0[p] >= 0 {
+                self.0[v] = self.0[p];
+                v = self.0[p] as usize;
+            } else {
+                v = p;
+            }
+        }
+        (v, -self.0[v] as usize)
+    }
+
+}
+
+
+#[derive(Clone, Debug)]
+pub struct PotentializedUnionFind<T: ComGroup>{
+    data: Vec<isize>,
     ws: Vec<T>
 }
 
-impl<T: ComGroup> WeighedUnionFind<T> {
+impl<T: ComGroup> PotentializedUnionFind<T> {
     pub fn new(len: usize) -> Self {
         Self{
-            data: vec![PatentOrSize::Size(1); len],
+            data: vec![-1; len],
             ws: vec![T::zero(); len]
         }
     }
@@ -87,8 +141,8 @@ impl<T: ComGroup> WeighedUnionFind<T> {
             std::mem::swap(&mut u, &mut v);
             w = -w;
         }
-        self.data[u] = PatentOrSize::Size(su + sv);
-        self.data[v] = PatentOrSize::Parent(u);
+        self.data[u] += self.data[v];
+        self.data[v] = u as isize;
         self.ws[v] = w;
         Ok(())
     }
@@ -97,28 +151,40 @@ impl<T: ComGroup> WeighedUnionFind<T> {
         self.find(u) == self.find(v)
     }
 
+    pub fn diff(&mut self, u: usize, v: usize) -> Result<T, ()> {
+        let (u, _, wu) = self._climb(u);
+        let (v, _, wv) = self._climb(v);
+        if u == v {
+            Ok(wu + -wv)
+        } else {
+            Err(())
+        }
+    }
+
+    pub fn weight(&mut self, u: usize, w: T) {
+        let p = self.find(u);
+        self.ws[p] += w;
+    }
+
     /// _climb(index) -> (root index, group size, potential)
-    fn _climb(&mut self, mut i: usize) -> (usize, usize, T) {
+    fn _climb(&mut self, i: usize) -> (usize, usize, T) {
+        assert!(i < self.data.len());
+        let mut v = i;
         let mut w = T::zero();
-        while let PatentOrSize::Parent(p) = self.data[i] {
-            match self.data[p] {
-                PatentOrSize::Parent(pp) => {
-                    self.ws[i] = self.ws[i].clone() + self.ws[p].clone();
-                    self.data[i] = self.data[p];
-                    w += self.ws[i].clone();
-                    i = pp;
-                },
-                PatentOrSize::Size(_) => {
-                    w += self.ws[i].clone();
-                    i = p;
-                }
+        while self.data[v] >= 0 {
+            let p = self.data[v] as usize;
+            if self.data[p] >= 0 {
+                self.data[v] = self.data[p];
+                self.ws[v] = self.ws[v].clone() + self.ws[p].clone();
+                w += self.ws[v].clone();
+                v = self.data[p] as usize;
+            } else {
+                w += self.ws[v].clone();
+                v = p;
             }
         }
-        if let PatentOrSize::Size(s) = self.data[i] {
-            (i, s, w + self.ws[i].clone())
-        } else {
-            (0, 0, T::zero())
-        }
+        w += self.ws[v].clone();
+        (v, -self.data[v] as usize, w)
     }
 }
 
