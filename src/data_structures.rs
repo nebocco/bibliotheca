@@ -1,5 +1,6 @@
 pub mod bit_vector;
 pub mod fenwick_tree;
+pub mod interval_heap;
 pub mod li_chao_tree;
 pub mod monotone_cht;
 pub mod segment_tree;
