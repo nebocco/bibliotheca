@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 use std::ops::Range;
-use crate::utils::algebraic_traits::{/* Element, */ Monoid};
+use crate::utils::algebraic_traits::{Element, Monoid};
 
 pub struct SegmentTree<T: Monoid> {
 	size: usize,
@@ -106,4 +106,71 @@ mod tests {
         let seg = SegmentTree::from(&vec![Am(1)]);
         assert!(seg.fold(0..1).0 == 1);
     }
+}
+
+
+pub struct SegmentTree2<T: Element, F: Fn(&T, &T) -> T> {
+	size: usize,
+	node: Vec<T>,
+	zero: T,
+	func: F
+}
+
+impl<T: Element, F: Fn(&T, &T) -> T> SegmentTree2<T, F> {
+	fn new(n0: usize, zero: T, func: F) -> Self {
+		let size = n0.next_power_of_two();
+		let node = vec![zero.clone(); size * 2];
+		Self {
+			size, node, zero, func
+		}
+	}
+
+	fn from(vec: &[T], zero: T, func: F) -> Self {
+		let size = vec.len().next_power_of_two();
+		let mut node = vec![zero.clone(); size << 1];
+		for i in 0..vec.len() {
+			node[i + size] = vec[i].clone();
+		}
+		for i in (1..size).rev() {
+			node[i] = func(&node[i << 1], &node[(i << 1) + 1]);
+		}
+		Self {
+			size, node, zero, func
+		}
+	}
+
+	pub fn get(&self, i: usize) -> &T { &self.node[i + self.size] }
+
+	pub fn set(&mut self, mut i: usize, x: T) {
+		i += self.size;
+		self.node[i] = x;
+		self.fix(i);
+	}
+
+	fn fix(&mut self, mut i: usize) {
+        while i > 0 {
+			i >>= 1;
+			self.node[i] = (self.func)(&self.node[i << 1], &self.node[(i << 1) + 1]);
+		}
+    }
+
+	pub fn fold(&self, rng: Range<usize>) -> T {
+		let mut vl = self.zero.clone();
+		let mut vr = self.zero.clone();
+		let mut l = rng.start + self.size;
+		let mut r = rng.end + self.size;
+		while l < r {
+			if l & 1 == 1 {
+				vl = (self.func)(&vl, &self.node[l]);
+				l += 1;
+			}
+			if r & 1 == 1 {
+				r -= 1;
+				vr = (self.func)(&self.node[r], &vr);
+			}
+			l >>= 1;
+			r >>= 1;
+		}
+		(self.func)(&vl, &vr)
+	}
 }
