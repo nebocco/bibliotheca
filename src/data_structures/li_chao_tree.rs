@@ -1,143 +1,110 @@
 #![allow(dead_code)]
 
+use std::ops::{ Add, Mul };
+
+pub trait LineNumber: Add<Output=Self> + Mul<Output=Self> + Copy + PartialOrd {}
+impl LineNumber for i64 {}
+impl LineNumber for f64 {}
+
 #[derive(Clone, Debug)]
-pub struct Line {
-	slope: i64,
-	intercept: i64,
+pub struct Line<T> { pub a: T, pub b: T, }
+
+impl<T: LineNumber> Line<T> {
+    pub fn new(a: T, b: T) -> Self { Line { a, b } }
+    pub fn get(&self, x: T) -> T { self.a * x + self.b }
 }
 
-impl Line {
-	pub fn new(slope: i64, intercept: i64) -> Self {
-		Line { slope, intercept }
-	}
-
-	pub fn eval(&self, x: i64) -> i64 {
-		self.slope * x + self.intercept
-	}
+pub struct LiChaoTree<T> {
+    node: Box<[Option<Line<T>>]>,
+    xs: Box<[T]>,
+    sz: usize,
 }
 
-// pub struct Segment {
-// 	line: Line,
-// 	left: i64,
-// 	right: i64
-// }
+impl<T: LineNumber> LiChaoTree<T> {
+    pub fn new(xs: &[T]) -> Self {
+        let sz = xs.len().next_power_of_two();
+        let mut xs = xs.to_vec();
+        xs.resize(sz, *xs.last().unwrap());
+        Self {
+            node: vec![None; sz << 1].into_boxed_slice(),
+            xs: xs.into_boxed_slice(),
+            sz,
+        }
+    }
 
-// impl Segment {
-// 	pub fn new(slope: i64, intercept: i64, left: i64, right: i64) -> Self {
-// 		Segment { line: Line::new(slope, intercept), left, right }
-// 	}
+    fn update_range(&mut self, mut i: usize, mut l: usize, mut r: usize, mut line: Line<T>) {
+        while i < (self.sz << 1) {
+            if let Some(li) = self.node[i].take() {
+                let m = (l + r) >> 1;
+                let bl = line.get(self.xs[l]) < li.get(self.xs[l]);
+                let bm = line.get(self.xs[m]) < li.get(self.xs[m]);
+                let br = line.get(self.xs[r - 1]) < li.get(self.xs[r - 1]);
+                if bm {
+                    self.node[i] = Some(std::mem::replace(&mut line, li));
+                }
+                else {
+                    self.node[i] = Some(li)
+                }
+                if bl == br { break; }
+                if bl != bm {
+                    r = m;
+                    i = i << 1;
+                }
+                else {
+                    l = m;
+                    i = (i << 1) + 1;
+                }
+            }
+            else {
+                self.node[i] = Some(line);
+                break
+            };
+        }
+    }
 
-// 	pub fn eval(&self, x: i64) -> Option<i64> {
-// 		if self.is_valid(x) {
-// 			Some(self.line.eval(x))
-// 		} else {
-// 			None
-// 		}
-// 	}
+    pub fn add_line(&mut self, line: Line<T>) {
+        self.update_range(1, 0, self.sz, line);
+    }
 
-// 	pub fn is_valid(&self, x: i64) -> bool {
-// 		self.left <= x && x <= self.right
-// 	}
-// }
+    pub fn add_segment(&mut self, mut l: usize, mut r: usize, line: Line<T>) {
+        let mut left = l;
+        let mut right = r;
+        l += self.sz;
+        r += self.sz;
+        let mut len = 1;
+        while l < r {
+            if l & 1 == 1 {
+                self.update_range(l, left, left + len, line.clone());
+                l += 1;
+                left += len;
+            }
+            if r & 1 == 1 {
+                r -= 1;
+                self.update_range(r, right - len, right, line.clone());
+                right -= len;
+            }
+            l = l >> 1;
+            r = r >> 1;
+            len = len << 1;
+        }
+    }
 
-pub struct LiChaoTree {
-	n: usize,
-	points: Vec<i64>,
-	tree: Vec<Line>,
-	u: Vec<bool>
-}
-
-impl LiChaoTree {
-	const INF: i64 = 1 << 60;
-
-	fn new(n0: usize, xs: &[i64]) -> Self {
-		let n = n0.next_power_of_two();
-		let u = vec![false; 2*n];
-		let mut points = vec![Self::INF ; 2*n];
-		for i in 0..n0 {
-			points[i] = xs[i];
-		}
-		LiChaoTree {
-			n, points, u,
-			tree: vec![Line::new(0, Self::INF); 2*n],
-		}
-	}
-
-	fn _add_line(&mut self, mut line: Line, mut k: usize, mut l: usize, mut r:usize) {
-		while r - l > 0 {
-			let m = (l + r) >> 1;
-			if !self.u[k] {
-				self.tree[k] = line;
-				self.u[k] = true;
-				return;
-			}
-			let lx = self.points[l];
-			let mx = self.points[m];
-			let rx = self.points[r-1];
-			let cur = &self.tree[k];
-			let lb = line.eval(lx) < cur.eval(lx);
-			let mb = line.eval(mx) < cur.eval(mx);
-			let rb = line.eval(rx) < cur.eval(rx);
-			if lb && rb {
-				self.tree[k] = line;
-				return;
-			} else if !lb && !rb {
-				return;
-			}
-			if mb {
-				std::mem::swap(&mut line, &mut self.tree[k]);
-			}
-			if lb ^ mb {
-				k = (k << 1) + 1;
-				r = m;
-			} else {
-				k = (k << 1) + 2;
-				l = m;
-			}
-		}
-	}
-
-	fn _query(&self, mut k: usize, x: i64) -> i64 {
-		k += self.n - 1;
-		let mut s = if self.u[k] { self.tree[k].eval(x) } else { Self::INF };
-		while k > 0 {
-			k = (k - 1) >> 1;
-			if self.u[k] {
-				s = std::cmp::min(s, self.tree[k].eval(x));
-			}
-		}
-		s
-	}
-
-	pub fn add_line(&mut self, a: i64, b: i64) {
-		let line = Line::new(a, b);
-		self._add_line(line, 0, 0, self.n);
-	}
-
-	pub fn add_segment(&mut self, a: i64, b: i64, l: usize, r: usize) {
-		let line = Line::new(a, b);
-		let mut l0 = l + self.n;
-		let mut r0 = r + self.n;
-		let mut s0 = l;
-		let mut t0 = r;
-		let mut sz = 1;
-		while l0 < r0 {
-			if r0 & 1 > 0 {
-				r0 -= 1; t0 -= sz;
-				self._add_line(line.clone(), r0-1, t0, t0+sz);
-			}
-			if l0 & 1 > 0 {
-				self._add_line(line.clone(), l0-1, s0, s0+sz);
-				l0 += 1; s0 += sz;
-			}
-			l0 >>= 1; r0 >>= 1;
-			sz <<= 1;
-		}
-	}
-
-	pub fn query(&self, i: usize) -> i64 {
-		return self._query(i, self.points[i])
-	}
+    pub fn get_min(&self, mut i: usize) -> Option<T> {
+        let x = self.xs[i];
+        i += self.sz;
+        let mut ans = None;
+        while i > 0 {
+            let res = self.node[i].as_ref().map(|l| l.get(x));
+            ans = match (ans, res) {
+                (Some(a), Some(b)) if a < b => Some(a),
+                (Some(_), Some(b)) => Some(b),
+                (Some(a), _) => Some(a),
+                (None, b) => b,
+            };
+            i = i >> 1;
+        }
+        ans
+    }
 }
 
 #[cfg(test)]
