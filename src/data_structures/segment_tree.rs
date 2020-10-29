@@ -1,7 +1,5 @@
 #![allow(dead_code)]
-
 use std::ops::Range;
-
 use crate::utils::algebraic_traits::{/* Element, */ Monoid};
 
 pub struct SegmentTree<T: Monoid> {
@@ -24,7 +22,7 @@ impl<T: Monoid> SegmentTree<T> {
 		for i in 0..vec.len() {
 			node[i + size] = vec[i].clone();
 		}
-		for i in (0..size).rev() {
+		for i in (1..size).rev() {
 			node[i] = node[i << 1].clone() + node[(i << 1) + 1].clone();
 		}
 		SegmentTree {
