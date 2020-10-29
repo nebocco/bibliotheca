@@ -1,137 +1,65 @@
 #![allow(dead_code)]
 
-use crate::utils::algebraic_traits::*;
+use std::ops::Range;
+
+use crate::utils::algebraic_traits::{/* Element, */ Monoid};
 
 pub struct SegmentTree<T: Monoid> {
 	size: usize,
-	tree: Vec<T>
+	node: Vec<T>
 }
 
 impl<T: Monoid> SegmentTree<T> {
 	fn new(n0: usize) -> Self {
 		let size = n0.next_power_of_two();
-		let tree = vec![T::zero(); size * 2];
+		let node = vec![T::zero(); size * 2];
 		SegmentTree {
-			size, tree
+			size, node
 		}
 	}
 
 	fn from(vec: &[T]) -> Self {
 		let size = vec.len().next_power_of_two();
-		let mut tree = vec![T::zero(); size * 2];
+		let mut node = vec![T::zero(); size << 1];
 		for i in 0..vec.len() {
-			tree[i + size] = vec[i].clone();
+			node[i + size] = vec[i].clone();
 		}
 		for i in (0..size).rev() {
-			tree[i] = tree[i << 1].clone() + tree[(i << 1) + 1].clone();
+			node[i] = node[i << 1].clone() + node[(i << 1) + 1].clone();
 		}
 		SegmentTree {
-			size, tree
+			size, node
 		}
 	}
 
-	fn add(&mut self, mut i: usize, x: T) {
+	pub fn get(&self, i: usize) -> &T { &self.node[i + self.size] }
+
+	pub fn set(&mut self, mut i: usize, x: T) {
 		i += self.size;
-		self.tree[i] = self.tree[i].clone() + x;
-		while i > 0 {
-			i >>= 1;
-			self.tree[i] = self.tree[i << 1].clone() + self.tree[(i << 1) + 1].clone();
-		}
+		self.node[i] = x;
+		self.fix(i);
 	}
 
-	fn update(&mut self, mut i: usize, x: T) {
-		i += self.size;
-		self.tree[i] = x;
-		while i > 0 {
+	fn fix(&mut self, mut i: usize) {
+        while i > 0 {
 			i >>= 1;
-			self.tree[i] = self.tree[i << 1].clone() + self.tree[(i << 1) + 1].clone();
+			self.node[i] = self.node[i << 1].clone() + self.node[(i << 1) + 1].clone();
 		}
-	}
+    }
 
-	fn query(&self, l0: usize, r0:usize) -> T {
+	pub fn fold(&self, rng: Range<usize>) -> T {
 		let mut vl = T::zero();
 		let mut vr = T::zero();
-		let mut l = l0 + self.size;
-		let mut r = r0 + self.size;
+		let mut l = rng.start + self.size;
+		let mut r = rng.end + self.size;
 		while l < r {
-			if l & 1 > 0 {
-				vl = vl + self.tree[l].clone();
+			if l & 1 == 1 {
+				vl = vl + self.node[l].clone();
 				l += 1;
 			}
-			if r & 1 > 0 {
+			if r & 1 == 1 {
 				r -= 1;
-				vr = self.tree[r].clone() + vr;
-			}
-			l >>= 1;
-			r >>= 1;
-		}
-		vl + vr
-	}
-}
-
-
-pub struct SegmentTree2<T, F> {
-	size: usize,
-	tree: Vec<T>,
-	func: F
-}
-
-impl<T, F> SegmentTree2<T, F> where
-	T: Monoid, F: Fn(T, T) -> T
-{
-	fn new(n0: usize, func: F) -> Self {
-		let size = n0.next_power_of_two();
-		let tree = vec![T::zero(); size * 2];
-		SegmentTree2 {
-			size, tree, func
-		}
-	}
-
-	fn from(vec: &[T], func: F) -> Self {
-		let size = vec.len().next_power_of_two();
-		let mut tree = vec![T::zero(); size * 2];
-		for i in 0..vec.len() {
-			tree[i + size] = vec[i].clone();
-		}
-		for i in (0..size).rev() {
-			tree[i] = func(tree[i << 1].clone(), tree[(i << 1) + 1].clone());
-		}
-		SegmentTree2 {
-			size, tree, func
-		}
-	}
-
-	fn add(&mut self, mut i: usize, x: T) {
-		i += self.size;
-		self.tree[i] = (self.func)(self.tree[i].clone(), x);
-		while i > 0 {
-			i >>= 1;
-			self.tree[i] = (self.func)(self.tree[i << 1].clone(), self.tree[(i << 1) + 1].clone());
-		}
-	}
-
-	fn update(&mut self, mut i: usize, x: T) {
-		i += self.size;
-		self.tree[i] = x;
-		while i > 0 {
-			i >>= 1;
-			self.tree[i] = (self.func)(self.tree[i << 1].clone(), self.tree[(i << 1) + 1].clone());
-		}
-	}
-
-	fn query(&self, l0: usize, r0:usize) -> T {
-		let mut vl = T::zero();
-		let mut vr = T::zero();
-		let mut l = l0 + self.size;
-		let mut r = r0 + self.size;
-		while l < r {
-			if l & 1 > 0 {
-				vl = (self.func)(vl, self.tree[l].clone());
-				l += 1;
-			}
-			if r & 1 > 0 {
-				r -= 1;
-				vr = (self.func)(self.tree[r].clone(), vr);
+				vr = self.node[r].clone() + vr;
 			}
 			l >>= 1;
 			r >>= 1;
@@ -142,9 +70,42 @@ impl<T, F> SegmentTree2<T, F> where
 
 #[cfg(test)]
 mod tests {
-    // TODO: make tests
+	use super::*;
+	use crate::utils::algebraic_traits::*;
+	use std::ops::Add;
+	use num_traits::Zero;
+
+	#[derive(Clone, PartialEq)]
+    struct Am(usize);
+
+    impl Add for Am {
+		type Output = Self;
+        fn add(self, right: Self) -> Self { Am(self.0 + right.0) }
+	}
+
+    impl Associative for Am {}
+
+    impl Zero for Am {
+		fn zero() -> Self { Am(0) }
+		fn is_zero(&self) -> bool { self.0 == 0 }
+	}
+
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    fn rsq_test() {
+        let mut seg = SegmentTree::from(&vec![Am(1), Am(2), Am(3)]);
+        assert!(seg.fold(0..2).0 == 3);
+        assert!(seg.fold(1..2).0 == 2);
+        seg.set(1, Am(5));
+        assert!(seg.fold(0..2).0 == 6);
+        assert!(seg.fold(1..2).0 == 5);
+        seg.set(1, seg.get(1).clone() + Am(5));
+        assert!(seg.fold(0..2).0 == 11);
+        assert!(seg.fold(1..2).0 == 10);
+	}
+
+	#[test]
+    fn corner_test() {
+        let seg = SegmentTree::from(&vec![Am(1)]);
+        assert!(seg.fold(0..1).0 == 1);
     }
 }
