@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+/// find minimum assignment
 fn hungarian(a: &[Vec<i64>]) -> (i64, Vec<usize>) {
 	let n = a.len();
 	let (mut p, mut q): (usize, usize);
@@ -8,17 +9,18 @@ fn hungarian(a: &[Vec<i64>]) -> (i64, Vec<usize>) {
 	assert!(a[0].len() == n,
 	"given matrix is not square: {} rows, {} columns", n, a[0].len());
 	let mut fx = (0..n).map(
-		|k| a[k].iter().max().unwrap().clone()
+		|k| a[k].iter().min().unwrap().clone()
 	).collect::<Vec<_>>();
 	let mut fy = vec![0; n];
 	let mut i = 0;
+	let mut j: usize;
 	while i < n {
 		let mut t = vec![n; n];
 		let mut s = vec![i; n+1];
 		p = 0; q = 0;
 		while p <= q && x[i] == n {
 			let mut k = s[p];
-			let mut j = 0;
+			j = 0;
 			while j < n && x[i] == n {
 				if fx[k] + fy[j] == a[k][j] && t[j] == n {
 					q += 1;
@@ -33,25 +35,28 @@ fn hungarian(a: &[Vec<i64>]) -> (i64, Vec<usize>) {
 							x[k] = j;
 							j = p;
 						}
+						j = 0;
+						p = 0;
 					}
 				}
-				j += 1;
+				if j == n {
+					j = 0;
+				} else {
+					j += 1;
+				}
 			}
-			p += 1;
+			if p == n {
+				p = 0;
+			} else {
+				p += 1;
+			}
 		}
-		// println!("\nt: {:?}", t);
-		// println!("s: {:?}", s);
-		// println!("x: {:?}", x);
-		// println!("y: {:?}", y);
-		// println!("fx: {:?}", fx);
-		// println!("fy: {:?}", fy);
 		if x[i] == n {
-			println!("x[{}] = n, q = {}", i, q);
-			let mut d = std::i64::MAX;
+			let mut d = std::i64::MIN;
 			for k in 0..=q {
 				for j in 0..n {
 					if t[j] == n {
-						d = std::cmp::min(d, fx[s[k]] + fy[j] - a[s[k]][j]);
+						d = std::cmp::max(d, fx[s[k]] + fy[j] - a[s[k]][j]);
 					}
 				}
 			}
@@ -72,7 +77,18 @@ fn hungarian(a: &[Vec<i64>]) -> (i64, Vec<usize>) {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	// ! test failed
+	#[test]
+    fn test_3x3() {
+		let a = vec![
+			vec![4, 3, 5],
+			vec![3, 5, 9],
+			vec![4, 1, 4],
+		];
+		let (sc, x) = hungarian(&a);
+		assert_eq!(sc, 9);
+		assert_eq!(x, vec![2, 0, 1]);
+    }
+
     #[test]
     fn test_4x4() {
 		let a = vec![
