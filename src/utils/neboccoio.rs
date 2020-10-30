@@ -209,3 +209,23 @@ impl<T: Print, U: Print, V: Print> Print for (T, U, V) {
 		w.print(z);
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	#[test]
+	fn test_ignore() {
+		let mut io = IO::new();
+		let (n, q) = io.scan();
+		let a: Vec<i32> = io.scan_vec(n);
+		for _ in 0..q {
+			if io.scan::<u32>() == 0 {
+				let idx: usize = io.scan::<usize>();
+				io.println::<i32>(a[idx]);
+			} else {
+				let res: (usize, isize) = (io.scan(), io.scan());
+				io.println(res);
+			}
+		}
+	}
+}
