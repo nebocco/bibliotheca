@@ -1,5 +1,57 @@
-// TODO: use generics
 use crate::utils::algebraic_traits::ComMonoid;
+
+// ------------ FenwickTree with generics start ------------
+
+#[derive(Clone, Debug)]
+pub struct FenwickTree<T>(Vec<T>);
+
+impl<T> FenwickTree<T> where
+    T: ComMonoid
+{
+    #[inline]
+    fn lsb(x: usize) -> usize {
+        x & x.wrapping_neg()
+    }
+
+    pub fn new(n: usize) -> Self {
+        Self(vec![T::zero(); n+1])
+    }
+
+    pub fn build_from_slice(src: &[T]) -> Self {
+        let mut table = std::iter::once(T::zero())
+            .chain(src.iter().cloned())
+            .collect::<Vec<T>>();
+
+        let n = table.len();
+
+        (1..n)
+            .map(|i| (i, i + Self::lsb(i)))
+            .filter(|&(_, j)| j < n)
+            .for_each(|(i, j)| {
+                table[j] = table[j].clone() + table[i].clone();
+            });
+        Self(table)
+    }
+
+    pub fn prefix_sum(&self, i: usize) -> T {
+        std::iter::successors(Some(i), |&i| Some(i - Self::lsb(i)))
+            .take_while(|&i| i != 0)
+            .map(|i| self.0[i].clone())
+            .fold(T::zero(), |sum, x| sum + x)
+    }
+
+    pub fn add(&mut self, i: usize, x: T) {
+        let n = self.0.len();
+        std::iter::successors(Some(i + 1), |&i| Some(i + Self::lsb(i)))
+            .take_while(|&i| i < n)
+            .for_each(|i| self.0[i] = self.0[i].clone() + x.clone());
+    }
+}
+
+// ------------ FenwickTree with generics end ------------
+
+// ------------ FenwickTree without generics start ------------
+// verify: https://judge.yosupo.jp/submission/28227
 
 pub struct Fenwick(Vec<i64>);
 
@@ -79,51 +131,7 @@ impl Fenwick {
 
 }
 
-#[derive(Clone, Debug)]
-pub struct FenwickTree<T>(Vec<T>);
-
-impl<T> FenwickTree<T> where
-    T: ComMonoid
-{
-    #[inline]
-    fn lsb(x: usize) -> usize {
-        x & x.wrapping_neg()
-    }
-
-    pub fn new(n: usize) -> Self {
-        Self(vec![T::zero(); n+1])
-    }
-
-    pub fn build_from_slice(src: &[T]) -> Self {
-        let mut table = std::iter::once(T::zero())
-            .chain(src.iter().cloned())
-            .collect::<Vec<T>>();
-
-        let n = table.len();
-
-        (1..n)
-            .map(|i| (i, i + Self::lsb(i)))
-            .filter(|&(_, j)| j < n)
-            .for_each(|(i, j)| {
-                table[j] = table[j].clone() + table[i].clone();
-            });
-        Self(table)
-    }
-
-    pub fn prefix_sum(&self, i: usize) -> T {
-        std::iter::successors(Some(i), |&i| Some(i - Self::lsb(i)))
-            .take_while(|&i| i != 0)
-            .map(|i| self.0[i].clone())
-            .fold(T::zero(), |sum, x| sum + x)
-    }
-
-    pub fn add(&mut self, i: usize, x: T) {
-        let n = self.0.len();
-        std::iter::successors(Some(i + 1), |&i| Some(i + Self::lsb(i)))
-            .take_while(|&i| i < n)
-            .for_each(|i| self.0[i] = self.0[i].clone() + x.clone());
-    }
-}
+// ------------ FenwickTree without generics end ------------
 
 #[cfg(test)]
 mod tests {
