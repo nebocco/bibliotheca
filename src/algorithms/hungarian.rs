@@ -1,4 +1,5 @@
-#[allow(dead_code, unused_mut, unused_variables)]
+#![allow(dead_code)]
+
 fn hungarian(a: &[Vec<i64>]) -> (i64, Vec<usize>) {
 	let n = a.len();
 	let mut p: usize;
