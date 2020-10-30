@@ -130,10 +130,7 @@ mod tests {
     #[test]
     fn new_i32() {
 		let mut hq = DoublePriorityHeap::<i32>::new();
-		for i in 0..6 {
-			hq.push(&i);
-			println!("{:?}", &hq.0);
-		}
+		for i in 0..6 { hq.push(&i); }
         assert_eq!(hq.get_min(), Some(&0));
         assert_eq!(hq.get_max(), Some(&5));
         assert_eq!(hq.pop_min(), Some(0));
@@ -151,7 +148,6 @@ mod tests {
 	fn build_u64() {
 		let v = (0..8).collect::<Vec<u64>>();
 		let mut hq = DoublePriorityHeap::<u64>::from(&v);
-		println!("{:?}", &hq.0);
         assert_eq!(hq.get_min(), Some(&0));
         assert_eq!(hq.get_max(), Some(&7));
         assert_eq!(hq.pop_min(), Some(0));
