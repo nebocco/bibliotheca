@@ -2,6 +2,9 @@
 use std::ops::Range;
 use crate::utils::algebraic_traits::{Element, Monoid};
 
+// ------------ module start ------------
+// * verified: https://judge.yosupo.jp/submission/28323, https://judge.yosupo.jp/submission/28333
+
 pub struct SegmentTree<T: Monoid> {
 	size: usize,
 	node: Vec<T>
@@ -66,48 +69,9 @@ impl<T: Monoid> SegmentTree<T> {
 	}
 }
 
-#[cfg(test)]
-mod tests {
-	use super::*;
-	use crate::utils::algebraic_traits::*;
-	use std::ops::Add;
-	use num_traits::Zero;
+// ------------ module end ------------
 
-	#[derive(Clone, PartialEq)]
-    struct Am(usize);
-
-    impl Add for Am {
-		type Output = Self;
-        fn add(self, right: Self) -> Self { Am(self.0 + right.0) }
-	}
-
-    impl Associative for Am {}
-
-    impl Zero for Am {
-		fn zero() -> Self { Am(0) }
-		fn is_zero(&self) -> bool { self.0 == 0 }
-	}
-
-    #[test]
-    fn rsq_test() {
-        let mut seg = SegmentTree::from(&vec![Am(1), Am(2), Am(3)]);
-        assert!(seg.fold(0..2).0 == 3);
-        assert!(seg.fold(1..2).0 == 2);
-        seg.set(1, Am(5));
-        assert!(seg.fold(0..2).0 == 6);
-        assert!(seg.fold(1..2).0 == 5);
-        seg.set(1, seg.get(1).clone() + Am(5));
-        assert!(seg.fold(0..2).0 == 11);
-        assert!(seg.fold(1..2).0 == 10);
-	}
-
-	#[test]
-    fn corner_test() {
-        let seg = SegmentTree::from(&vec![Am(1)]);
-        assert!(seg.fold(0..1).0 == 1);
-    }
-}
-
+// ------------ module start ------------
 
 pub struct SegmentTree2<T: Element, F: Fn(&T, &T) -> T> {
 	size: usize,
@@ -173,4 +137,49 @@ impl<T: Element, F: Fn(&T, &T) -> T> SegmentTree2<T, F> {
 		}
 		(self.func)(&vl, &vr)
 	}
+}
+
+// ------------ module end ------------
+
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::utils::algebraic_traits::*;
+	use std::ops::Add;
+	use num_traits::Zero;
+
+	#[derive(Clone, PartialEq)]
+    struct Am(usize);
+
+    impl Add for Am {
+		type Output = Self;
+        fn add(self, right: Self) -> Self { Am(self.0 + right.0) }
+	}
+
+    impl Associative for Am {}
+
+    impl Zero for Am {
+		fn zero() -> Self { Am(0) }
+		fn is_zero(&self) -> bool { self.0 == 0 }
+	}
+
+    #[test]
+    fn rsq_test() {
+        let mut seg = SegmentTree::from(&vec![Am(1), Am(2), Am(3)]);
+        assert!(seg.fold(0..2).0 == 3);
+        assert!(seg.fold(1..2).0 == 2);
+        seg.set(1, Am(5));
+        assert!(seg.fold(0..2).0 == 6);
+        assert!(seg.fold(1..2).0 == 5);
+        seg.set(1, seg.get(1).clone() + Am(5));
+        assert!(seg.fold(0..2).0 == 11);
+        assert!(seg.fold(1..2).0 == 10);
+	}
+
+	#[test]
+    fn corner_test() {
+        let seg = SegmentTree::from(&vec![Am(1)]);
+        assert!(seg.fold(0..1).0 == 1);
+    }
 }
