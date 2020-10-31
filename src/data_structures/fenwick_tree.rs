@@ -1,6 +1,7 @@
 use crate::utils::algebraic_traits::ComMonoid;
 
 // ------------ FenwickTree with generics start ------------
+// * verified: https://judge.yosupo.jp/submission/28326
 
 #[derive(Clone, Debug)]
 pub struct FenwickTree<T>(Vec<T>);
@@ -51,7 +52,7 @@ impl<T> FenwickTree<T> where
 // ------------ FenwickTree with generics end ------------
 
 // ------------ FenwickTree without generics start ------------
-// verify: https://judge.yosupo.jp/submission/28227
+// * verified: https://judge.yosupo.jp/submission/28227
 
 pub struct Fenwick(Vec<i64>);
 
