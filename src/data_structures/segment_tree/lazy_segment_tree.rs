@@ -2,6 +2,10 @@
 use std::ops::{Mul, Range};
 use crate::utils::algebraic_traits::Monoid;
 
+// ------------ module start ------------
+// * verified: https://judge.yosupo.jp/submission/28350
+// TODO: it might be able to make it faster
+
 #[derive(Clone)]
 struct Node<T: Monoid + Mul<E, Output=T>, E: Monoid> {
 	val: T,
@@ -23,8 +27,8 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
             node: node.into_boxed_slice(),
             size, dep
         }
-
 	}
+
     pub fn from(arr: &[T]) -> Self {
         let size = arr.len().next_power_of_two();
         let dep = size.trailing_zeros() as usize + 1;
@@ -42,8 +46,7 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
 	}
 
     fn effect(&mut self, i: usize, e: &E) {
-        if i < self.node.len() {
-            //self.flag.set(i, true);
+        if i < self.size << 1 {
             self.node[i].val = self.node[i].val.clone() * e.clone();
             self.node[i].lazy = self.node[i].lazy.clone() + e.clone();
         }
@@ -55,11 +58,12 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
 		self.effect((i << 1) + 1, &e);
 	}
 
-	fn infuse(&mut self, i: usize) {
-        let mut i = i >> (i.trailing_zeros() as usize);
-        while {i >>= 1; i} >= 1 {
+	fn infuse(&mut self, mut i: usize) {
+        i >>= i.trailing_zeros();
+        while {i >>= 1; i} > 0 {
             self.node[i].val = self.node[i << 1].val.clone() + self.node[(i << 1) + 1].val.clone();
-        }
+
+		}
     }
 
     fn infiltrate(&mut self, i: usize) {
@@ -77,11 +81,11 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
         self.infiltrate(l);
         self.infiltrate(r);
         while l < r {
-            if l & 1 != 0 {
+            if l & 1 == 1 {
                 self.effect(l, &e);
                 l += 1;
             }
-            if r & 1 != 0 {
+            if r & 1 == 1 {
                 r -= 1;
                 self.effect(r, &e);
             }
@@ -92,19 +96,19 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
         self.infuse(rng.end + self.size);
     }
 
-    pub fn fold(&mut self, a: usize, b: usize) -> T {
-        let mut l = a + self.size;
-        let mut r = b + self.size;
+    pub fn fold(&mut self, rng: Range<usize>) -> T {
+        let mut l = rng.start + self.size;
+        let mut r = rng.end + self.size;
         self.infiltrate(l);
         self.infiltrate(r);
         let mut lx = T::zero();
         let mut rx = T::zero();
         while l < r {
-            if l & 1 != 0 {
+            if l & 1 == 1 {
                 lx = lx + self.node[l].val.clone();
                 l += 1;
             }
-            if r & 1 != 0 {
+            if r & 1 == 1 {
                 r -= 1;
                 rx = self.node[r].val.clone() + rx;
             }
@@ -132,6 +136,7 @@ mod rmq_ruq_test {
 			Mm(min(self.0, right.0))
 		}
     }
+
 	impl Associative for Mm {}
 
     impl Zero for Mm {
@@ -184,7 +189,7 @@ mod rmq_ruq_test {
         seg.update(0..2, Uq(Some(1)));
         seg.update(1..3, Uq(Some(3)));
         seg.update(2..3, Uq(Some(2)));
-        assert_eq!(seg.fold(0, 3).0, 1);
-        assert_eq!(seg.fold(1, 3).0, 2);
+        assert_eq!(seg.fold(0..3).0, 1);
+        assert_eq!(seg.fold(1..3).0, 2);
     }
 }
