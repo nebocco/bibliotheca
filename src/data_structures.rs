@@ -1,4 +1,5 @@
 pub mod bit_vector;
+pub mod disjoint_sparse_table;
 pub mod fenwick_tree;
 pub mod interval_heap;
 pub mod li_chao_tree;
