@@ -47,7 +47,7 @@ impl IO {
 			self.print(v);
 			for v in iter {
 				self.print(delim);
-				self.println(v);
+				self.print(v);
 			}
 		}
 		self.print("\n");
