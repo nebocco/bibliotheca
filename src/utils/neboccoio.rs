@@ -152,6 +152,7 @@ impl<T: Print, U: Print, V: Print> Print for (T, U, V) {
 mod tests {
 	use super::*;
 	#[test]
+	#[ignore]
 	fn test_ignore() {
 		let mut io = IO::new();
 		let (n, q) = io.scan();
