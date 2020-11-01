@@ -1,25 +1,30 @@
-use std::cmp::min;
-
-pub fn z_algorithm<T: Ord>(s: &[T]) -> Vec<usize> {
-    let n = s.len();
-    if n == 0 { return Vec::new(); }
-    let mut ret = vec![0; n];
-    let mut j = 0;
-    for i in 1..n {
-        ret[i] = (if j + ret[j] <= i {
-            0
-        } else {
-            min(j + ret[j] - i, ret[i - j])
-        }..)
-            .find(|&k| i + k == n || s[k] != s[i + k])
-            .unwrap();
-        if j + ret[j] < i + ret[i] { j = i; }
+// ------------ Z algorithm start ------------
+// * verified: https://judge.yosupo.jp/submission/28369
+pub fn z_algorithm<T: PartialEq>(s: &[T]) -> Vec<usize> {
+    let mut ret = vec![0; s.len()];
+    ret[0] = s.len();
+    let mut p = 0;
+    let mut i = 1;
+    while i < s.len() {
+        while s.get(p) == s.get(i + p) {
+            p += 1;
+        }
+        ret[i] = p;
+        let mut k = 1;
+        while k + ret[k] < p {
+            k += 1;
+        }
+        i += k;
+        p = p.saturating_sub(k);
     }
-    ret[0] = n;
     ret
 }
 
-pub fn kmp_table<T: Ord>(pattern: &[T]) -> Vec<usize> {
+// ------------ Z algorithm end ------------
+
+// ------------ KMP algorithm start ------------
+
+pub fn kmp_table<T: PartialEq>(pattern: &[T]) -> Vec<usize> {
     let n = pattern.len();
     let mut ret = vec![0; n];
     let mut j = 0;
@@ -34,7 +39,7 @@ pub fn kmp_table<T: Ord>(pattern: &[T]) -> Vec<usize> {
     ret
 }
 
-pub fn kmp_search<T: Ord>(pattern: &[T], target: &[T]) -> Option<usize> {
+pub fn kmp_search<T: PartialEq>(pattern: &[T], target: &[T]) -> Option<usize> {
     let n = pattern.len();
     let m = target.len();
     let table = kmp_table(&pattern);
@@ -57,6 +62,10 @@ pub fn kmp_search<T: Ord>(pattern: &[T], target: &[T]) -> Option<usize> {
     }
 }
 
+// ------------ KMP algorithm end ------------
+
+// ------------ run length start ------------
+
 pub fn runlength(s: &String) -> Vec<(char, usize)> {
     let mut res = Vec::new();
     let mut cur: char = '$';
@@ -78,6 +87,7 @@ pub fn runlength(s: &String) -> Vec<(char, usize)> {
     res
 }
 
+// ------------ run length end ------------
 
 #[cfg(test)]
 mod tests {
