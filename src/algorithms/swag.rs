@@ -2,11 +2,11 @@
 
 use crate::utils::algebraic_traits::SemiGroup;
 
+// ------------ module start ------------
+// * verified: https://judge.yosupo.jp/submission/28460
 struct SWAG<T: SemiGroup> {
-    front: Vec<T>,
-    back: Vec<T>,
-    fsum: Vec<T>,
-    bsum: Vec<T>,
+    front: Vec<(T, T)>,
+    back: Vec<(T, T)>,
 }
 
 impl<T: SemiGroup> SWAG<T> {
@@ -14,8 +14,6 @@ impl<T: SemiGroup> SWAG<T> {
         Self {
             front: Vec::new(),
             back: Vec::new(),
-            fsum: Vec::new(),
-            bsum: Vec::new(),
         }
     }
 
@@ -28,42 +26,44 @@ impl<T: SemiGroup> SWAG<T> {
     }
 
     fn push(&mut self, v: T) {
-        let s = if let Some(x) = self.bsum.last() {
+        let s = if let Some((_, x)) = self.back.last() {
             x.clone() + v.clone()
         } else {
             v.clone()
         };
-        self.bsum.push(s);
-        self.back.push(v);
+        self.back.push((v, s));
     }
 
     fn pop(&mut self) -> Option<T> {
         if self.front.is_empty() {
-            while let Some(v) = self.back.pop() {
-                let s = if let Some(x) = self.fsum.last() {
-                    x.clone() + v.clone()
+            let back = std::mem::replace(&mut self.back, Vec::new());
+            for (v, _) in back.into_iter().rev() {
+                let s = if let Some((_, x)) = self.front.last() {
+                    v.clone() + x.clone()
                 } else {
                     v.clone()
                 };
-                self.fsum.push(s);
-                self.front.push(v);
+                self.front.push((v, s));
             }
-            self.bsum.clear();
+            // self.back.clear();
         }
-        self.fsum.pop();
-        self.front.pop()
+        if let Some((x, _)) = self.front.pop() {
+            Some(x)
+        } else {
+            None
+        }
     }
 
     fn fold_all(&self) -> Option<T> {
-        match (self.fsum.last(), self.bsum.last()) {
-            (Some(u), Some(v)) => Some(u.clone() + v.clone()),
-            (Some(u), None) => Some(u.clone()),
-            (None, Some(v)) => Some(v.clone()),
+        match (self.front.last(), self.back.last()) {
+            (Some(u), Some(v)) => Some(u.1.clone() + v.1.clone()),
+            (Some(u), None) => Some(u.1.clone()),
+            (None, Some(v)) => Some(v.1.clone()),
             (None, None) => None,
         }
     }
 }
-
+// ------------ module end ------------
 
 #[cfg(test)]
 mod tests {
