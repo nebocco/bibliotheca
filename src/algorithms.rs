@@ -6,5 +6,7 @@ pub mod hungarian;
 pub mod rerooting;
 pub mod scc;
 pub mod str_algorithms;
+pub mod swag;
 pub mod traversal;
+pub mod tree_dfs;
 pub mod zeta_mobius;
