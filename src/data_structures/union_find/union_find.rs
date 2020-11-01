@@ -99,7 +99,6 @@ impl UnionFind {
         }
         (v, -self.0[v] as usize)
     }
-
 }
 
 
