@@ -1,4 +1,6 @@
-use crate::geometry::Point;
+/*
+
+use crate::utils::geometry::Point;
 
 use std::collections::{ HashMap, HashSet };
 
@@ -22,3 +24,5 @@ fn compress_2D(l: &[Point]) -> ((usize, usize), Vec<Point>) {
         .collect();
     ((x_size, y_size), res)
 }
+
+*/

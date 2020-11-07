@@ -1,5 +1,6 @@
+/*
 use crate::utils::{
-    graph::DirectedGraph,
+    graph::{Graph, DirectedGraph},
     algebraic_traits::Group
 };
 
@@ -35,6 +36,8 @@ fn dfs<E: Group>(u: usize, g: &DirectedGraph, seen: &mut [bool], res: &mut [E], 
     }
     r
 }
+
+*/
 
 #[cfg(test)]
 mod tests {

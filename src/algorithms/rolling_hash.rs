@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 struct RollingHash {
     base: u64,
     modulo: u64,
@@ -11,7 +13,7 @@ impl RollingHash {
         let base = 79;
         let modulo = 1_000_000_009;
         for (i, e) in string.into_iter().enumerate() {
-            data[i+1] = (data[i] * base + e) % modulo;
+            data[i+1] = (data[i] * base + e as u64) % modulo;
         }
         Self {
             base, modulo, data
@@ -21,7 +23,7 @@ impl RollingHash {
     fn hash(&self, rng: std::ops::Range<usize>) -> u64 {
         let l = rng.start;
         let r = rng.end;
-        (self.data[r] + self.moduo - self.data[l] * Self::modpow(r - l) % self.modulo) % self.modulo
+        (self.data[r] + self.modulo - self.data[l] * self.modpow(r - l) % self.modulo) % self.modulo
     }
 
     fn modpow(&self, mut s: usize) -> u64 {
@@ -32,6 +34,7 @@ impl RollingHash {
                 res = res * r % self.modulo;
             }
             r = r * r % self.modulo;
+            s >>= 1;
         }
         res
     }

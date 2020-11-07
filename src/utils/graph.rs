@@ -4,8 +4,10 @@ use std::cmp::Ordering;
 
 #[derive(Copy, Clone)]
 pub struct Edge {
+    // pub from: usize,
     pub to: usize,
-    pub cost: i64
+    pub cost: i64,
+    // pub id: usize
 }
 
 #[derive(Copy, Clone)]

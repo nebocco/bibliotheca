@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::utils::graph::Graph;
 
 fn is_biparate<G: Graph>(graph: &G) -> bool {
@@ -10,10 +11,10 @@ fn is_biparate<G: Graph>(graph: &G) -> bool {
         st.push(i);
         while let Some(v) = st.pop() {
             for u in graph.edges_from(v) {
-                if color[u] == 2 {
-                    color[u] = color[v] ^ 1;
-                    st.push(u);
-                } else if color[u] == color[v] {
+                if color[u.to] == 2 {
+                    color[u.to] = color[v] ^ 1;
+                    st.push(u.to);
+                } else if color[u.to] == color[v] {
                     return false;
                 }
             }

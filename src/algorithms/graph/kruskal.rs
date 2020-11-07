@@ -1,15 +1,14 @@
-use crate::utils::graph::{UndirectedGraph, Edge};
-use crate::data_structure::unionfind::UnionFind;
+#![allow(dead_code)]
+use crate::utils::graph::{Graph, UndirectedGraph};
+use crate::data_structures::union_find::union_find::UnionFind;
 
-fn kruskal(graph: &mut UndirectedGraph, edges: &[Edge]) -> Vec<Edge> {
-    let mut f = edges.clone();
-    f.sort_by_key(|x| x.cost);
+fn kruskal(graph: &mut UndirectedGraph, edges: &mut [(usize, usize, i64)]) -> Vec<(usize, usize, i64)> {
+    edges.sort_by_key(|x| x.2);
     let mut res = Vec::with_capacity(graph.size() - 1);
-    let uf = UnionFind::new(graph.size());
-    for e in f.into_iter() {
-        if !uf.same(e.from, e.to) {
-            uf.unite(e.from, e.to);
-            graph.add_edge(e);
+    let mut uf = UnionFind::new(graph.size());
+    for &e in edges.iter() {
+        if uf.unite(e.0, e.1).is_ok() {
+            graph.add_edge(e.0, e.1, e.2);
             res.push(e);
         }
     }

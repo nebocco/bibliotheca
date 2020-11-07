@@ -2,11 +2,21 @@
 https://gist.github.com/wata-orz/d3037bd0b919c76dd9ddc0379e1e3192
 */
 
+
+// use crate::data_structures::union_find::union_find::UnionFind;
+use crate::utils::{
+	// algebraic_traits::Group,
+	graph::*,
+};
+
+/*
+
+
 /// Computes single-source unorthodox shortest paths with respect to the given shortest-path tree `sp`.
 /// O(m log n) time.
-pub fn sssup(g: &UndirectedGraph<G_Edge>, s: usize) -> Vec<i64> {
+pub fn sssup<T: Group>(g: &UndirectedGraph<GEdge>, s: usize) -> Vec<i64> {
 	let n = g.size();
-	let sp = SSSP::new(g, s);
+	let sp = SSSP::<T>::new(g, s);
 	let mut dist = vec![std::i64::MAX; n];
 	let mut uf = UnionFind::new(n);
 	let mut que = std::collections::BinaryHeap::new();
@@ -44,14 +54,6 @@ pub fn sssup(g: &UndirectedGraph<G_Edge>, s: usize) -> Vec<i64> {
 	dist
 }
 
-struct G_Edge<T: Group> {
-	from: usize,
-	to: usize,
-	cost: i64,
-	label: T,
-	is_consistet: bool
-}
-
 /// Single-Source Shortest Paths
 #[derive(Clone, Debug)]
 pub struct SSSP<T: Group> {
@@ -65,7 +67,7 @@ pub struct SSSP<T: Group> {
 impl<T: Group> SSSP<T> {
 	/// Computes single-source shortest paths with Dijkstra algorithm
 	/// O(ElogV)
-	pub fn new(g: &UndirectedGraph<G_Edge<T>>, s: usize) -> Self {
+	pub fn new(g: &UndirectedGraph<GEdge<T>>, s: usize) -> Self {
 		let n = g.size();
 		let mut dist = vec![std::i64::MAX; n];
 		let mut depth = vec![std::usize::MAX; n];
@@ -94,7 +96,9 @@ impl<T: Group> SSSP<T> {
 	}
 }
 
-pub fn dijkstra_heap<G: Graph>(g: &G, s: usize) -> Self {
+*/
+
+pub fn dijkstra_heap<G: Graph>(g: &G, s: usize) {
 	let n = g.size();
 	let mut dist = vec![std::i64::MAX; n];
 	let mut depth = vec![std::usize::MAX; n];
@@ -117,12 +121,12 @@ pub fn dijkstra_heap<G: Graph>(g: &G, s: usize) -> Self {
 			}
 		}
 	}
-	Self { s, dist, parent, depth }
+	( s, dist, parent, depth );
 }
 
 /// Computes single-source shortest paths with Dijkstra algorithm
 /// O(V^2)
-pub fn dijkstra_loop<G: Graph>(g: &G, s: usize) -> Self {
+pub fn dijkstra_loop<G: Graph>(g: &G, s: usize) {
 	let n = g.size();
 	let mut dist = vec![std::i64::MAX; n];
 	let mut depth = vec![std::usize::MAX; n];
@@ -131,7 +135,7 @@ pub fn dijkstra_loop<G: Graph>(g: &G, s: usize) -> Self {
 	dist[s] = 0;
 	depth[s] = 0;
 	for _ in 0..n-1 {
-		let u = (0..n).filter(|&i| !done[i]).min_by_key(|i| dist[i]).unwrap();
+		let u = (0..n).filter(|&i| !done[i]).min_by_key(|&i| dist[i]).unwrap();
 		done[u] = true;
 		for e in g.edges_from(u) {
 			if dist[e.to] > dist[u] + e.cost {
@@ -141,12 +145,12 @@ pub fn dijkstra_loop<G: Graph>(g: &G, s: usize) -> Self {
 			}
 		}
 	}
-	Self { s, dist, parent, depth }
+	( s, dist, parent, depth );
 }
 
 /// Computes single-source shortest paths with Bellman-Ford algorithm
 /// O(EV)
-pub fn bellman_ford<G: Graph>(g: &G, s: usize) -> Result<Self, &str> {
+pub fn bellman_ford<G: Graph>(g: &G, s: usize) -> Result<(), &str> {
 	let n = g.size();
 	let mut dist = vec![std::i64::MAX; n];
 	let mut depth = vec![std::usize::MAX; n];
@@ -162,13 +166,13 @@ pub fn bellman_ford<G: Graph>(g: &G, s: usize) -> Result<Self, &str> {
 			}
 		}
 	}
-
 	for v in 0..n {
 		for e in g.edges_from(v) {
 			if dist[e.to] > dist[v] + e.cost {
-				Err("graph contains a negative cycle")
+				return Err("graph contains a negative cycle");
 			}
 		}
 	}
-	Ok(Self { s, dist, parent, depth })
+	( s, dist, parent, depth );
+	Ok(())
 }
