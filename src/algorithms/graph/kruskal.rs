@@ -1,5 +1,5 @@
 use crate::utils::graph::{UndirectedGraph, Edge};
-use crate::data_structure::unionfind::UnionFind;
+use crate::data_structures::union_find::UnionFind;
 
 fn kruskal(graph: &mut UndirectedGraph, edges: &[Edge]) -> Vec<Edge> {
     let mut f = edges.clone();
