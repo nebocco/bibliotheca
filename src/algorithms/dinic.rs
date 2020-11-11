@@ -32,3 +32,12 @@ impl<Value: FlowTrait> MaxFlow<Value> {
         self.network.len()
 	}
 }
+
+#[cfg(test)]
+mod tests {
+    // TODO: make tests
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
+}

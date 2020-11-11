@@ -23,3 +23,12 @@ pub fn subset_mobius<T: Group>(l: &mut Vec<T>) {
 		}
 	}
 }
+
+#[cfg(test)]
+mod tests {
+    // TODO: make tests
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
+}
