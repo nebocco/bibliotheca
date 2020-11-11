@@ -1,4 +1,5 @@
-use crate::utils::algebraic_traits::ComMonoid;
+use std::ops::Range;
+use crate::utils::algebraic_traits::{ ComMonoid, ComGroup };
 
 // ------------ FenwickTree with generics start ------------
 // * verified: https://judge.yosupo.jp/submission/28326
@@ -6,9 +7,7 @@ use crate::utils::algebraic_traits::ComMonoid;
 #[derive(Clone, Debug)]
 pub struct FenwickTree<T>(Vec<T>);
 
-impl<T> FenwickTree<T> where
-    T: ComMonoid
-{
+impl<T: ComMonoid> FenwickTree<T> {
     #[inline]
     fn lsb(x: usize) -> usize {
         x & x.wrapping_neg()
@@ -46,6 +45,12 @@ impl<T> FenwickTree<T> where
         std::iter::successors(Some(i + 1), |&i| Some(i + Self::lsb(i)))
             .take_while(|&i| i < n)
             .for_each(|i| self.0[i] = self.0[i].clone() + x.clone());
+    }
+}
+
+impl<T: ComGroup> FenwickTree<T> {
+    pub fn sum(&self, rng: Range<usize>) -> T {
+        self.prefix_sum(rng.end) + -self.prefix_sum(rng.start)
     }
 }
 
