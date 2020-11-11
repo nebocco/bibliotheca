@@ -147,7 +147,6 @@ mod tests {
 	use super::*;
 	use crate::utils::algebraic_traits::*;
 	use std::ops::Add;
-	use num_traits::Zero;
 
 	#[derive(Clone, PartialEq)]
     struct Am(usize);

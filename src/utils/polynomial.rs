@@ -1,11 +1,10 @@
 use crate::utils::algebraic_traits::{
-	ComGroup, ComMonoid, Group, Monoid, SemiRing
+	ComGroup, ComMonoid, Group, Monoid, SemiRing, Zero
 };
-use num_traits::{one, zero, Zero};
 // use std::convert::From;
 use std::ops::{Add, AddAssign, Mul, Neg, Shl, Sub};
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Polynomial<T: Monoid>{
     pub coef: Vec<T>,
 }
@@ -26,8 +25,8 @@ impl<T: Monoid> Polynomial<T>{
         T: Mul<U, Output = U>,
         U: SemiRing,
     {
-        let mut res: U = zero();
-        let mut pow: U = one();
+        let mut res = U::zero();
+        let mut pow = U::one();
         for c in self.coef.iter() {
             res += c.clone() * pow.clone();
             pow = pow * x.clone();
@@ -42,9 +41,9 @@ impl<T: Monoid> Add<Self> for Polynomial<T> {
         let n = self.coef.len();
         let m = rhs.coef.len();
         if n < m {
-            self.coef.extend(vec![zero(); m - n]);
+            self.coef.extend(vec![T::zero(); m - n]);
         } else {
-            rhs.coef.extend(vec![zero(); n - m]);
+            rhs.coef.extend(vec![T::zero(); n - m]);
         }
         self.coef.iter().zip(rhs.coef.iter()).map(|(a, b)| a.clone() + b.clone()).collect()
     }
@@ -55,7 +54,7 @@ impl<T: ComMonoid> AddAssign<Self> for Polynomial<T> {
         let n = self.coef.len();
         let m = rhs.coef.len();
         if n < m {
-            self.coef.extend(vec![zero(); m - n]);
+            self.coef.extend(vec![T::zero(); m - n]);
         }
         for i in 0..m {
 			self.coef[i] += rhs.coef[i].clone();
@@ -68,7 +67,7 @@ impl<T: SemiRing> Mul for Polynomial<T> {
     fn mul(self, right: Self) -> Self {
         let n = self.coef.len();
         let m = right.coef.len();
-        let mut res = vec![zero::<T>(); n + m - 1];
+        let mut res = vec![T::zero(); n + m - 1];
         for (i, a) in self.coef.iter().enumerate() {
             for (j, b) in right.coef.iter().enumerate() {
                 res[i + j] += a.clone() * b.clone();
@@ -95,7 +94,7 @@ impl<T: ComGroup> Sub for Polynomial<T> {
 impl<T: Monoid> Shl<usize> for Polynomial<T> {
     type Output = Self;
     fn shl(self, rhs: usize) -> Self {
-        let mut res = vec![zero(); rhs];
+        let mut res = vec![T::zero(); rhs];
         res.extend(self.coef);
         Self { coef: res }
     }

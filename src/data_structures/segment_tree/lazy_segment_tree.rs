@@ -123,7 +123,6 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
 mod rmq_ruq_test {
 	use std::cmp::min;
 	use std::ops::{Add, Mul};
-	use num_traits::Zero;
 	use crate::utils::algebraic_traits::*;
     use super::*;
 

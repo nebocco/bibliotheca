@@ -1,5 +1,4 @@
 use std::marker::Sized;
-use num_traits::{One, Zero};
 use std::ops::{Add, Mul, Div, Neg, AddAssign, MulAssign, DivAssign};
 
 /// 元
@@ -45,6 +44,48 @@ impl<T: Ring + MulAssign> ComRing for T {}
 /// 体
 pub trait Field: ComRing + Div<Output=Self> + DivAssign {}
 impl<T: ComRing + Div<Output=Self> + DivAssign> Field for T {}
+
+/// 加法単元
+pub trait Zero: Element {
+    fn zero() -> Self;
+    fn is_zero(&self) -> bool;
+}
+
+/// 乗法単元
+pub trait One: Element {
+    fn one() -> Self;
+    fn is_one(&self) -> bool;
+}
+
+macro_rules! impl_zero_one {
+    ($($imp:ident)*) => {
+        $(
+            impl Zero for $imp {
+                fn zero() -> Self { 0 }
+                fn is_zero(&self) -> bool { *self == 0 }
+            }
+
+            impl<'a> Zero for &'a $imp {
+                fn zero() -> Self { &0 }
+                fn is_zero(&self) -> bool { *self == &0 }
+            }
+
+            impl One for $imp {
+                fn one() -> Self { 1 }
+                fn is_one(&self) -> bool { *self == 1 }
+            }
+
+            impl<'a> One for &'a $imp {
+                fn one() -> Self { &1 }
+                fn is_one(&self) -> bool { *self == &1 }
+            }
+        )*
+    };
+}
+
+impl_zero_one! {
+    i16 i32 i64 i128 u8 u16 u32 u64 u128
+}
 
 #[cfg(test)]
 mod tests {

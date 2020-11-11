@@ -57,7 +57,7 @@
 
 use type_traits::{One, Ring, Zero};
 
-mod arith;
+mod poly_arith;
 
 /// 多項式です。値型は [`Copy`](https://doc.rust-lang.org/std/ops/trait.Debug.html)
 /// と [`Ring`](../type_traits/traits.Ring.html) を満たすことが要求されます。
