@@ -2,8 +2,6 @@
 use std::collections::{ HashMap, HashSet };
 use std::hash::Hash;
 
-use crate::utils::geometry::Point;
-
 fn compress<T: Clone + Ord + Hash>(l: &[T])-> (usize, HashMap<T, usize>, Vec<T>, Vec<usize>) {
     let set: HashSet<T> = l.iter().cloned().collect();
     let mut f: Vec<T> = set.into_iter().collect();
@@ -13,23 +11,14 @@ fn compress<T: Clone + Ord + Hash>(l: &[T])-> (usize, HashMap<T, usize>, Vec<T>,
     (f.len(), dict, f, res)
 }
 
-fn compress_2d(l: &[Point]) -> ((usize, usize), Vec<Point>) {
-    let x_list: Vec<i64> = l.iter().map(|p| p.x).collect();
-    let y_list: Vec<i64> = l.iter().map(|p| p.y).collect();
+fn compress_2d<T: Clone + Ord + Hash>(l: &[(T, T)]) -> ((usize, usize), Vec<(usize, usize)>) {
+    let x_list: Vec<T> = l.iter().map(|p| p.0.clone()).collect();
+    let y_list: Vec<T> = l.iter().map(|p| p.1.clone()).collect();
     let (x_size, _, _, x_comp) = compress(&x_list);
     let (y_size, _, _, y_comp) = compress(&y_list);
     let res = x_comp.into_iter()
         .zip(y_comp.into_iter())
-        .map(|(x, y)| Point::new(x as i64, y as i64))
         .collect();
     ((x_size, y_size), res)
 }
 
-#[cfg(test)]
-mod tests {
-    // TODO: make tests
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
