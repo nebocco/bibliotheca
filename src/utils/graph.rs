@@ -49,6 +49,8 @@ pub trait Graph {
     fn edges_from(&self, v: usize) -> std::slice::Iter<Edge>;
 }
 
+pub trait Tree: Graph {}
+
 impl Graph for UndirectedGraph {
     fn new(size: usize) -> Self {
         Self(vec![Vec::<Edge>::new(); size])

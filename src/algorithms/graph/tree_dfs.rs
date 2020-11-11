@@ -1,7 +1,7 @@
 #![allow(dead_code)]
-use crate::utils::graph::Graph;
+use crate::utils::graph::Tree;
 
-fn tree_dfs<T: Graph>(g: &T, root: usize) -> (Vec<i64>, Vec<Option<usize>>) {
+fn tree_dfs<T: Tree>(g: &T, root: usize) -> (Vec<i64>, Vec<Option<usize>>) {
     let n = g.size();
 	let mut dist = vec![std::i64::MAX; n];
 	dist[root] = 0;
