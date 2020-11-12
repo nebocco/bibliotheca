@@ -9,7 +9,7 @@ use std::ops::{Range, RangeBounds};
 ///
 /// # Examples
 /// ```
-/// use nekolib::utils::bounds_within;
+/// use bibliotheca::utils::bounds::bounds_within;
 ///
 /// assert_eq!(bounds_within(.., 7), 0..7);
 /// assert_eq!(bounds_within(..=4, 7), 0..5);

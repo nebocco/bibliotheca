@@ -1,4 +1,5 @@
 pub mod dinic;
+pub mod network_simplex;
 
 use crate::utils::algebraic_traits::{ Element, Zero, One };
 
