@@ -1,9 +1,14 @@
-#![allow(dead_code)]
-use std::ops::Range;
-use crate::utils::algebraic_traits::{Element, Monoid};
+use crate::utils::{
+	algebraic_traits::{ Element, Monoid },
+	bounds::bounds_within,
+};
 
-// ------------ module start ------------
 // * verified: https://judge.yosupo.jp/submission/28323, https://judge.yosupo.jp/submission/28333
+// ------------ Segment Tree start ------------
+
+use std::ops::Index;
+use std::convert::From;
+use std::ops::{ Range, RangeBounds };
 
 pub struct SegmentTree<T: Monoid> {
 	size: usize,
@@ -11,29 +16,13 @@ pub struct SegmentTree<T: Monoid> {
 }
 
 impl<T: Monoid> SegmentTree<T> {
-	fn new(n0: usize) -> Self {
+	pub fn new(n0: usize) -> Self {
 		let size = n0.next_power_of_two();
 		let node = vec![T::zero(); size * 2];
 		SegmentTree {
 			size, node
 		}
 	}
-
-	fn from(vec: &[T]) -> Self {
-		let size = vec.len().next_power_of_two();
-		let mut node = vec![T::zero(); size << 1];
-		for i in 0..vec.len() {
-			node[i + size] = vec[i].clone();
-		}
-		for i in (1..size).rev() {
-			node[i] = node[i << 1].clone() + node[(i << 1) + 1].clone();
-		}
-		SegmentTree {
-			size, node
-		}
-	}
-
-	pub fn get(&self, i: usize) -> &T { &self.node[i + self.size] }
 
 	pub fn set(&mut self, mut i: usize, x: T) {
 		i += self.size;
@@ -48,11 +37,12 @@ impl<T: Monoid> SegmentTree<T> {
 		}
     }
 
-	pub fn fold(&self, rng: Range<usize>) -> T {
+	pub fn fold<R: RangeBounds<usize>>(&self, rng: R) -> T {
+		let Range { start, end } = bounds_within(rng, self.size);
 		let mut vl = T::zero();
 		let mut vr = T::zero();
-		let mut l = rng.start + self.size;
-		let mut r = rng.end + self.size;
+		let mut l = start + self.size;
+		let mut r = end + self.size;
 		while l < r {
 			if l & 1 == 1 {
 				vl = vl + self.node[l].clone();
@@ -69,9 +59,33 @@ impl<T: Monoid> SegmentTree<T> {
 	}
 }
 
-// ------------ module end ------------
+impl<T: Monoid> From<Vec<T>> for SegmentTree<T> {
+	fn from(vec: Vec<T>) -> Self {
+		let size = vec.len().next_power_of_two();
+		let mut node = vec![T::zero(); size << 1];
+		for (i, e) in vec.iter().cloned().enumerate() {
+			node[i + size] = e;
+		}
+		for i in (1..size).rev() {
+			node[i] = node[i << 1].clone() + node[(i << 1) + 1].clone();
+		}
+		SegmentTree {
+			size, node
+		}
+	}
+}
 
-// ------------ module start ------------
+impl<T: Monoid> Index<usize> for SegmentTree<T> {
+	type Output = T;
+	fn index(&self, i: usize) -> &Self::Output {
+		assert!(i < self.size, "index out of range: length is {}, but given {}.", self.size, i);
+		&self.node[i + self.size]
+	}
+}
+
+// ------------ Segment Tree end ------------
+
+// ------------ Segment Tree with function start ------------
 
 pub struct SegmentTree2<T: Element, F: Fn(&T, &T) -> T> {
 	size: usize,
@@ -81,7 +95,7 @@ pub struct SegmentTree2<T: Element, F: Fn(&T, &T) -> T> {
 }
 
 impl<T: Element, F: Fn(&T, &T) -> T> SegmentTree2<T, F> {
-	fn new(n0: usize, zero: T, func: F) -> Self {
+	pub fn new(n0: usize, zero: T, func: F) -> Self {
 		let size = n0.next_power_of_two();
 		let node = vec![zero.clone(); size * 2];
 		Self {
@@ -89,7 +103,7 @@ impl<T: Element, F: Fn(&T, &T) -> T> SegmentTree2<T, F> {
 		}
 	}
 
-	fn from(vec: &[T], zero: T, func: F) -> Self {
+	pub fn from(vec: &[T], zero: T, func: F) -> Self {
 		let size = vec.len().next_power_of_two();
 		let mut node = vec![zero.clone(); size << 1];
 		for i in 0..vec.len() {
@@ -118,11 +132,12 @@ impl<T: Element, F: Fn(&T, &T) -> T> SegmentTree2<T, F> {
 		}
     }
 
-	pub fn fold(&self, rng: Range<usize>) -> T {
+	pub fn fold<R: RangeBounds<usize>>(&self, rng: R) -> T {
+		let Range { start, end } = bounds_within(rng, self.size);
 		let mut vl = self.zero.clone();
 		let mut vr = self.zero.clone();
-		let mut l = rng.start + self.size;
-		let mut r = rng.end + self.size;
+		let mut l = start + self.size;
+		let mut r = end + self.size;
 		while l < r {
 			if l & 1 == 1 {
 				vl = (self.func)(&vl, &self.node[l]);
@@ -139,7 +154,7 @@ impl<T: Element, F: Fn(&T, &T) -> T> SegmentTree2<T, F> {
 	}
 }
 
-// ------------ module end ------------
+// ------------ Segment Tree with function end ------------
 
 
 #[cfg(test)]
@@ -153,32 +168,47 @@ mod tests {
 
     impl Add for Am {
 		type Output = Self;
-        fn add(self, right: Self) -> Self { Am(self.0 + right.0) }
+        fn add(self, right: Self) -> Self { Am(self.0.min(right.0)) }
 	}
 
     impl Associative for Am {}
 
     impl Zero for Am {
-		fn zero() -> Self { Am(0) }
-		fn is_zero(&self) -> bool { self.0 == 0 }
+		fn zero() -> Self { Am(std::usize::MAX) }
+		fn is_zero(&self) -> bool { self.0 == std::usize::MAX }
 	}
 
     #[test]
-    fn rsq_test() {
-        let mut seg = SegmentTree::from(&vec![Am(1), Am(2), Am(3)]);
-        assert!(seg.fold(0..2).0 == 3);
+    fn rmq_test() {
+		let vec = vec![Am(1), Am(2), Am(3)];
+        let mut seg = SegmentTree::from(vec);
+        assert!(seg.fold(0..2).0 == 1);
         assert!(seg.fold(1..2).0 == 2);
         seg.set(1, Am(5));
-        assert!(seg.fold(0..2).0 == 6);
-        assert!(seg.fold(1..2).0 == 5);
-        seg.set(1, seg.get(1).clone() + Am(5));
-        assert!(seg.fold(0..2).0 == 11);
-        assert!(seg.fold(1..2).0 == 10);
+        assert!(seg.fold(0..2).0 == 1);
+        assert!(seg.fold(2..3).0 == 3);
+        seg.set(2, Am(0));
+        assert!(seg.fold(0..2).0 == 1);
+        assert!(seg.fold(1..3).0 == 0);
+	}
+
+    #[test]
+	fn i32_test() {
+		let vec = vec![1, 2, 3];
+        let mut seg = SegmentTree::from(vec);
+        assert!(seg.fold(0..2) == 3);
+        assert!(seg.fold(1..2) == 2);
+        seg.set(1, 5);
+        assert!(seg.fold(0..2) == 6);
+        assert!(seg.fold(1..2) == 5);
+        seg.set(1, seg[1].clone() + 5);
+        assert!(seg.fold(0..2) == 11);
+        assert!(seg.fold(1..2) == 10);
 	}
 
 	#[test]
     fn corner_test() {
-        let seg = SegmentTree::from(&vec![Am(1)]);
+        let seg = SegmentTree::from(vec![Am(1)]);
         assert!(seg.fold(0..1).0 == 1);
     }
 }
