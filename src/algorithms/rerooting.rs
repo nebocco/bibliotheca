@@ -1,6 +1,4 @@
-#![allow(dead_code)]
-
-struct Rerooting<Edge, Value, Func> {
+pub struct Rerooting<Edge, Value, Func> {
     size: usize,
     edge: Vec<(usize, usize, Edge)>,
     initial: Value,
@@ -12,7 +10,7 @@ where Edge: Clone,
       Value: Clone,
       Func: Fn(&Value, &Value, &Edge) -> Value {
 
-    fn new(size: usize, initial: Value, func: Func) -> Self {
+    pub fn new(size: usize, initial: Value, func: Func) -> Self {
         Rerooting {
             size: size,
             edge: vec![],
@@ -21,11 +19,11 @@ where Edge: Clone,
         }
     }
 
-    fn add_edge(&mut self, a: usize, b: usize, cost: Edge) {
+    pub fn add_edge(&mut self, a: usize, b: usize, cost: Edge) {
         self.edge.push((a, b, cost));
     }
 
-    fn solve(&self) -> Vec<Value> {
+    pub fn solve(&self) -> Vec<Value> {
         let mut graph = vec![vec![]; self.size];
         for e in self.edge.iter() {
             let a = e.0;
@@ -85,5 +83,14 @@ where Edge: Clone,
             }
         }
         ans
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // TODO: make tests
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
     }
 }

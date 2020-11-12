@@ -1,7 +1,6 @@
-#![allow(dead_code)]
 use crate::utils::algebraic_traits::Element;
 
-struct DoublePriorityHeap<T: Element + Ord>(Vec<T>);
+pub struct DoublePriorityHeap<T: Element + Ord>(Vec<T>);
 
 impl<T: Element + Ord> DoublePriorityHeap<T> {
 	pub fn new() -> Self {

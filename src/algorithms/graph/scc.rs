@@ -1,6 +1,13 @@
 use crate::utils::graph::*;
 use crate::algorithms::traversal::*;
 
+// * verified: https://judge.yosupo.jp/submission/26465
+// ------------ 2-SAT start ------------
+
+// * verified: https://judge.yosupo.jp/submission/26463
+// ------------ Strongly Connected Components start ------------
+// ! DirectedGraph::reverse() is too heavy
+
 pub trait SCC {
     fn strongly_connected(&self) -> (usize, Vec<usize>);
     fn groups(&self) -> Vec<Vec<usize>>;
@@ -44,6 +51,8 @@ impl SCC for DirectedGraph {
     }
 }
 
+// ------------ Strongly Connected Components end ------------
+
 pub struct TwoSat(DirectedGraph);
 
 impl TwoSat {
@@ -72,13 +81,12 @@ impl TwoSat {
     }
 }
 
+// ------------ 2-SAT end ------------
+
+
 #[cfg(test)]
 mod tests {
     // TODO: make tests
-    // * SCC: https://judge.yosupo.jp/submission/26463
-    // ! DirectedGraph::reverse() is too heavy
-
-    // * 2-SAT: https://judge.yosupo.jp/submission/26465
     #[test]
     fn it_works() {
         assert_eq!(2 + 2, 4);

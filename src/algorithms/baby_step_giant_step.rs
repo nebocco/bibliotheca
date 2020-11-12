@@ -1,14 +1,12 @@
-//! solve k s.t. x.pow(k) === y (mod M)
-use std::collections::HashMap;
 use crate::utils::math::modpow;
 
+use std::collections::HashMap;
+
+/// solve k s.t. x.pow(k) === y (mod M)
 pub fn baby_giant(x: u64, y: u64, modulo: u64) -> Option<u64> {
     let mut dic: HashMap<u64, u64> = HashMap::new();
     dic.insert(1, 0);
-
     let sq = (modulo as f64).sqrt() as u64 + 1;
-
-    // Baby-step
     let mut z = 1;
     for i in 1..sq+1 {
         z = z * x % modulo;
@@ -28,7 +26,6 @@ pub fn baby_giant(x: u64, y: u64, modulo: u64) -> Option<u64> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn it_works() {
         let x: u64 = 3;

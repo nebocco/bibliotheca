@@ -35,24 +35,6 @@ impl<T> SparseTableArgmin<T> {
 }
 
 impl<T: Ord> SparseTableArgmin<T> {
-    pub fn from_vec(seq: Vec<T>) -> Self {
-        let n = seq.len();
-        let mut table = vec![(0..n).collect::<Vec<_>>()];
-        let mut d = 1;
-        while 2 * d < n {
-            let prv = table.last().unwrap();
-            let mut crr = prv.clone();
-            for i in 0..n - d {
-                if seq[crr[i + d]] < seq[crr[i]] {
-                    crr[i] = crr[i + d];
-                }
-            }
-            table.push(crr);
-            d *= 2;
-        }
-        Self { table, seq }
-    }
-
     pub fn query(&self, range: impl ops::RangeBounds<usize>) -> Option<usize> {
         let ops::Range { start, end } = Self::convert_to_range(self.seq.len(), range);
         assert!(start <= end);
@@ -101,6 +83,26 @@ where
     }
 }
 
+impl<T: Ord> From<Vec<T>> for SparseTableArgmin<T> {
+    fn from(seq: Vec<T>) -> Self {
+        let n = seq.len();
+        let mut table = vec![(0..n).collect::<Vec<_>>()];
+        let mut d = 1;
+        while 2 * d < n {
+            let prv = table.last().unwrap();
+            let mut crr = prv.clone();
+            for i in 0..n - d {
+                if seq[crr[i + d]] < seq[crr[i]] {
+                    crr[i] = crr[i + d];
+                }
+            }
+            table.push(crr);
+            d *= 2;
+        }
+        Self { table, seq }
+    }
+}
+
 
 
 #[cfg(test)]
@@ -110,7 +112,7 @@ mod tests {
     #[test]
     fn test_hand() {
         let a = vec![4, 3, 5, 1, 3, 2];
-        let spt = SparseTableArgmin::from_vec(a);
+        let spt = SparseTableArgmin::from(a);
         assert_eq!(spt.query(3..3), None);
         assert_eq!(spt.query(5..6), Some(5));
         assert_eq!(spt.query(1..3), Some(1));
@@ -132,7 +134,7 @@ mod tests {
             let a = std::iter::repeat_with(|| rand::random::<u32>() % VALUE_MAX)
                 .take(LEN_MAX)
                 .collect::<Vec<_>>();
-            let spt = SparseTableArgmin::from_vec(a.clone());
+            let spt = SparseTableArgmin::from(a.clone());
 
             for _ in 0..NUMBER_OF_QUERIES {
                 let (l, r) = {

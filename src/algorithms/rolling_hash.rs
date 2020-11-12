@@ -1,26 +1,13 @@
-#![allow(dead_code)]
+// ------------ Rolling Hash start ------------
 
-struct RollingHash {
+pub struct RollingHash {
     base: u64,
     modulo: u64,
     data: Vec<u64>
 }
 
 impl RollingHash {
-    fn from(string: Vec<u8>) -> Self {
-        let n = string.len();
-        let mut data = vec![0; n+1];
-        let base = 79;
-        let modulo = 1_000_000_009;
-        for (i, e) in string.into_iter().enumerate() {
-            data[i+1] = (data[i] * base + e as u64) % modulo;
-        }
-        Self {
-            base, modulo, data
-        }
-    }
-
-    fn hash(&self, rng: std::ops::Range<usize>) -> u64 {
+    pub fn hash(&self, rng: std::ops::Range<usize>) -> u64 {
         let l = rng.start;
         let r = rng.end;
         (self.data[r] + self.modulo - self.data[l] * self.modpow(r - l) % self.modulo) % self.modulo
@@ -39,6 +26,23 @@ impl RollingHash {
         res
     }
 }
+
+impl From<Vec<u8>> for RollingHash {
+    fn from(string: Vec<u8>) -> Self {
+        let n = string.len();
+        let mut data = vec![0; n+1];
+        let base = 79;
+        let modulo = 1_000_000_009;
+        for (i, e) in string.into_iter().enumerate() {
+            data[i+1] = (data[i] * base + e as u64) % modulo;
+        }
+        Self {
+            base, modulo, data
+        }
+    }
+}
+
+// ------------ Rolling Hash end ------------
 
 #[cfg(test)]
 mod tests {

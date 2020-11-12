@@ -4,8 +4,6 @@
 //! See the bottom of file for solution.
 //! ----------------------------------------------
 
-#![allow(dead_code, non_snake_case)]
-
 // use std::cell::RefCell;
 // use std::cmp::{max, min, Ordering};
 // use std::collections::*;
@@ -163,5 +161,14 @@ impl X {
             size: self.size + other.size,
             divisor: self.divisor * other.divisor % P,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // TODO: make tests
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
     }
 }

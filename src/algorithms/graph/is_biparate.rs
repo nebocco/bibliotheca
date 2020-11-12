@@ -1,7 +1,6 @@
-#![allow(dead_code)]
 use crate::utils::graph::Graph;
 
-fn is_biparate<G: Graph>(graph: &G) -> bool {
+pub fn is_biparate<G: Graph>(graph: &G) -> bool {
     let n = graph.size();
     let mut color = vec![2; n];
     for i in 0..n {

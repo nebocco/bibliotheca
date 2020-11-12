@@ -3,8 +3,8 @@ use crate::utils::{
     bounds::bounds_within,
 };
 
-// ------------ FenwickTree with generics start ------------
 // * verified: https://judge.yosupo.jp/submission/28326, https://judge.yosupo.jp/submission/29570
+// ------------ FenwickTree with generics start ------------
 
 use std::ops::{ Range, RangeBounds };
 
@@ -19,22 +19,6 @@ impl<T: ComMonoid> FenwickTree<T> {
 
     pub fn new(n: usize) -> Self {
         Self(vec![T::zero(); n+1])
-    }
-
-    pub fn build_from_slice(src: &[T]) -> Self {
-        let mut table = std::iter::once(T::zero())
-            .chain(src.iter().cloned())
-            .collect::<Vec<T>>();
-
-        let n = table.len();
-
-        (1..n)
-            .map(|i| (i, i + Self::lsb(i)))
-            .filter(|&(_, j)| j < n)
-            .for_each(|(i, j)| {
-                table[j] = table[j].clone() + table[i].clone();
-            });
-        Self(table)
     }
 
     pub fn prefix_sum(&self, i: usize) -> T {
@@ -52,6 +36,22 @@ impl<T: ComMonoid> FenwickTree<T> {
     }
 }
 
+impl<T: ComMonoid> From<Vec<T>> for FenwickTree<T> {
+    fn from(src: Vec<T>) -> Self {
+        let mut table = std::iter::once(T::zero())
+            .chain(src.into_iter())
+            .collect::<Vec<T>>();
+        let n = table.len();
+        (1..n)
+            .map(|i| (i, i + Self::lsb(i)))
+            .filter(|&(_, j)| j < n)
+            .for_each(|(i, j)| {
+                table[j] = table[j].clone() + table[i].clone();
+            });
+        Self(table)
+    }
+}
+
 impl<T: ComGroup> FenwickTree<T> {
     pub fn sum<R: RangeBounds<usize>>(&self, rng: R) -> T {
         let Range { start, end } = bounds_within(rng, self.0.len());
@@ -61,8 +61,9 @@ impl<T: ComGroup> FenwickTree<T> {
 
 // ------------ FenwickTree with generics end ------------
 
-// ------------ FenwickTree without generics start ------------
+
 // * verified: https://judge.yosupo.jp/submission/28227
+// ------------ FenwickTree without generics start ------------
 
 pub struct Fenwick(Vec<i64>);
 

@@ -7,7 +7,6 @@ use crate::utils::{
 // ------------ Segment Tree start ------------
 
 use std::ops::Index;
-use std::convert::From;
 use std::ops::{ Range, RangeBounds };
 
 pub struct SegmentTree<T: Monoid> {
@@ -117,8 +116,6 @@ impl<T: Element, F: Fn(&T, &T) -> T> SegmentTree2<T, F> {
 		}
 	}
 
-	pub fn get(&self, i: usize) -> &T { &self.node[i + self.size] }
-
 	pub fn set(&mut self, mut i: usize, x: T) {
 		i += self.size;
 		self.node[i] = x;
@@ -151,6 +148,14 @@ impl<T: Element, F: Fn(&T, &T) -> T> SegmentTree2<T, F> {
 			r >>= 1;
 		}
 		(self.func)(&vl, &vr)
+	}
+}
+
+impl<T: Element, F: Fn(&T, &T) -> T> Index<usize> for SegmentTree2<T, F> {
+	type Output = T;
+	fn index(&self, i: usize) -> &Self::Output {
+		assert!(i < self.size, "index out of range: length is {}, but given {}.", self.size, i);
+		&self.node[i + self.size]
 	}
 }
 

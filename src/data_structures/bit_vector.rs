@@ -1,36 +1,31 @@
-#![allow(unused_variables, dead_code, non_snake_case, non_upper_case_globals)]
-
 pub struct BitVector {
 	length: usize,
 	cnum: usize,
 	bnum: usize,
-	cw: usize,
-	bw: usize,
 	bit: Vec<u8>,
 	chunk: Vec<u16>,
 	blocks: Vec<Vec<u8>>
 }
 
 impl BitVector {
-	const cw: usize = 256;
-	const bw: usize = 8;
+	const CW: usize = 256;
+	const BW: usize = 8;
 
 	pub fn new(length: usize) -> Self {
-		let cnum = (length + Self::cw - 1) / Self::cw;
-		let bnum = Self::cw / Self::bw;
+		let cnum = (length + Self::CW - 1) / Self::CW;
+		let bnum = Self::CW / Self::BW;
         let bit = vec![0; cnum * bnum];
         let chunk = vec![0; cnum + 1];
         let blocks = vec![vec![0; bnum]; cnum];
         BitVector {
             length, cnum, bnum,
-            cw: Self::cw, bw: Self::bw,
             bit, chunk, blocks
         }
     }
 
     pub fn set(&mut self, pos: usize, b: u8) {
-        let bpos = pos / self.bw;
-        let offset = pos % self.bw;
+        let bpos = pos / Self::BW;
+        let offset = pos % Self::BW;
         if b == 0 {
             self.bit[bpos] &= !(1 << offset);
         } else {
@@ -40,8 +35,8 @@ impl BitVector {
     }
 
     pub fn access(&self, pos:usize) -> u8 {
-        let bpos = pos / self.bw;
-        let offset = pos % self.bw;
+        let bpos = pos / Self::BW;
+        let offset = pos % Self::BW;
         self.bit[bpos] >> offset & 1
     }
 
@@ -60,9 +55,9 @@ impl BitVector {
     }
 
     pub fn rank(&self, pos:usize) -> u16 {
-        let cpos = pos / self.cw;
-        let bpos = pos % self.cw / self.bw;
-        let offset = pos % self.bw;
+        let cpos = pos / Self::CW;
+        let bpos = pos % Self::CW / Self::BW;
+        let offset = pos % Self::BW;
         let masked = self.bit[cpos * self.bnum + bpos] & ((1 << offset) - 1);
         self.chunk[cpos] + (self.blocks[cpos][bpos] + Self::popcount(masked)) as u16
     }

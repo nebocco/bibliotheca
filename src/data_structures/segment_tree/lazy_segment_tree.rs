@@ -1,10 +1,9 @@
-#![allow(dead_code)]
 use std::ops::{Mul, Range};
 use crate::utils::algebraic_traits::Monoid;
 
-// ------------ module start ------------
 // * verified: https://judge.yosupo.jp/submission/28350
 // TODO: it might be able to make it faster
+// ------------ Lazy Segment Tree start ------------
 
 #[derive(Clone)]
 struct Node<T: Monoid + Mul<E, Output=T>, E: Monoid> {
@@ -12,7 +11,7 @@ struct Node<T: Monoid + Mul<E, Output=T>, E: Monoid> {
 	lazy: E
 }
 
-struct LazySegmentTree<T: Monoid + Mul<E, Output=T>, E: Monoid> {
+pub struct LazySegmentTree<T: Monoid + Mul<E, Output=T>, E: Monoid> {
 	node: Box<[Node<T, E>]>,
 	size: usize,
 	dep: usize
@@ -24,22 +23,6 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
 		let dep = size.trailing_zeros() as usize + 1;
         let node = vec![Node { val: T::zero(), lazy: E::zero() }; size << 1];
 		Self {
-            node: node.into_boxed_slice(),
-            size, dep
-        }
-	}
-
-    pub fn from(arr: &[T]) -> Self {
-        let size = arr.len().next_power_of_two();
-        let dep = size.trailing_zeros() as usize + 1;
-        let mut node = vec![Node { val: T::zero(), lazy: E::zero() }; size << 1];
-        for i in 0..arr.len() {
-			node[i + size].val = arr[i].clone();
-		}
-        for i in (1..size).rev() {
-			node[i].val = node[i << 1].val.clone() + node[(i << 1) + 1].val.clone();
-		}
-        Self {
             node: node.into_boxed_slice(),
             size, dep
         }
@@ -118,6 +101,27 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
         lx + rx
     }
 }
+
+impl<T: Monoid + Mul<E, Output=T>, E: Monoid> From<&Vec<T>> for LazySegmentTree<T, E> {
+    fn from(arr: &Vec<T>) -> Self {
+        let size = arr.len().next_power_of_two();
+        let dep = size.trailing_zeros() as usize + 1;
+        let mut node = vec![Node { val: T::zero(), lazy: E::zero() }; size << 1];
+        for i in 0..arr.len() {
+			node[i + size].val = arr[i].clone();
+		}
+        for i in (1..size).rev() {
+			node[i].val = node[i << 1].val.clone() + node[(i << 1) + 1].val.clone();
+		}
+        Self {
+            node: node.into_boxed_slice(),
+            size, dep
+        }
+	}
+}
+
+// ------------ Lazy Segment Tree end ------------
+
 
 #[cfg(test)]
 mod rmq_ruq_test {

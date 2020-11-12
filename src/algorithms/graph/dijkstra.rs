@@ -1,11 +1,9 @@
-#![allow(dead_code, non_snake_case)]
-
 use std::collections::BinaryHeap;
 use crate::utils::graph::{Edge, State, Graph};
 
 
 // * verified: https://judge.yosupo.jp/submission/28367
-fn dijkstra_ElogV<T: Graph>(graph: &T, start: usize) -> (Vec<i64>, Vec<usize>) {
+pub fn dijkstra_heap<T: Graph>(graph: &T, start: usize) -> (Vec<i64>, Vec<usize>) {
 	let n = graph.size();
 	let mut dist = vec![std::i64::MAX; n];
 	let mut path = (0..n).collect::<Vec<_>>();
@@ -25,7 +23,7 @@ fn dijkstra_ElogV<T: Graph>(graph: &T, start: usize) -> (Vec<i64>, Vec<usize>) {
     (dist, path)
 }
 
-fn dijkstra_V2<T: Graph>(graph: &T, start: usize) -> Vec<i64> {
+pub fn dijkstra_loop<T: Graph>(graph: &T, start: usize) -> Vec<i64> {
     let n = graph.size();
     let mut dist = vec![std::i64::MAX; n];
     dist[start] = 0;

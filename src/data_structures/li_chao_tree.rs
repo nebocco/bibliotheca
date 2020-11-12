@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use std::ops::{ Add, Mul };
 
 pub trait LineNumber: Add<Output=Self> + Mul<Output=Self> + Copy + PartialOrd {}

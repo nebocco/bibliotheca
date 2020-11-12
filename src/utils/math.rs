@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 pub fn gcd(mut a: u64, mut b: u64) -> u64 {
     while b > 0 {
         a %= b;
@@ -29,15 +27,14 @@ pub fn modpow(x: u64, mut y: u64, modulo:u64) -> u64 {
     ret
 }
 
-struct Fact {
+pub struct Fact {
     modulo: u64,
-    size: usize,
     fact: Vec<u64>,
     inv_fact: Vec<u64>
 }
 
 impl Fact {
-    fn new(size: usize, modulo: u64) -> Self {
+    pub fn new(size: usize, modulo: u64) -> Self {
         let mut fact = vec![1; size + 1];
         let mut inv_fact = vec![1; size + 1];
         for i in 1..size+1 {
@@ -48,8 +45,7 @@ impl Fact {
             inv_fact[i-1] = inv_fact[i] * i as u64 % modulo;
         }
         Fact {
-            modulo, size,
-            fact, inv_fact
+            modulo, fact, inv_fact
         }
     }
 
@@ -65,21 +61,25 @@ impl Fact {
         res
     }
 
-    fn modinv(x: u64, m:u64) -> u64 {
+    pub fn modinv(x: u64, m:u64) -> u64 {
         Self::modpow(x, m-2, m)
     }
 
-    fn permutation (&self, n:usize, r:usize) -> u64 {
+    pub fn permutation (&self, n:usize, r:usize) -> u64 {
+        assert!(r > n || n < self.fact.len(),
+        "index out of range: length is {}, but given {}", self.fact.len(), n);
         if n < r { return 0 };
         self.fact[n] * self.inv_fact[n-r] % self.modulo
     }
-    fn combination (&self, n:usize, r:usize) -> u64 {
+    pub fn combination (&self, n:usize, r:usize) -> u64 {
+        assert!(r > n || n < self.fact.len(),
+        "index out of range: length is {}, but given {}", self.fact.len(), n);
         if n < r { return 0 };
         self.fact[n] * self.inv_fact[r] % self.modulo * self.inv_fact[n-r] % self.modulo
     }
 }
 
-fn sum_of_floor(mut n:i64, mut m:i64, mut a:i64, mut b:i64) -> i64 {
+pub fn sum_of_floor(mut n:i64, mut m:i64, mut a:i64, mut b:i64) -> i64 {
     // return sum_{i=0}^{n-1} (a*i+b)/m
     let mut s = 0;
     while n > 0 {

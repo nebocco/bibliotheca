@@ -1,5 +1,6 @@
-// ------------ Z algorithm start ------------
 // * verified: https://judge.yosupo.jp/submission/28369
+// ------------ Z algorithm start ------------
+
 pub fn z_algorithm<T: PartialEq>(s: &[T]) -> Vec<usize> {
     let mut ret = vec![0; s.len()];
     ret[0] = s.len();

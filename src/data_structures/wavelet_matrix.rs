@@ -1,14 +1,12 @@
-#![allow(dead_code)]
-
 use crate::data_structures::bit_vector::BitVector;
 
-struct WaveletMatrix {
-    table: BitVector
+pub struct WaveletMatrix {
+    _table: BitVector
 }
 
 impl WaveletMatrix {
-    fn new() -> Self {
-        WaveletMatrix{ table: BitVector::new(1) }
+    pub fn new() -> Self {
+        WaveletMatrix{ _table: BitVector::new(1) }
     }
 }
 

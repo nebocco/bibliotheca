@@ -1,31 +1,30 @@
-#![allow(dead_code)]
-
 use crate::utils::algebraic_traits::SemiGroup;
 
-// ------------ module start ------------
 // * verified: https://judge.yosupo.jp/submission/28460
-struct SWAG<T: SemiGroup> {
+// ------------ module start ------------
+
+pub struct SWAG<T: SemiGroup> {
     front: Vec<(T, T)>,
     back: Vec<(T, T)>,
 }
 
 impl<T: SemiGroup> SWAG<T> {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             front: Vec::new(),
             back: Vec::new(),
         }
     }
 
-    fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.front.len() + self.back.len()
     }
 
-    fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.front.is_empty() && self.back.is_empty()
     }
 
-    fn push(&mut self, v: T) {
+    pub fn push(&mut self, v: T) {
         let s = if let Some((_, x)) = self.back.last() {
             x.clone() + v.clone()
         } else {
@@ -34,7 +33,7 @@ impl<T: SemiGroup> SWAG<T> {
         self.back.push((v, s));
     }
 
-    fn pop(&mut self) -> Option<T> {
+    pub fn pop(&mut self) -> Option<T> {
         if self.front.is_empty() {
             let back = std::mem::replace(&mut self.back, Vec::new());
             for (v, _) in back.into_iter().rev() {
@@ -54,7 +53,7 @@ impl<T: SemiGroup> SWAG<T> {
         }
     }
 
-    fn fold_all(&self) -> Option<T> {
+    pub fn fold_all(&self) -> Option<T> {
         match (self.front.last(), self.back.last()) {
             (Some(u), Some(v)) => Some(u.1.clone() + v.1.clone()),
             (Some(u), None) => Some(u.1.clone()),

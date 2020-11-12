@@ -1,4 +1,3 @@
-#![allow(unused_variables, unused_mut)]
 use crate::heuristics::{Metaheuristics, State, StateWrapper};
 use rand::{thread_rng, Rng};
 use std::time::{Duration, Instant};
@@ -26,7 +25,7 @@ pub fn genetics<S: State>(problem: &mut Box<dyn Metaheuristics<S>>, runtime: Dur
 				next_generation.push(mutate(&current_generation[idx]))
 			} else if gen_type < p_mutation + p_cross {
 				let rand_idx_2 = rng.gen_range(0., scores.last().unwrap());
-				let idx_2 = scores.binary_search_by(|x| x.partial_cmp(&rand_idx).unwrap()).unwrap();
+				let idx_2 = scores.binary_search_by(|x| x.partial_cmp(&rand_idx_2).unwrap()).unwrap();
 				if idx == idx_2 {
 					next_generation.push(current_generation[idx].clone());
 				} else {

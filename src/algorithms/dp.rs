@@ -1,4 +1,4 @@
-use crate::utils::algebraic_traits::{Element};
+use crate::utils::algebraic_traits::Element;
 
 // pub mod knuth_yao;
 // pub mod monotone_minima;

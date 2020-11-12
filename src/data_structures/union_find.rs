@@ -1,5 +1,5 @@
-// ------------ module start ------------
 // * verified at https://judge.yosupo.jp/submission/26460
+// ------------ module start ------------
 #[derive(Clone, Debug)]
 pub struct UnionFind(Vec<isize>);
 

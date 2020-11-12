@@ -1,9 +1,7 @@
-#![allow(dead_code)]
-
 use crate::utils::bitset::Bitset;
 use crate::utils::math::*;
 
-fn atkin_sieve(n: usize) -> Vec<u64> {
+pub fn atkin_sieve(n: usize) -> Vec<u64> {
     let mut sieve = Bitset::new(n);
     let lim = (n as f64).sqrt() as usize + 1;
 
@@ -55,7 +53,7 @@ fn atkin_sieve(n: usize) -> Vec<u64> {
 }
 
 
-fn factorize(x: u64) -> Vec<(u64, usize)> {
+pub fn factorize(x: u64) -> Vec<(u64, usize)> {
     let mut y = x;
     let mut res = Vec::new();
     for i in 2..x+1 {
@@ -73,7 +71,7 @@ fn factorize(x: u64) -> Vec<(u64, usize)> {
     res
 }
 
-fn divisor(x: u64) -> Vec<u64> {
+pub fn divisor(x: u64) -> Vec<u64> {
     let mut res = Vec::new();
     for i in 1..x+1 {
         if i * i > x { break; }
@@ -87,7 +85,7 @@ fn divisor(x: u64) -> Vec<u64> {
     res
 }
 
-fn totient(x: u64) -> u64 {
+pub fn totient(x: u64) -> u64 {
     let mut res = x;
     for &(i, _) in factorize(x).iter() {
         res = res * (i - 1) / i;

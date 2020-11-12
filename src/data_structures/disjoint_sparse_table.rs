@@ -1,14 +1,27 @@
-#![allow(dead_code)]
-use std::ops::Range;
 use crate::utils::algebraic_traits::SemiGroup;
+
+// * verified: https://judge.yosupo.jp/submission/28320
+// ------------ module start ------------
+use std::ops::Range;
 use std::iter::successors;
 
-// ------------ module start ------------
-// * verified: https://judge.yosupo.jp/submission/28320
-
-struct DisjointSparseTable<T: SemiGroup>(Vec<Vec<T>>);
+pub struct DisjointSparseTable<T: SemiGroup>(Vec<Vec<T>>);
 
 impl<T: SemiGroup> DisjointSparseTable<T> {
+    pub fn fold(&self, rng: Range<usize>) -> T {
+        let l = rng.start;
+        let r = rng.end - 1;
+        assert!(l <= r && r < self.0[0].len(), "index out of range: {}..{}", l, r + 1);
+        if l  == r {
+            return self.0[0][l].clone();
+        } else {
+            let p = (std::usize::MAX.count_ones() - (l ^ r).leading_zeros() - 1) as usize;
+            self.0[p][l ^ (1 << p) - 1].clone() + self.0[p][r].clone()
+        }
+    }
+}
+
+impl<T: SemiGroup> From<&Vec<T>> for DisjointSparseTable<T> {
     fn from(vec: &Vec<T>) -> Self {
         let size = vec.len();
         let mut table = Vec::with_capacity(31);
@@ -29,18 +42,6 @@ impl<T: SemiGroup> DisjointSparseTable<T> {
             table.push(l);
         }
         Self(table)
-    }
-
-    fn fold(&self, rng: Range<usize>) -> T {
-        let l = rng.start;
-        let r = rng.end - 1;
-        assert!(l <= r && r < self.0[0].len(), "index out of range: {}..{}", l, r + 1);
-        if l  == r {
-            return self.0[0][l].clone();
-        } else {
-            let p = (std::usize::MAX.count_ones() - (l ^ r).leading_zeros() - 1) as usize;
-            self.0[p][l ^ (1 << p) - 1].clone() + self.0[p][r].clone()
-        }
     }
 }
 

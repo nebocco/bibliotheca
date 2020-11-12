@@ -1,8 +1,7 @@
-#![allow(dead_code)]
 use std::collections::{ HashMap, HashSet };
 use std::hash::Hash;
 
-fn compress<T: Clone + Ord + Hash>(l: &[T])-> (usize, HashMap<T, usize>, Vec<T>, Vec<usize>) {
+pub fn compress<T: Clone + Ord + Hash>(l: &[T])-> (usize, HashMap<T, usize>, Vec<T>, Vec<usize>) {
     let set: HashSet<T> = l.iter().cloned().collect();
     let mut f: Vec<T> = set.into_iter().collect();
     f.sort();
@@ -11,7 +10,7 @@ fn compress<T: Clone + Ord + Hash>(l: &[T])-> (usize, HashMap<T, usize>, Vec<T>,
     (f.len(), dict, f, res)
 }
 
-fn compress_2d<T: Clone + Ord + Hash>(l: &[(T, T)]) -> ((usize, usize), Vec<(usize, usize)>) {
+pub fn compress_2d<T: Clone + Ord + Hash>(l: &[(T, T)]) -> ((usize, usize), Vec<(usize, usize)>) {
     let x_list: Vec<T> = l.iter().map(|p| p.0.clone()).collect();
     let y_list: Vec<T> = l.iter().map(|p| p.1.clone()).collect();
     let (x_size, _, _, x_comp) = compress(&x_list);
