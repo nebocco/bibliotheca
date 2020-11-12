@@ -1,5 +1,5 @@
 pub mod baby_step_giant_step;
-pub mod dinic;
+pub mod flow;
 pub mod dp;
 pub mod graph;
 pub mod hungarian;

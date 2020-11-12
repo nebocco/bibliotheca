@@ -58,24 +58,24 @@ pub trait One: Element {
 }
 
 macro_rules! impl_zero_one {
-    ($($imp:ident)*) => {
+    ($($T:ty,)*) => {
         $(
-            impl Zero for $imp {
+            impl Zero for $T {
                 fn zero() -> Self { 0 }
                 fn is_zero(&self) -> bool { *self == 0 }
             }
 
-            impl<'a> Zero for &'a $imp {
+            impl<'a> Zero for &'a $T {
                 fn zero() -> Self { &0 }
                 fn is_zero(&self) -> bool { *self == &0 }
             }
 
-            impl One for $imp {
+            impl One for $T {
                 fn one() -> Self { 1 }
                 fn is_one(&self) -> bool { *self == 1 }
             }
 
-            impl<'a> One for &'a $imp {
+            impl<'a> One for &'a $T {
                 fn one() -> Self { &1 }
                 fn is_one(&self) -> bool { *self == &1 }
             }
@@ -84,7 +84,8 @@ macro_rules! impl_zero_one {
 }
 
 impl_zero_one! {
-    i16 i32 i64 i128 u8 u16 u32 u64 u128
+    i8, i16, i32, i64, i128, isize,
+    u8, u16, u32, u64, u128, usize,
 }
 
 #[cfg(test)]
