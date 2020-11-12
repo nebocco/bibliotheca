@@ -1,7 +1,6 @@
 // ------------ Heavy Light Decomposition start ------------
-// ! verify failed ! : https://judge.yosupo.jp/submission/29456
+// * verified: https://judge.yosupo.jp/submission/29570, https://judge.yosupo.jp/submission/29571
 
-use std::collections::VecDeque;
 use std::ops::Range;
 pub struct HeavyLightDecomposition {
 	graph: Vec<Vec<usize>>,
@@ -61,10 +60,10 @@ impl HeavyLightDecomposition {
 				self.heavy[v] = h;
 			}
 		}
-		let mut deq = VecDeque::new();
-		deq.push_back((0, 0));
+		let mut st = Vec::new();
+		st.push((0, 0));
 		let mut i = 0;
-		while let Some((mut v, d)) = deq.pop_front() {
+		while let Some((mut v, d)) = st.pop() {
 			let mut s = Vec::new();
 			let k = self.ss.len();
 			while v < n {
@@ -73,37 +72,12 @@ impl HeavyLightDecomposition {
 				self.id[v] = i; self.range[v] = i; i += 1;
 				let h = self.heavy[v];
 				for &u in self.graph[v].iter() {
-					if h != u && self.parent[v] != u { deq.push_back((u, d+1)); }
+					if h != u && self.parent[v] != u { st.push((u, d+1)); }
 				}
 				v = h;
 			}
 			self.ss.push(s);
 			self.depth.push(d);
-		}
-
-		let mut st = Vec::new();
-		st.push(root);
-		while let Some(v) = st.pop() {
-			if v < n {
-				st.push(!v);
-				for &u in self.graph[v].iter() {
-					if self.parent[v] == u { continue; }
-					st.push(u);
-				}
-			} else {
-				let v = !v;
-				let mut h = n;
-				let mut m = 0;
-				for &u in self.graph[v].iter() {
-					if self.parent[v] == u { continue; }
-					siz[v] += siz[u];
-					if m < siz[u] {
-						m = siz[u];
-						h = u;
-					}
-				}
-				self.heavy[v] = h;
-			}
 		}
 		for i in (0..self.ss.len()).rev() {
 			for &v in self.ss[i].iter().rev() {

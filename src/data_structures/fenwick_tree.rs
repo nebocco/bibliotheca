@@ -1,8 +1,12 @@
-use std::ops::Range;
-use crate::utils::algebraic_traits::{ ComMonoid, ComGroup };
+use crate::utils::{
+    algebraic_traits::{ ComMonoid, ComGroup },
+    bounds::bounds_within,
+};
 
 // ------------ FenwickTree with generics start ------------
-// * verified: https://judge.yosupo.jp/submission/28326
+// * verified: https://judge.yosupo.jp/submission/28326, https://judge.yosupo.jp/submission/29570
+
+use std::ops::{ Range, RangeBounds };
 
 #[derive(Clone, Debug)]
 pub struct FenwickTree<T>(Vec<T>);
@@ -49,8 +53,9 @@ impl<T: ComMonoid> FenwickTree<T> {
 }
 
 impl<T: ComGroup> FenwickTree<T> {
-    pub fn sum(&self, rng: Range<usize>) -> T {
-        self.prefix_sum(rng.end) + -self.prefix_sum(rng.start)
+    pub fn sum<R: RangeBounds<usize>>(&self, rng: R) -> T {
+        let Range { start, end } = bounds_within(rng, self.0.len());
+        self.prefix_sum(end) + -self.prefix_sum(start)
     }
 }
 
