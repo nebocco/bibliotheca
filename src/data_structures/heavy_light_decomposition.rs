@@ -1,29 +1,24 @@
 // ------------ Heavy Light Decomposition start ------------
-// * verified: https://judge.yosupo.jp/submission/29570, https://judge.yosupo.jp/submission/29571
+// * verified: https://judge.yosupo.jp/submission/29574
 
 use std::ops::Range;
+
 pub struct HeavyLightDecomposition {
 	graph: Vec<Vec<usize>>,
-	id: Vec<usize>,
+	index: Vec<usize>, // 新しい頂点番号
 	parent: Vec<usize>, // 親
-	heavy: Vec<usize>, // 重い子
-	ss: Vec<Vec<usize>>, // 分解されたHeavy Path
-	depth: Vec<usize>, // Heavy Pathの深さ
-	group: Vec<usize>, // どのHeavy Pathに属するか
-	range: Vec<usize>, // 部分木内最大のid
+	head: Vec<usize>, // 属するHeavy Pathの根
+	range: Vec<usize>, // 部分木の開区間右端
 }
 
 impl HeavyLightDecomposition {
 	pub fn new(n: usize) -> Self {
 		Self {
 			graph: vec![Vec::new(); n],
-			id: vec![0; n],
-			parent: vec![n; n],
-			heavy: vec![n; n],
-			ss: Vec::new(),
-			depth: Vec::new(),
-			group: vec![0; n],
-			range: vec![0; n],
+			index: Vec::new(),
+			parent: Vec::new(),
+			head: Vec::new(),
+			range: Vec::new(),
 		}
 	}
 
@@ -33,71 +28,73 @@ impl HeavyLightDecomposition {
 	}
 
 	pub fn build(&mut self, root: usize)  {
-		let n = self.graph.len();
+		let graph = &mut self.graph;
+		let n = graph.len();
+		let mut index = vec![0; n];
+		let mut parent = vec![n; n];
+		let mut head = vec![root; n];
+		let mut range = vec![0; n];
 		let mut siz = vec![1; n];
 		let mut st = Vec::new();
 		st.push(root);
 		while let Some(v) = st.pop() {
 			if v < n {
 				st.push(!v);
-				for &u in self.graph[v].iter() {
-					if self.parent[v] == u { continue; }
-					self.parent[u] = v;
+				for i in 0..graph[v].len() {
+					if graph[v][i] == parent[v] {
+						graph[v].swap_remove(i);
+						break;
+					}
+				}
+				graph[v].iter().for_each(|&u| { parent[u] = v; st.push(u); });
+			} else {
+				let v = !v;
+				for i in 0..graph[v].len() {
+					let u = graph[v][i];
+					siz[v] += siz[u];
+					if siz[graph[v][0]] < siz[u] {
+						graph[v].swap(0, i);
+					}
+				}
+			}
+		}
+		st.push(root);
+		let mut c = 0;
+		while let Some(v) = st.pop() {
+			if v < n {
+				st.push(!v);
+				index[v] = c; c += 1;
+				for &u in graph[v].iter().skip(1) {
+					head[u] = u;
+					st.push(u);
+				}
+				if let Some(&u) = graph[v].get(0) {
+					head[u] = head[v];
 					st.push(u);
 				}
 			} else {
-				let v = !v;
-				let mut h = n;
-				let mut m = 0;
-				for &u in self.graph[v].iter() {
-					if self.parent[v] == u { continue; }
-					siz[v] += siz[u];
-					if m < siz[u] {
-						m = siz[u];
-						h = u;
-					}
-				}
-				self.heavy[v] = h;
+				range[!v] = c;
 			}
 		}
-		let mut st = Vec::new();
-		st.push((0, 0));
-		let mut i = 0;
-		while let Some((mut v, d)) = st.pop() {
-			let mut s = Vec::new();
-			let k = self.ss.len();
-			while v < n {
-				s.push(v);
-				self.group[v] = k;
-				self.id[v] = i; self.range[v] = i; i += 1;
-				let h = self.heavy[v];
-				for &u in self.graph[v].iter() {
-					if h != u && self.parent[v] != u { st.push((u, d+1)); }
-				}
-				v = h;
-			}
-			self.ss.push(s);
-			self.depth.push(d);
-		}
-		for i in (0..self.ss.len()).rev() {
-			for &v in self.ss[i].iter().rev() {
-				let p = self.parent[v];
-				if p < n && self.range[p] < self.range[v] {
-					self.range[p] = self.range[v];
-				}
-			}
-		}
+		self.index = index;
+		self.parent = parent;
+		self.head = head;
+		self.range = range;
 	}
 
 	pub fn lca(&self, mut u: usize, mut v: usize) -> usize {
-		while self.group[u] != self.group[v] {
-			if self.depth[self.group[u]] < self.depth[self.group[v]] {
-				v = self.parent[self.ss[self.group[v]][0]];
+		let parent = &self.parent;
+		let head = &self.head;
+		let index = &self.index;
+
+		while head[u] != head[v] {
+			if index[u] < index[v] {
+				v = parent[head[v]];
 			} else {
-				u = self.parent[self.ss[self.group[u]][0]];
+				u = parent[head[u]];
 			}
 		}
-		if self.id[u] < self.id[v] {
+		if index[u] < index[v] {
 			u
 		} else {
 			v
@@ -105,23 +102,27 @@ impl HeavyLightDecomposition {
 	}
 
 	fn for_each(&self, mut u: usize, mut v: usize, b: usize) -> (Vec<Range<usize>>, Vec<Range<usize>>) {
+		let parent = &self.parent;
+		let head = &self.head;
+		let index = &self.index;
+
 		let mut up = Vec::new();
 		let mut down = Vec::new();
-		while self.group[u] != self.group[v] {
-			if self.depth[self.group[u]] < self.depth[self.group[v]] {
-				let head = self.ss[self.group[v]][0];
-				down.push(self.id[head]..self.id[v]+1);
-				v = self.parent[head];
+		while head[u] != head[v] {
+			if index[u] < index[v] {
+				let h = head[v];
+				down.push(index[h]..index[v] + 1);
+				v = parent[h];
 			} else {
-				let head = self.ss[self.group[u]][0];
-				up.push(self.id[head]..self.id[u]+1);
-				u = self.parent[head];
+				let h = head[u];
+				up.push(index[h]..index[u] + 1);
+				u = parent[h];
 			}
 		}
-		if self.id[u] < self.id[v] {
-			down.push(self.id[u] + b..self.id[v] + 1);
-		} else if self.id[v] + b < self.id[u] + 1 {
-			up.push(self.id[v] + b..self.id[u] + 1);
+		if index[u] < index[v] {
+			down.push(index[u] + b .. index[v] + 1);
+		} else if index[v] + b < index[u] + 1 {
+			up.push(index[v] + b .. index[u] + 1);
 		}
 
 		down.reverse();
@@ -129,7 +130,7 @@ impl HeavyLightDecomposition {
 	}
 
 	pub fn id(&self, v: usize) -> usize {
-		self.id[v]
+		self.index[v]
 	}
 
 	pub fn for_each_vertex(&self, u: usize, v: usize) -> (Vec<Range<usize>>, Vec<Range<usize>>) {
@@ -139,7 +140,7 @@ impl HeavyLightDecomposition {
 		self.for_each(u, v, 1)
 	}
 	pub fn subtree_range(&self, v: usize) -> Range<usize> {
-		self.id[v]..self.range[v]+1
+		self.index[v]..self.range[v]
 	}
 }
 
