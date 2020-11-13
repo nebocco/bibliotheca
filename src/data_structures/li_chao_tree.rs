@@ -46,7 +46,7 @@ impl<T: LineNumber> LiChaoTree<T> {
                 if bl == br { break; }
                 if bl != bm {
                     r = m;
-                    i = i << 1;
+                    i <<= 1;
                 }
                 else {
                     l = m;
@@ -81,9 +81,9 @@ impl<T: LineNumber> LiChaoTree<T> {
                 self.update_range(r, right - len, right, line.clone());
                 right -= len;
             }
-            l = l >> 1;
-            r = r >> 1;
-            len = len << 1;
+            l >>= 1;
+            r >>= 1;
+            len <<= 1;
         }
     }
 
@@ -99,7 +99,7 @@ impl<T: LineNumber> LiChaoTree<T> {
                 (Some(a), _) => Some(a),
                 (None, b) => b,
             };
-            i = i >> 1;
+            i >>= 1;
         }
         ans
     }

@@ -57,6 +57,12 @@ impl IO {
 	}
 }
 
+impl Default for IO {
+	fn default() -> Self {
+		Self::new()
+	}
+}
+
 pub trait Scan {
 	fn scan(io: &mut IO) -> Self;
 }

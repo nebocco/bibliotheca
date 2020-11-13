@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
-pub fn compress<T: Clone + Ord + Hash>(l: &Vec<T>)-> (usize, HashMap<T, usize>, Vec<T>, Vec<usize>) {
-    let mut f = l.clone();
+pub fn compress<T: Clone + Ord + Hash>(l: &[T])-> (usize, HashMap<T, usize>, Vec<T>, Vec<usize>) {
+    let mut f = l.to_owned();
     f.sort();
     f.dedup();
     let dict: HashMap<T, usize> = f.iter().cloned().zip(0..f.len()).collect();

@@ -1,3 +1,5 @@
+pub mod lazy_segment_tree;
+
 use crate::utils::{
 	algebraic_traits::{ Element, Monoid },
 	bounds::bounds_within,
@@ -105,9 +107,7 @@ impl<T: Element, F: Fn(&T, &T) -> T> SegmentTree2<T, F> {
 	pub fn from(vec: &[T], zero: T, func: F) -> Self {
 		let size = vec.len().next_power_of_two();
 		let mut node = vec![zero.clone(); size << 1];
-		for i in 0..vec.len() {
-			node[i + size] = vec[i].clone();
-		}
+		node[size..(vec.len() + size)].clone_from_slice(&vec[..]);
 		for i in (1..size).rev() {
 			node[i] = func(&node[i << 1], &node[(i << 1) + 1]);
 		}

@@ -1,7 +1,7 @@
 use crate::heuristics::{Metaheuristics, State};
 use std::time::{Duration, Instant};
 
-pub fn random_search<S: State>(problem: &mut Box<dyn Metaheuristics<S>>, runtime: Duration) -> S {
+pub fn random_search<S: State, T: Metaheuristics<S>>(problem: &mut T, runtime: Duration) -> S {
     let mut best_candidate = problem.generate();
     let start_time = Instant::now();
 

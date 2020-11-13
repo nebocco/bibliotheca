@@ -2,7 +2,7 @@ use crate::heuristics::{Metaheuristics, State};
 use rand::{thread_rng, Rng};
 use std::time::{Duration, Instant};
 
-pub fn hill_climb<S: State>(problem: &mut Box<dyn Metaheuristics<S>>, runtime: Duration) -> S {
+pub fn hill_climb<S: State, T: Metaheuristics<S>>(problem: &mut T, runtime: Duration) -> S {
     let mut best_candidate = problem.generate();
     let start_time = Instant::now();
 
@@ -17,7 +17,7 @@ pub fn hill_climb<S: State>(problem: &mut Box<dyn Metaheuristics<S>>, runtime: D
     best_candidate.state
 }
 
-pub fn hill_climb_retry<S: State>(problem: &mut Box<dyn Metaheuristics<S>>, runtime: Duration, probability: f64) -> S {
+pub fn hill_climb_retry<S: State, T: Metaheuristics<S>>(problem: &mut T, runtime: Duration, probability: f64) -> S {
     let mut rng = thread_rng();
     let mut current_candidate = problem.generate();
 	let mut best_candidate = current_candidate.clone();

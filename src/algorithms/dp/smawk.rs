@@ -61,7 +61,7 @@ fn smawk_inner<T: Element + Ord, F: Fn(usize, usize) -> T>(
 	for (r, &row) in rows.iter().enumerate().step_by(2) {
 		let mut col = cols[c];
 		let last_col = if r == rows.len() - 1 {
-			cols.last().unwrap().clone()
+			*cols.last().unwrap()
 		} else {
 			minima[rows[r + 1]]
 		};

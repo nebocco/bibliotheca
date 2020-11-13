@@ -39,6 +39,7 @@ impl Mul for Point {
     }
 }
 
+#[allow(clippy::suspicious_arithmetic_impl)]
 impl Div for Point {
     type Output = Point;
     fn div(self, rhs: Self) -> Self {

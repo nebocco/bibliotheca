@@ -2,7 +2,7 @@ use crate::heuristics::{Metaheuristics, State, StateWrapper};
 use rand::{thread_rng, Rng};
 use std::time::{Duration, Instant};
 
-pub fn genetics<S: State>(problem: &mut Box<dyn Metaheuristics<S>>, runtime: Duration) -> S {
+pub fn genetics<S: State, T: Metaheuristics<S>>(problem: &mut T, runtime: Duration) -> S {
 	let mut rng = thread_rng();
 	let gen_size = 30;
 	let p_mutation = 0.05;

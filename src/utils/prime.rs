@@ -93,6 +93,7 @@ pub fn totient(x: u64) -> u64 {
     res
 }
 
+#[allow(clippy::many_single_char_names)]
 pub fn pollard_rho(v: u64, seed: u64) -> u64 {
     if v == 0 { return 1;}
     let seed = seed.wrapping_mul(v);
@@ -135,6 +136,7 @@ pub fn pollard_rho(v: u64, seed: u64) -> u64 {
         } else {
             q = q.wrapping_mul(y_old - x) % v;
         }
+        fac = gcd(q, v);
     }
     fac
 }

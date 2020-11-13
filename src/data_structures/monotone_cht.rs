@@ -2,12 +2,16 @@ use crate::data_structures::li_chao_tree::{ Line, LineNumber };
 
 use std::collections::VecDeque;
 
+#[derive(Default)]
 pub struct MonotoneCHT<T: LineNumber> {
     lines: VecDeque<Line<T>>,
 }
 
 impl<T: LineNumber + std::ops::Sub<Output=T>> MonotoneCHT<T> {
-    pub fn new() -> Self { MonotoneCHT { lines: VecDeque::new() } }
+    pub fn new() -> Self {
+        MonotoneCHT { lines: VecDeque::new() }
+    }
+
     fn check(ln0: &Line<T>, ln1: &Line<T>, ln2: &Line<T>) -> bool {
         if ln0.a == ln1.a { ln0.b < ln1.b }
         else if ln1.a == ln2.a { ln1.b > ln2.b }

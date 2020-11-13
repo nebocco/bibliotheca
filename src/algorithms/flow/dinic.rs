@@ -19,7 +19,7 @@ struct TemporaryData {
     current_edge: Vec<usize>,
     buffer: Vec<usize>,
 }
-
+#[derive(Default)]
 pub struct Dinic<F: Flow> {
     edges: Vec<Vec<Edge<F>>>,
 }
@@ -51,7 +51,7 @@ impl<F: Flow> Dinic<F> {
 
     fn prepare_data(&mut self, s: usize, t: usize) -> TemporaryData {
         let n = max(max(s, t) + 1, self.edges.len());
-        self.edges.resize_with(n, || Default::default());
+        self.edges.resize_with(n, Default::default);
         TemporaryData {
             n,
             s,
@@ -89,6 +89,7 @@ impl<F: Flow> Dinic<F> {
         data.label[data.t] < n
     }
 
+    #[allow(clippy::many_single_char_names)]
     fn primal_dfs(&mut self, u: usize, data: &mut TemporaryData, mut limit: F) -> F {
         if u == data.s {
             return limit;

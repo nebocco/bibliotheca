@@ -2,8 +2,8 @@ use crate::heuristics::{Metaheuristics, State};
 use rand::{thread_rng, Rng};
 use std::time::{Duration, Instant};
 
-pub fn annealing<S: State>(
-	problem: &mut Box<dyn Metaheuristics<S>>,
+pub fn annealing<S: State, T: Metaheuristics<S>>(
+	problem: &mut T,
 	runtime: Duration,
 	mut temprature: f64,
 	dt: f64
@@ -39,7 +39,7 @@ pub fn annealing<S: State>(
     best_candidate.state
 }
 
-pub fn annealing_easy<S: State>(problem: &mut Box<dyn Metaheuristics<S>>, runtime: Duration) -> S {
+pub fn annealing_easy<S: State, T: Metaheuristics<S>>(problem: &mut T, runtime: Duration) -> S {
 	let probability = |t: f64| (-10.0 * t.powf(3.0)).exp();
 
 	let mut rng = thread_rng();

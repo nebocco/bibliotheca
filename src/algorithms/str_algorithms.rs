@@ -67,7 +67,7 @@ pub fn kmp_search<T: PartialEq>(pattern: &[T], target: &[T]) -> Option<usize> {
 
 // ------------ run length start ------------
 
-pub fn runlength(s: &String) -> Vec<(char, usize)> {
+pub fn runlength(s: &str) -> Vec<(char, usize)> {
     let mut res = Vec::new();
     let mut cur: char = '$';
     let mut cnt = 0;

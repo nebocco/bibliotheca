@@ -79,6 +79,7 @@ impl Fact {
     }
 }
 
+#[allow(clippy::many_single_char_names)]
 pub fn sum_of_floor(mut n:i64, mut m:i64, mut a:i64, mut b:i64) -> i64 {
     // return sum_{i=0}^{n-1} (a*i+b)/m
     let mut s = 0;

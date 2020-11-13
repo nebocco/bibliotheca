@@ -10,6 +10,12 @@ impl WaveletMatrix {
     }
 }
 
+impl Default for WaveletMatrix {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     // TODO: make tests

@@ -98,7 +98,8 @@ impl<T: Group> SSSP<T> {
 
 */
 
-pub fn dijkstra_heap<G: Graph>(g: &G, s: usize) {
+#[allow(clippy::many_single_char_names)]
+pub fn dijkstra_heap<G: Graph>(g: &G, s: usize) -> Vec<i64> {
 	let n = g.size();
 	let mut dist = vec![std::i64::MAX; n];
 	let mut depth = vec![std::usize::MAX; n];
@@ -121,12 +122,12 @@ pub fn dijkstra_heap<G: Graph>(g: &G, s: usize) {
 			}
 		}
 	}
-	( s, dist, parent, depth );
+	dist
 }
 
 /// Computes single-source shortest paths with Dijkstra algorithm
 /// O(V^2)
-pub fn dijkstra_loop<G: Graph>(g: &G, s: usize) {
+pub fn dijkstra_loop<G: Graph>(g: &G, s: usize) -> Vec<i64> {
 	let n = g.size();
 	let mut dist = vec![std::i64::MAX; n];
 	let mut depth = vec![std::usize::MAX; n];
@@ -145,15 +146,17 @@ pub fn dijkstra_loop<G: Graph>(g: &G, s: usize) {
 			}
 		}
 	}
-	( s, dist, parent, depth );
+	dist
 }
 
 /// Computes single-source shortest paths with Bellman-Ford algorithm
 /// O(EV)
-pub fn bellman_ford<G: Graph>(g: &G, s: usize) -> Result<(), &str> {
+pub fn bellman_ford<G: Graph>(g: &G, s: usize) -> Result<Vec<i64>, &str> {
 	let n = g.size();
 	let mut dist = vec![std::i64::MAX; n];
+	dist[s] = 0;
 	let mut depth = vec![std::usize::MAX; n];
+	depth[s] = 0;
 	let mut parent = vec![std::usize::MAX; n];
 	for _ in 0..n-1 {
 		for v in 0..n {
@@ -173,6 +176,5 @@ pub fn bellman_ford<G: Graph>(g: &G, s: usize) -> Result<(), &str> {
 			}
 		}
 	}
-	( s, dist, parent, depth );
-	Ok(())
+	Ok(dist)
 }

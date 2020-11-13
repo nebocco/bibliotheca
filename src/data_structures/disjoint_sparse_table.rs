@@ -13,10 +13,10 @@ impl<T: SemiGroup> DisjointSparseTable<T> {
         let r = rng.end - 1;
         assert!(l <= r && r < self.0[0].len(), "index out of range: {}..{}", l, r + 1);
         if l  == r {
-            return self.0[0][l].clone();
+            self.0[0][l].clone()
         } else {
             let p = (std::usize::MAX.count_ones() - (l ^ r).leading_zeros() - 1) as usize;
-            self.0[p][l ^ (1 << p) - 1].clone() + self.0[p][r].clone()
+            self.0[p][l ^ ((1 << p) - 1)].clone() + self.0[p][r].clone()
         }
     }
 }

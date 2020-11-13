@@ -3,6 +3,7 @@ use crate::utils::algebraic_traits::SemiGroup;
 // * verified: https://judge.yosupo.jp/submission/28460
 // ------------ module start ------------
 
+#[derive(Default)]
 pub struct SWAG<T: SemiGroup> {
     front: Vec<(T, T)>,
     back: Vec<(T, T)>,

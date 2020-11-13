@@ -1,4 +1,5 @@
 /// find minimum assignment
+#[allow(clippy::many_single_char_names)]
 pub fn hungarian(a: &[Vec<i64>]) -> (i64, Vec<usize>) {
 	let n = a.len();
 	let (mut p, mut q): (usize, usize);
@@ -7,7 +8,7 @@ pub fn hungarian(a: &[Vec<i64>]) -> (i64, Vec<usize>) {
 	assert!(a[0].len() == n,
 	"given matrix is not square: {} rows, {} columns", n, a[0].len());
 	let mut fx = (0..n).map(
-		|k| a[k].iter().min().unwrap().clone()
+		|k| *a[k].iter().min().unwrap()
 	).collect::<Vec<_>>();
 	let mut fy = vec![0; n];
 	let mut i = 0;

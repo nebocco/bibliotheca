@@ -43,9 +43,9 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
 
 	fn infuse(&mut self, mut i: usize) {
         i >>= i.trailing_zeros();
-        while {i >>= 1; i} > 0 {
+        while i > 1 {
+            i >>= 1;
             self.node[i].val = self.node[i << 1].val.clone() + self.node[(i << 1) + 1].val.clone();
-
 		}
     }
 
