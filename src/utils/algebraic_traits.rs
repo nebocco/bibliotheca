@@ -57,9 +57,11 @@ pub trait One: Element {
     fn is_one(&self) -> bool;
 }
 
-macro_rules! impl_zero_one {
+macro_rules! impl_integer {
     ($($T:ty,)*) => {
         $(
+            impl Associative for $T {}
+
             impl Zero for $T {
                 fn zero() -> Self { 0 }
                 fn is_zero(&self) -> bool { *self == 0 }
@@ -83,7 +85,7 @@ macro_rules! impl_zero_one {
     };
 }
 
-impl_zero_one! {
+impl_integer! {
     i8, i16, i32, i64, i128, isize,
     u8, u16, u32, u64, u128, usize,
 }

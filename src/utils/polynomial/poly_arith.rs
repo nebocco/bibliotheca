@@ -1,6 +1,6 @@
 use super::Poly;
 use std::ops::*;
-use type_traits::Ring;
+use crate::utils::algebraic_traits::Ring;
 
 impl<T: Ring + Copy> Add for Poly<T> {
     type Output = Poly<T>;
@@ -17,10 +17,7 @@ impl<T: Ring + Copy> Add for Poly<T> {
     }
 }
 
-impl<T: Ring + Copy> Sub for Poly<T>
-where
-    T: Sub + SubAssign,
-{
+impl<T: Ring + Copy> Sub for Poly<T> {
     type Output = Poly<T>;
     fn sub(self, rhs: Self) -> Self::Output {
         let mut res = self.0.clone();
@@ -28,7 +25,7 @@ where
             res.resize(rhs.0.len(), T::zero());
         }
         res.iter_mut().zip(rhs.0.iter()).for_each(|(x, y)| {
-            *x -= *y;
+            *x += -*y;
         });
         Self::remove_trailig_zeros(&mut res);
         Poly(res)
@@ -61,7 +58,7 @@ macro_rules! forward_assign_biop {
             impl<T: Ring + Copy> $trait for Poly<T> {
                 #[inline]
                 fn $fn_assign(&mut self, rhs: Self) {
-                    *self = self.clone().$fn(&rhs);
+                    *self = self.clone().$fn(rhs);
                 }
             }
         )*
@@ -77,27 +74,27 @@ forward_assign_biop! {
 macro_rules! forward_ref_binop {
     ($(impl $imp:ident, $method:ident)*) => {
         $(
-            impl<'a, T: Ring + Ring + Copy> $imp<Poly<T>> for &'a Poly<T> {
+            impl<'a, T: Ring + Copy> $imp<Poly<T>> for &'a Poly<T> {
                 type Output = Poly<T>;
                 #[inline]
-                fn $method(self, other: Poly<T>) -> Self::Output {
-                    $imp::$method(self.clone(), other.clone())
+                fn $method(self, rhs: Poly<T>) -> Self::Output {
+                    $imp::$method(self.clone(), rhs)
                 }
             }
 
             impl<'a, T: Ring + Copy> $imp<&'a Poly<T>> for Poly<T> {
                 type Output = Poly<T>;
                 #[inline]
-                fn $method(self, other: &Poly<T>) -> Self::Output {
-                    $imp::$method(self.clone(), other.clone())
+                fn $method(self, rhs: &Poly<T>) -> Self::Output {
+                    $imp::$method(self, rhs.clone())
                 }
             }
 
             impl<'a, T: Ring + Copy> $imp<&'a Poly<T>> for &'a Poly<T> {
                 type Output = Poly<T>;
                 #[inline]
-                fn $method(self, other: &Poly<T>) -> Self::Output {
-                    $imp::$method(self.clone(), other)
+                fn $method(self, rhs: &Poly<T>) -> Self::Output {
+                    $imp::$method(self.clone(), rhs.clone())
                 }
             }
         )*
@@ -106,5 +103,5 @@ macro_rules! forward_ref_binop {
 forward_ref_binop! {
     impl Add, add
     impl Sub, sub
-    impl Mul, mul
+    // impl Mul, mul
 }

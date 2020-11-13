@@ -1,6 +1,8 @@
-use super::{Fp, Mod};
-use alg_traits::arith::Zero;
+use super::{ Fp, Mod };
+use crate::utils::algebraic_traits::{ Zero, Associative };
 use std::ops::*;
+
+impl<M: Mod> Associative for Fp<M> {}
 
 impl<M: Mod> Add for Fp<M> {
     type Output = Self;

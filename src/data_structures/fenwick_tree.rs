@@ -172,8 +172,6 @@ mod tests {
 
     #[test]
     fn test_abst() {
-        use crate::utils::algebraic_traits::Associative;
-        impl Associative for i32 {}
         let mut bit = FenwickTree::<i32>::new(5);
         bit.add(0, 0);
         bit.add(1, 1);

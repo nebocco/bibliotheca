@@ -1,5 +1,5 @@
-mod arith;
-use alg_traits::arith::{One, Zero};
+mod fp_arith;
+use crate::utils::algebraic_traits::{ One, Zero };
 use std::{cmp, fmt, iter, mem::swap, ops};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -109,10 +109,17 @@ impl<M: Mod> Zero for Fp<M> {
     fn zero() -> Fp<M> {
         Fp::new(M::Mod::zero())
     }
+
+    fn is_zero(&self) -> bool {
+        *self == Self::zero()
+    }
 }
 impl<M: Mod> One for Fp<M> {
     fn one() -> Fp<M> {
         Fp::new(M::Mod::one())
+    }
+    fn is_one(&self) -> bool {
+        *self == Self::one()
     }
 }
 
@@ -188,7 +195,6 @@ pub trait Mod: Sized + fmt::Debug + Clone + Copy + cmp::PartialEq + cmp::Eq {
 mod tests {
     use super::*;
     use assert_impl::assert_impl;
-    use test_case::test_case;
 
     #[derive(Debug, Clone, PartialEq, Eq, Copy)]
     struct Mod97 {}
@@ -286,13 +292,13 @@ mod tests {
         assert_eq!(-&F97::new(1), F97::new(96));
     }
 
-    #[test_case(7, 0 => 1)]
-    #[test_case(7, 1 => 7)]
-    #[test_case(7, 2 => 49)]
-    #[test_case(7, 3 => 343 % 97)]
-    #[test_case(7, 4 => 2401 % 97)]
-    fn test_pow(a: i16, b: u64) -> i16 {
-        F97::new(a).pow(b).into_inner()
+    #[test]
+    fn test_pow() {
+        assert_eq!(F97::new(7).pow(0).into_inner(), 1);
+        assert_eq!(F97::new(7).pow(1).into_inner(), 7);
+        assert_eq!(F97::new(7).pow(2).into_inner(), 49);
+        assert_eq!(F97::new(7).pow(3).into_inner(), 343 % 97);
+        assert_eq!(F97::new(7).pow(4).into_inner(), 2401 % 97);
     }
 
     #[test]
