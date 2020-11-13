@@ -1,18 +1,3 @@
-//! ----------------------------------------------
-//! Framework <https://github.com/vain0x/procon>
-//!
-//! See the bottom of file for solution.
-//! ----------------------------------------------
-
-// use std::cell::RefCell;
-// use std::cmp::{max, min, Ordering};
-// use std::collections::*;
-// use std::fmt::{Debug, Display, Formatter, Write as FmtWrite};
-// use std::io::{stderr, stdin, BufRead, Write};
-// use std::mem::{replace, swap};
-// use std::ops::*;
-// use std::rc::Rc;
-
 pub fn rerooting<
     T: Clone,
     E: IntoIterator<Item = (usize, usize)>,
@@ -46,7 +31,7 @@ pub fn rerooting<
     }
 
     let mut parents = vec![0; node_count];
-    let mut order = vec![0; node_count];
+    let mut order = Vec::with_capacity(node_count);
 
     // initialize ordered tree
     {
@@ -55,15 +40,12 @@ pub fn rerooting<
         parents[0] = NO_PARENT;
 
         while let Some(node) = stack.pop() {
-            order[index] = node;
-            index += 1;
+            order.push(node);
 
-            for i in 0..adjacents[node].len() {
-                let adjacent = adjacents[node][i];
+            for &adjacent in adjacents[node].iter() {
                 if adjacent == parents[node] {
                     continue;
                 }
-
                 stack.push(adjacent);
                 parents[adjacent] = node;
             }
@@ -75,10 +57,8 @@ pub fn rerooting<
         .collect::<Vec<_>>();
 
     // from leaf
-    for i in (1..node_count).rev() {
-        let node = order[i];
+    for &node in order.iter().rev() {
         let parent = parents[node];
-
         let mut accum = identity.clone();
         let mut parent_index = NO_PARENT;
 
@@ -98,8 +78,7 @@ pub fn rerooting<
     let mut accums_from_tail = vec![];
 
     // to leaf
-    for i in 0..node_count {
-        let node = order[i];
+    for &node in order.iter() {
         let deg = adjacents[node].len();
         let mut accum = identity.clone();
 
@@ -124,20 +103,6 @@ pub fn rerooting<
 
 const P: i64 = 1_000_000_007;
 
-pub fn pow(x: i64, n: i64) -> i64 {
-    let (mut x, mut y, mut n) = (x % P, 1_i64, n);
-    while n > 0 {
-        if n % 2 != 0 {
-            y = (y * x) % P;
-            n -= 1;
-        }
-
-        x = (x * x) % P;
-        n /= 2;
-    }
-    y
-}
-
 /// 部分木に対して持つ計算結果
 #[derive(Clone, Copy)]
 struct X {
@@ -147,7 +112,7 @@ struct X {
 }
 
 impl X {
-    fn empty() -> X {
+    fn zero() -> X {
         X {
             combo: 1,
             size: 0,
@@ -155,7 +120,7 @@ impl X {
         }
     }
 
-    fn append(self, other: X) -> X {
+    fn add(self, other: X) -> X {
         X {
             combo: self.combo * other.combo % P,
             size: self.size + other.size,

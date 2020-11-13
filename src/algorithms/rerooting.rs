@@ -10,12 +10,12 @@ where Edge: Clone,
       Value: Clone,
       Func: Fn(&Value, &Value, &Edge) -> Value {
 
-    pub fn new(size: usize, initial: Value, func: Func) -> Self {
-        Rerooting {
-            size: size,
+    pub fn new(size: usize, initial: Value, merge: Func) -> Self {
+        Self {
+            size,
             edge: vec![],
-            initial: initial,
-            merge: func,
+            initial,
+            merge,
         }
     }
 
@@ -23,7 +23,7 @@ where Edge: Clone,
         self.edge.push((a, b, cost));
     }
 
-    pub fn solve(&self) -> Vec<Value> {
+    pub fn solve(&self, root: usize) -> Vec<Value> {
         let mut graph = vec![vec![]; self.size];
         for e in self.edge.iter() {
             let a = e.0;
@@ -32,29 +32,28 @@ where Edge: Clone,
             graph[b].push((a, e.2.clone()));
         }
 
-        let root = 0;
-        let mut topo = vec![];
+        let mut euler = vec![];
         let mut stack = vec![(root, root)];
         while let Some((v, p)) = stack.pop() {
-            topo.push(v);
+            euler.push(v);
             if let Some(k) = graph[v].iter().position(|e| e.0 == p) {
-                graph[v].remove(k);
+                graph[v].swap_remove(k);
             }
             for e in graph[v].iter() {
                 stack.push((e.0, v));
             }
         }
-        assert!(topo.len() == self.size);
+        assert!(euler.len() == self.size);
 
         let mut down = vec![self.initial.clone(); self.size];
-        for &v in topo.iter().rev() {
+        for &v in euler.iter().rev() {
             for e in graph[v].iter() {
                 down[v] = (self.merge)(&down[v], &down[e.0], &e.1);
             }
         }
         let mut up = vec![self.initial.clone(); self.size];
         let mut ans = up.clone();
-        for &v in topo.iter() {
+        for &v in euler.iter() {
             ans[v] = up[v].clone();
             for e in graph[v].iter() {
                 ans[v] = (self.merge)(&ans[v], &down[e.0], &e.1);
@@ -67,8 +66,7 @@ where Edge: Clone,
                 if g.len() == 1 {
                     up[g[0].0] = (self.merge)(&self.initial, &val, &g[0].1);
                 } else {
-                    let m = g.len() / 2;
-                    let (a, b) = g.split_at(m);
+                    let (a, b) = g.split_at(g.len() / 2);
                     let mut p = val.clone();
                     for e in a.iter() {
                         p = (self.merge)(&p, &down[e.0], &e.1);

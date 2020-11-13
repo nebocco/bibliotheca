@@ -1,10 +1,10 @@
-use std::collections::{ HashMap, HashSet };
+use std::collections::HashMap;
 use std::hash::Hash;
 
-pub fn compress<T: Clone + Ord + Hash>(l: &[T])-> (usize, HashMap<T, usize>, Vec<T>, Vec<usize>) {
-    let set: HashSet<T> = l.iter().cloned().collect();
-    let mut f: Vec<T> = set.into_iter().collect();
+pub fn compress<T: Clone + Ord + Hash>(l: &Vec<T>)-> (usize, HashMap<T, usize>, Vec<T>, Vec<usize>) {
+    let mut f = l.clone();
     f.sort();
+    f.dedup();
     let dict: HashMap<T, usize> = f.iter().cloned().zip(0..f.len()).collect();
     let res: Vec<usize> = l.iter().map(|x| *dict.get(x).unwrap()).collect();
     (f.len(), dict, f, res)
