@@ -3,7 +3,6 @@ use super::{ Cost, Flow };
 use std::cmp::{ max, min };
 use std::collections::HashSet;
 use std::ops::{ Add, Mul };
-use std::option::Option::{ None, Some };
 
 struct Edge<F, C> {
     src: usize,
