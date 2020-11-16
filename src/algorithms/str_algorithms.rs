@@ -66,18 +66,19 @@ pub fn kmp_search<T: PartialEq>(pattern: &[T], target: &[T]) -> Option<usize> {
 // ------------ KMP algorithm end ------------
 
 // ------------ run length start ------------
-
-pub fn runlength(s: &str) -> Vec<(char, usize)> {
+pub fn runlength<T>(l: &[T]) -> Vec<(T, usize)> where
+    T: PartialEq + Copy,
+{
     let mut res = Vec::new();
-    let mut cur: char = '$';
-    let mut cnt = 0;
-    for x in s.chars() {
+    let mut s = l.iter();
+    let cur = s.next();
+    if cur.is_none() { return res; }
+    let mut cur = *cur.unwrap();
+    let mut cnt = 1;
+    for &x in s {
         if x != cur {
-            if cnt > 0 {
-                res.push((cur, cnt));
-            }
-            cur = x;
-            cnt = 1;
+            res.push((cur, cnt));
+            cur = x; cnt = 1;
         } else {
             cnt += 1;
         }
@@ -87,7 +88,6 @@ pub fn runlength(s: &str) -> Vec<(char, usize)> {
     }
     res
 }
-
 // ------------ run length end ------------
 
 #[cfg(test)]

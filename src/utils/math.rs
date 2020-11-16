@@ -65,17 +65,29 @@ impl Fact {
         Self::modpow(x, m-2, m)
     }
 
-    pub fn permutation (&self, n:usize, r:usize) -> u64 {
+    pub fn permutation(&self, n:usize, r:usize) -> u64 {
         assert!(r > n || n < self.fact.len(),
         "index out of range: length is {}, but given {}", self.fact.len(), n);
         if n < r { return 0 };
         self.fact[n] * self.inv_fact[n-r] % self.modulo
     }
-    pub fn combination (&self, n:usize, r:usize) -> u64 {
+
+    pub fn combination(&self, n:usize, r:usize) -> u64 {
         assert!(r > n || n < self.fact.len(),
         "index out of range: length is {}, but given {}", self.fact.len(), n);
         if n < r { return 0 };
         self.fact[n] * self.inv_fact[r] % self.modulo * self.inv_fact[n-r] % self.modulo
+    }
+
+    pub fn multi(&self, l: &[usize]) -> u64 {
+        let n = l.iter().sum::<usize>();
+        assert!(n < self.fact.len(),
+        "index out of range: length is {}, but given {}", self.fact.len(), n);
+        let mut ans = self.fact[n];
+        for &x in l {
+            ans = ans * self.inv_fact[x] % self.modulo;
+        }
+        ans
     }
 }
 
