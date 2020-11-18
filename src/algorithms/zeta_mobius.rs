@@ -30,7 +30,7 @@ pub fn superset_zeta<T: SemiGroup>(l: &mut Vec<T>) {
 	for p in (0..n.trailing_zeros()).map(|i| 1 << i) {
 		for i in 0..n {
 			if i & p == 0 {
-				l[i] = l[i ^ p].clone() + l[i].clone();
+				l[i] = l[i].clone() + l[i ^ p].clone();
 			}
 		}
 	}
@@ -42,7 +42,7 @@ pub fn superset_mobius<T: Group>(l: &mut Vec<T>) {
 	for p in (0..n.trailing_zeros()).rev().map(|i| 1 << i) {
 		for i in 0..n {
 			if i & p == 0 {
-				l[i] = -l[i ^ p].clone() + l[i].clone();
+				l[i] = l[i].clone() + -l[i ^ p].clone();
 			}
 		}
 	}
@@ -60,7 +60,7 @@ pub fn subset_convolution<T: Ring>(a: &[T], b: &[T]) -> Vec<T> {
 		f[i.count_ones() as usize][i] = a[i].clone();
 		g[i.count_ones() as usize][i] = b[i].clone();
 	}
-	for p in (0..n).map(|i| 1 << i) {
+	for p in (0..m).map(|i| 1 << i) {
 		for i in 0..n {
 			if i & p != 0 { continue; }
 			for k in 0..=m {
@@ -77,14 +77,33 @@ pub fn subset_convolution<T: Ring>(a: &[T], b: &[T]) -> Vec<T> {
 			}
 		}
 	}
+	for p in (0..m).rev().map(|i| 1 << i) {
+		for i in 0..n {
+			if i & p != 0 { continue; }
+			for k in 0..=m {
+				res[k][i|p] = res[k][i|p].clone() + -res[k][i].clone();
+			}
+		}
+	}
 	(0..n).map(|i| res[i.count_ones() as usize][i].clone()).collect()
 }
 
 #[cfg(test)]
 mod tests {
-    // TODO: make tests
+	// TODO: make tests
+
+	use super::*;
+
     #[test]
     fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
+		assert_eq!(2 + 2, 4);
+	}
+
+	#[test]
+	fn test_subset_conv() {
+		let a = vec![1, 2, 3, 4, 5, 6, 7, 8];
+		let b = vec![9, 10, 11, 12, 13, 14, 15, 16];
+		let c = subset_convolution(&a, &b);
+		assert_eq!(c, vec![9, 28, 38, 100, 58, 144, 172, 408]);
+	}
 }

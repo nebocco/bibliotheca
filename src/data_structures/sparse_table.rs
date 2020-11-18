@@ -4,8 +4,10 @@ https://github.com/ngtkana/ac-adapter-rs/blob/master/crates/algolib/sparse_table
 
 */
 
-//! Sparse table です。いまのところ Argmin しかありません。
 use crate::utils::bounds::bounds_within;
+
+
+// ------------ SparseTable start ------------
 
 use std::ops;
 
@@ -84,6 +86,7 @@ impl<T: Ord> From<Vec<T>> for SparseTableArgmin<T> {
     }
 }
 
+// ------------ SparseTable end ------------
 
 
 #[cfg(test)]

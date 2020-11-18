@@ -1,7 +1,7 @@
 use crate::utils::algebraic_traits::SemiGroup;
 
 // * verified: https://judge.yosupo.jp/submission/28320
-// ------------ module start ------------
+// ------------ Disjoint SparseTable start ------------
 use std::ops::Range;
 use std::iter::successors;
 
@@ -45,7 +45,7 @@ impl<T: SemiGroup> From<&Vec<T>> for DisjointSparseTable<T> {
     }
 }
 
-// ------------ module end ------------
+// ------------ Disjoint SparseTable end ------------
 
 #[cfg(test)]
 mod tests {

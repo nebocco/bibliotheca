@@ -63,7 +63,7 @@ pub fn bellman_ford<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Result<Vec<C>, &st
 	for _ in 0..n-1 {
 		for v in 0..n {
 			for e in g.edges_from(v) {
-				if dist[e.to] > dist[v] + e.cost {
+				if dist[v] != C::MAX && dist[e.to] > dist[v] + e.cost {
 					dist[e.to] = dist[v] + e.cost;
 					depth[e.to] = depth[v] + 1;
 					parent[e.to] = v;
@@ -83,9 +83,27 @@ pub fn bellman_ford<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Result<Vec<C>, &st
 
 #[cfg(test)]
 mod tests {
-    // TODO: make tests
+	use super::*;
+	use crate::utils::graph::UndirectedGraph;
+
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
+    fn test_3_ways() {
+		let mut g = UndirectedGraph::new(6);
+		g.add_edge(0, 1, 15);
+		g.add_edge(1, 2, 3);
+		g.add_edge(4, 1, 58);
+		g.add_edge(3, 5, 10);
+		g.add_edge(0, 5, 8);
+		g.add_edge(2, 5, 1);
+
+		let ans = vec![0, 12, 9, 18, 70, 8];
+		let res = dijkstra_heap(&g, 0);
+		assert_eq!(res, ans);
+
+		let res = dijkstra_loop(&g, 0);
+		assert_eq!(res, ans);
+
+		let res = bellman_ford(&g, 0);
+		assert_eq!(res.ok().unwrap(), ans);
+	}
 }
