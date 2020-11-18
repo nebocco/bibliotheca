@@ -1,6 +1,6 @@
-use crate::utils::graph::Graph;
+use crate::utils::graph::{ Cost, Graph };
 
-pub fn detect_cycle<G: Graph>(graph: &G) -> Option<Vec<usize>> {
+pub fn detect_cycle<C: Cost, G: Graph<C>>(graph: &G) -> Option<Vec<usize>> {
     let n = graph.size();
     let mut seen = vec![0; n];
     let mut from = vec![n; n];

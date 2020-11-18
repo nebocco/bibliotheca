@@ -1,6 +1,6 @@
-use crate::utils::graph::Graph;
+use crate::utils::graph::{ Cost, Graph };
 
-pub fn is_biparate<G: Graph>(graph: &G) -> Option<Vec<usize>> {
+pub fn is_biparate<C: Cost, G: Graph<C>>(graph: &G) -> Option<Vec<usize>> {
     let n = graph.size();
     let mut color = vec![2 * n; n];
     let mut c = 0;

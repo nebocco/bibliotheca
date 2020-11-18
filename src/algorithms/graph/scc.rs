@@ -14,9 +14,9 @@ pub trait SCC {
 
 }
 
-impl SCC for DirectedGraph {
+impl<C: Cost> SCC for DirectedGraph<C> {
     fn strongly_connected(&self) -> (usize, Vec<usize>) {
-        fn _scc_dfs(graph: &DirectedGraph, x: usize, res: &mut [Option<usize>]) {
+        fn _scc_dfs<C: Cost>(graph: &DirectedGraph<C>, x: usize, res: &mut [Option<usize>]) {
             for y in graph.edges_from(x) {
                 if res[y.to].is_none() {
                     res[y.to] = res[x];
@@ -53,7 +53,7 @@ impl SCC for DirectedGraph {
 
 // ------------ Strongly Connected Components end ------------
 
-pub struct TwoSat(DirectedGraph);
+pub struct TwoSat(DirectedGraph<i8>);
 
 impl TwoSat {
     pub fn new(n: usize) -> Self {

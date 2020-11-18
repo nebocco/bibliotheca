@@ -1,9 +1,9 @@
-use crate::utils::graph::Tree;
+use crate::utils::graph::{ Cost, Graph };
 
-pub fn tree_dfs<T: Tree>(g: &T, root: usize) -> (Vec<i64>, Vec<Option<usize>>) {
+pub fn tree_dfs<C: Cost, G: Graph<C>>(g: &G, root: usize) -> (Vec<C>, Vec<Option<usize>>) {
     let n = g.size();
-	let mut dist = vec![std::i64::MAX; n];
-	dist[root] = 0;
+	let mut dist = vec![C::MAX; n];
+	dist[root] = C::zero();
     let mut par = vec![None; n];
     let mut q = vec![root];
     while let Some(v) = q.pop() {

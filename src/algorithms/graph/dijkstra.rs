@@ -1,42 +1,84 @@
-use std::collections::BinaryHeap;
-use crate::utils::graph::{Edge, State, Graph};
+use crate::utils::graph::{ Cost, Graph };
 
-
-// * verified: https://judge.yosupo.jp/submission/28367
-pub fn dijkstra_heap<T: Graph>(graph: &T, start: usize) -> (Vec<i64>, Vec<usize>) {
-	let n = graph.size();
-	let mut dist = vec![std::i64::MAX; n];
-	let mut path = (0..n).collect::<Vec<_>>();
-    dist[start] = 0;
-    let mut que: BinaryHeap<State> = BinaryHeap::new();
-    que.push(State{cost:0, position:start});
-    while let Some(State{cost:c, position:v}) = que.pop() {
-        if dist[v] < c { continue; };
-        for &Edge{to: x, cost: d} in graph.edges_from(v) {
-            if dist[x] > c + d {
-				dist[x] = c + d;
-				path[x] = v;
-                que.push(State{ cost: c + d, position: x })
-            }
-        }
-    }
-    (dist, path)
+#[allow(clippy::many_single_char_names)]
+pub fn dijkstra_heap<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Vec<C> {
+	let n = g.size();
+	let mut dist = vec![C::MAX; n];
+	let mut depth = vec![std::usize::MAX; n];
+	let mut parent = vec![std::usize::MAX; n];
+	let mut que = std::collections::BinaryHeap::new();
+	dist[s] = C::zero();
+	depth[s] = 0;
+	que.push((C::zero(), s));
+	while let Some((d, u)) = que.pop() {
+		let d = -d;
+		if dist[u] < d { continue; }
+		for e in g.edges_from(u) {
+			let v = e.to;
+			let d2 = d + e.cost;
+			if dist[v] > d2 {
+				dist[v] = d2;
+				depth[v] = depth[u] + 1;
+				parent[v] = u;
+				que.push((-d2, v));
+			}
+		}
+	}
+	dist
 }
 
-pub fn dijkstra_loop<T: Graph>(graph: &T, start: usize) -> Vec<i64> {
-    let n = graph.size();
-    let mut dist = vec![std::i64::MAX; n];
-    dist[start] = 0;
-    let mut seen = vec![false; n];
-    while let Some(v) = (0..n).filter(|&i| !seen[i]).min_by_key(|&i| dist[i]) {
-        seen[v] = true;
-        for &Edge{to: x, cost: d} in graph.edges_from(v) {
-            if dist[x] > dist[v] + d {
-                dist[x] = dist[v] + d;
-            }
-        }
-    }
-    dist
+/// Computes single-source shortest paths with Dijkstra algorithm
+/// O(V^2)
+pub fn dijkstra_loop<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Vec<C> {
+	let n = g.size();
+	let mut dist = vec![C::MAX; n];
+	let mut depth = vec![std::usize::MAX; n];
+	let mut parent = vec![std::usize::MAX; n];
+	let mut done = vec![false; n];
+	dist[s] = C::zero();
+	depth[s] = 0;
+	for _ in 0..n-1 {
+		let u = (0..n).filter(|&i| !done[i]).min_by_key(|&i| dist[i]).unwrap();
+		done[u] = true;
+		for e in g.edges_from(u) {
+			if dist[e.to] > dist[u] + e.cost {
+				dist[e.to] = dist[u] + e.cost;
+				depth[e.to] = depth[u] + 1;
+				parent[e.to] = u;
+			}
+		}
+	}
+	dist
+}
+
+/// Computes single-source shortest paths with Bellman-Ford algorithm
+/// O(EV)
+pub fn bellman_ford<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Result<Vec<C>, &str> {
+	let n = g.size();
+	let mut dist = vec![C::MAX; n];
+	dist[s] = C::zero();
+	let mut depth = vec![std::usize::MAX; n];
+	depth[s] = 0;
+	let mut parent = vec![std::usize::MAX; n];
+	for _ in 0..n-1 {
+		for v in 0..n {
+			for e in g.edges_from(v) {
+				if dist[e.to] > dist[v] + e.cost {
+					dist[e.to] = dist[v] + e.cost;
+					depth[e.to] = depth[v] + 1;
+					parent[e.to] = v;
+				}
+			}
+		}
+	}
+	for v in 0..n {
+		for e in g.edges_from(v) {
+			if dist[e.to] > dist[v] + e.cost {
+				return Err("graph contains a negative cycle");
+			}
+		}
+	}
+	Ok(dist)
 }
 
 #[cfg(test)]
