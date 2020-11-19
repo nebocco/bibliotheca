@@ -12,7 +12,8 @@ pub fn z_algorithm<T: PartialEq>(s: &[T]) -> Vec<usize> {
         }
         ret[i] = p;
         let mut k = 1;
-        while k + ret[k] < p {
+        while i + k < s.len() && k + ret[k] < p {
+            ret[i+k] = ret[k];
             k += 1;
         }
         i += k;
