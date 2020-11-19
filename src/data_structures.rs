@@ -1,3 +1,4 @@
+pub mod binary_trie;
 pub mod bit_vector;
 pub mod disjoint_sparse_table;
 pub mod fenwick_tree;
