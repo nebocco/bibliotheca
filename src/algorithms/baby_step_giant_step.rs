@@ -27,11 +27,28 @@ pub fn baby_giant(x: u64, y: u64, modulo: u64) -> Option<u64> {
 mod tests {
     use super::*;
     #[test]
-    fn it_works() {
+    fn mini_test() {
         let x: u64 = 3;
         let y: u64 = 193;
         const MOD: u64 = 1_000_000_007;
         let r = baby_giant(x, y, MOD).unwrap_or(0);
         assert_eq!(modpow(x, r, MOD), y);
+    }
+
+    #[test]
+    fn test_random() {
+        use rand::prelude::*;
+        const MOD: u64 = 998_244_353;
+        let mut rng = thread_rng();
+        let mut f = Vec::new();
+        for _ in 0..20 {
+            let x = rng.gen::<u64>() % MOD;
+            let y = rng.gen::<u64>() % MOD;
+            let r = baby_giant(x, y, MOD);
+            if r.is_some() {
+                f.push(r.unwrap());
+                assert_eq!(modpow(x, r.unwrap(), MOD), y);
+            }
+        }
     }
 }

@@ -1,3 +1,5 @@
+// ------------ Li Chao Tree start ------------
+
 use std::ops::{ Add, Mul };
 
 pub trait LineNumber: Add<Output=Self> + Mul<Output=Self> + Copy + PartialOrd {}
@@ -104,6 +106,9 @@ impl<T: LineNumber> LiChaoTree<T> {
         ans
     }
 }
+
+// ------------ Li Chao Tree end ------------
+
 
 #[cfg(test)]
 mod tests {

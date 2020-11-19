@@ -1,3 +1,5 @@
+// ------------ BitVector start ------------
+
 pub struct BitVector {
 	length: usize,
 	cnum: usize,
@@ -81,6 +83,8 @@ impl BitVector {
         Ok(ok)
     }
 }
+
+// ------------ BitVector end ------------
 
 
 #[cfg(test)]

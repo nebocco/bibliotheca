@@ -1,5 +1,7 @@
 use crate::utils::algebraic_traits::Element;
 
+// ------------ DoublePriorityHeap start ------------
+
 #[derive(Default)]
 pub struct DoublePriorityHeap<T: Element + Ord>(Vec<T>);
 
@@ -123,6 +125,9 @@ impl<T: Element + Ord> DoublePriorityHeap<T> {
 		}
 	}
 }
+
+// ------------ DoublePriorityHeap end ------------
+
 
 #[cfg(test)]
 mod tests {

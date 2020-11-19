@@ -4,7 +4,11 @@ https://github.com/ngtkana/ac-adapter-rs/blob/master/crates/algolib/sparse_table
 
 */
 
-//! Sparse table です。いまのところ Argmin しかありません。
+use crate::utils::bounds::bounds_within;
+
+
+// ------------ SparseTable start ------------
+
 use std::ops;
 
 #[derive(Debug, Clone)]
@@ -13,30 +17,9 @@ pub struct SparseTableArgmin<T> {
     seq: Vec<T>,
 }
 
-impl<T> SparseTableArgmin<T> {
-	fn convert_to_range<U>(len: usize, range_bound: U) -> ops::Range<usize>
-	where
-		U: ops::RangeBounds<usize>,
-	{
-		use ops::Bound::*;
-		ops::Range {
-			start: match range_bound.start_bound() {
-				Excluded(&x) => x + 1,
-				Included(&x) => x,
-				Unbounded => 0,
-			},
-			end: match range_bound.end_bound() {
-				Excluded(&x) => x,
-				Included(&x) => x + 1,
-				Unbounded => len,
-			},
-		}
-	}
-}
-
 impl<T: Ord> SparseTableArgmin<T> {
     pub fn query(&self, range: impl ops::RangeBounds<usize>) -> Option<usize> {
-        let ops::Range { start, end } = Self::convert_to_range(self.seq.len(), range);
+        let ops::Range { start, end } = bounds_within(range, self.seq.len());
         assert!(start <= end);
         if start == end {
             None
@@ -103,6 +86,7 @@ impl<T: Ord> From<Vec<T>> for SparseTableArgmin<T> {
     }
 }
 
+// ------------ SparseTable end ------------
 
 
 #[cfg(test)]

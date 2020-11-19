@@ -18,37 +18,22 @@ pub fn hungarian(a: &[Vec<i64>]) -> (i64, Vec<usize>) {
 		let mut s = vec![i; n+1];
 		p = 0; q = 0;
 		while p <= q && x[i] == n {
-			let mut k = s[p];
-			j = 0;
+			let mut k = s[p]; j = 0;
 			while j < n && x[i] == n {
 				if fx[k] + fy[j] == a[k][j] && t[j] == n {
-					q += 1;
-					s[q] = y[j];
-					t[j] = k;
+					q += 1; s[q] = y[j]; t[j] = k;
 					if s[q] == n {
 						p = j;
 						while p != n {
-							y[j] = t[j];
-							k = t[j];
-							p = x[k];
-							x[k] = j;
-							j = p;
+							y[j] = t[j]; k = t[j]; p = x[k];
+							x[k] = j; j = p;
 						}
-						j = 0;
-						p = 0;
+						j = 0; p = 0;
 					}
 				}
-				if j == n {
-					j = 0;
-				} else {
-					j += 1;
-				}
+				if j == n { j = 0; } else { j += 1; }
 			}
-			if p == n {
-				p = 0;
-			} else {
-				p += 1;
-			}
+			if p == n { p = 0; } else { p += 1; }
 		}
 		if x[i] == n {
 			let mut d = std::i64::MIN;
@@ -59,12 +44,8 @@ pub fn hungarian(a: &[Vec<i64>]) -> (i64, Vec<usize>) {
 					}
 				}
 			}
-			for j in 0..n {
-				fy[j] += if t[j] == n { 0 } else { d };
-			}
-			for k in 0..=q {
-				fx[s[k]] -= d;
-			}
+			for j in 0..n { fy[j] += if t[j] == n { 0 } else { d }; }
+			for k in 0..=q { fx[s[k]] -= d; }
 		} else {
 			i += 1;
 		}

@@ -1,8 +1,8 @@
-use crate::utils::bitset::Bitset;
+use crate::utils::bitset::BitSet;
 use crate::utils::math::*;
 
 pub fn atkin_sieve(n: usize) -> Vec<u64> {
-    let mut sieve = Bitset::new(n);
+    let mut sieve = BitSet::new(n+1);
     let lim = (n as f64).sqrt() as usize + 1;
 
     for z in (1..6).step_by(4) {
@@ -147,7 +147,7 @@ mod tests {
 
     fn prime_brute(n: usize) -> Vec<u64> {
         let mut primes = Vec::new();
-        for i in 2..n+1 {
+        for i in 2..=n {
             if (2..i).all(|j| i % j > 0) {
                 primes.push(i as u64);
             }

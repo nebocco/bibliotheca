@@ -1,5 +1,5 @@
 // * verified at https://judge.yosupo.jp/submission/26460
-// ------------ module start ------------
+// ------------ UnionFind start ------------
 #[derive(Clone, Debug)]
 pub struct UnionFind(Vec<isize>);
 
@@ -47,10 +47,10 @@ impl UnionFind {
         (v, -self.0[v] as usize)
     }
 }
-// ------------ module end ------------
+// ------------ UnionFind end ------------
 
 
-// ------------ module start ------------
+// ------------ Potentialized UnionFind start ------------
 // TODO: verify
 use crate::utils::algebraic_traits::ComGroup;
 
@@ -136,7 +136,7 @@ impl<T: ComGroup> PotentializedUnionFind<T> {
         (v, -self.data[v] as usize, w)
     }
 }
-// ------------ module end ------------
+// ------------ Potentialized UnionFind end ------------
 
 
 #[cfg(test)]
