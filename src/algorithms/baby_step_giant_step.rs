@@ -3,10 +3,10 @@ use crate::utils::math::modpow;
 use std::collections::HashMap;
 
 /// solve k s.t. x.pow(k) === y (mod M)
-pub fn baby_giant(x: u64, y: u64, modulo: u64) -> Option<u64> {
-    let mut dic: HashMap<u64, u64> = HashMap::new();
+pub fn baby_giant(x: i64, y: i64, modulo: i64) -> Option<i64> {
+    let mut dic: HashMap<i64, i64> = HashMap::new();
     dic.insert(1, 0);
-    let sq = (modulo as f64).sqrt() as u64 + 1;
+    let sq = (modulo as f64).sqrt() as i64 + 1;
     let mut z = 1;
     for i in 1..sq+1 {
         z = z * x % modulo;
@@ -28,9 +28,9 @@ mod tests {
     use super::*;
     #[test]
     fn mini_test() {
-        let x: u64 = 3;
-        let y: u64 = 193;
-        const MOD: u64 = 1_000_000_007;
+        let x: i64 = 3;
+        let y: i64 = 193;
+        const MOD: i64 = 1_000_000_007;
         let r = baby_giant(x, y, MOD).unwrap_or(0);
         assert_eq!(modpow(x, r, MOD), y);
     }
@@ -38,12 +38,12 @@ mod tests {
     #[test]
     fn test_random() {
         use rand::prelude::*;
-        const MOD: u64 = 998_244_353;
+        const MOD: i64 = 998_244_353;
         let mut rng = thread_rng();
         let mut f = Vec::new();
         for _ in 0..20 {
-            let x = rng.gen::<u64>() % MOD;
-            let y = rng.gen::<u64>() % MOD;
+            let x = rng.gen::<i64>() % MOD;
+            let y = rng.gen::<i64>() % MOD;
             let r = baby_giant(x, y, MOD);
             if r.is_some() {
                 f.push(r.unwrap());

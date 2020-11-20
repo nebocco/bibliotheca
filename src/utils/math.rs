@@ -1,4 +1,4 @@
-pub fn gcd(mut a: u64, mut b: u64) -> u64 {
+pub fn gcd(mut a: i64, mut b: i64) -> i64 {
     while b > 0 {
         a %= b;
         std::mem::swap(&mut a, &mut b);
@@ -6,7 +6,7 @@ pub fn gcd(mut a: u64, mut b: u64) -> u64 {
     a
 }
 
-pub fn lcm(a: u64, b:u64) -> u64 {
+pub fn lcm(a: i64, b: i64) -> i64 {
     if a == 0 && b == 0 {
         0
     } else {
@@ -14,7 +14,7 @@ pub fn lcm(a: u64, b:u64) -> u64 {
     }
 }
 
-pub fn modpow(x: u64, mut y: u64, modulo:u64) -> u64 {
+pub fn modpow(x: i64, mut y: i64, modulo: i64) -> i64 {
     let mut ret = 1;
     let mut cur = x;
     while y > 0 {
@@ -25,6 +25,41 @@ pub fn modpow(x: u64, mut y: u64, modulo:u64) -> u64 {
         y >>= 1;
     }
     ret
+}
+
+pub fn modinv(x: i64, modulo: i64) -> i64 {
+    let mut ret = extgcd(x, modulo).0 % modulo;
+    if ret < 0 { ret += modulo; }
+    ret
+}
+
+// return (x, y) s.t. a * x + b * y = 1
+pub fn extgcd(a: i64, b: i64) -> (i64, i64) {
+    let mut x1 = 1;
+    let mut y1 = 0;
+    let mut m = a;
+    let mut x2 = 0;
+    let mut y2 = 1;
+    let mut n = b;
+    while m % n != 0 {
+        let q = m / n;
+        x1 -= q * x2;
+        y1 -= q * y2;
+        m -= q * n;
+        std::mem::swap(&mut x1, &mut x2);
+        std::mem::swap(&mut y1, &mut y2);
+        std::mem::swap(&mut m, &mut n);
+    }
+    (x2, y2)
+}
+
+pub fn make_modinv_list(size: usize, modulo: i64) -> Vec<i64> {
+    let mut inv_list = vec![0; size+1];
+    inv_list[1] = 1;
+    for i in 2..=size {
+        inv_list[i] = modulo - modulo / i as i64 * inv_list[modulo as usize % i] % modulo;
+    }
+    inv_list
 }
 
 pub struct Fact {
@@ -61,7 +96,7 @@ impl Fact {
         res
     }
 
-    pub fn modinv(x: u64, m:u64) -> u64 {
+    pub fn modinv(x: u64, m: u64) -> u64 {
         Self::modpow(x, m-2, m)
     }
 

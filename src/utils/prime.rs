@@ -1,7 +1,7 @@
 use crate::utils::bitset::BitSet;
 use crate::utils::math::*;
 
-pub fn atkin_sieve(n: usize) -> Vec<u64> {
+pub fn atkin_sieve(n: usize) -> Vec<i64> {
     let mut sieve = BitSet::new(n+1);
     let lim = (n as f64).sqrt() as usize + 1;
 
@@ -49,11 +49,11 @@ pub fn atkin_sieve(n: usize) -> Vec<u64> {
     }
     sieve.set(2, true);
     sieve.set(3, true);
-    sieve.collect()
+    sieve.collect().into_iter().map(|x| x as i64).collect()
 }
 
 
-pub fn factorize(x: u64) -> Vec<(u64, usize)> {
+pub fn factorize(x: i64) -> Vec<(i64, usize)> {
     let mut y = x;
     let mut res = Vec::new();
     for i in 2..x+1 {
@@ -71,7 +71,7 @@ pub fn factorize(x: u64) -> Vec<(u64, usize)> {
     res
 }
 
-pub fn divisor(x: u64) -> Vec<u64> {
+pub fn divisor(x: i64) -> Vec<i64> {
     let mut res = Vec::new();
     for i in 1..x+1 {
         if i * i > x { break; }
@@ -85,7 +85,7 @@ pub fn divisor(x: u64) -> Vec<u64> {
     res
 }
 
-pub fn totient(x: u64) -> u64 {
+pub fn totient(x: i64) -> i64 {
     let mut res = x;
     for &(i, _) in factorize(x).iter() {
         res = res * (i - 1) / i;
@@ -94,18 +94,18 @@ pub fn totient(x: u64) -> u64 {
 }
 
 #[allow(clippy::many_single_char_names)]
-pub fn pollard_rho(v: u64, seed: u64) -> u64 {
+pub fn pollard_rho(v: i64, seed: i64) -> i64 {
     if v == 0 { return 1;}
     let seed = seed.wrapping_mul(v);
     let c = seed & 0xff;
     let u = c & 0x7f;
-    let mut r: u64 = 1;
-    let mut q: u64 = 1;
-    let mut y: u64 = u & 0x0f;
-    let mut fac: u64 = 1;
-    let mut y_old: u64 = 0;
-    let mut x: u64 = 0;
-    let func = |x: u64| (x.wrapping_mul(x) + c) % v;
+    let mut r: i64 = 1;
+    let mut q: i64 = 1;
+    let mut y: i64 = u & 0x0f;
+    let mut fac: i64 = 1;
+    let mut y_old: i64 = 0;
+    let mut x: i64 = 0;
+    let func = |x: i64| (x.wrapping_mul(x) + c) % v;
     while fac == 1 {
         x = y;
         for _ in 0..r {
@@ -141,15 +141,54 @@ pub fn pollard_rho(v: u64, seed: u64) -> u64 {
     fac
 }
 
+// * verified: https://judge.yosupo.jp/submission/30338
+// Tonelli-Shanks algorithm
+
+#[allow(clippy::many_single_char_names)]
+pub fn mod_sqrt(mut a: i64, p: i64) -> Option<i64> {
+    a %= p;
+    if a < 2 { return Some(a); }
+    let s = (p - 1).trailing_zeros() as i64;
+    let q = (p - 1) >> s;
+    let mut z = 1;
+    while modpow(z, (p - 1) / 2, p) != p - 1 {
+        z += 1;
+    }
+    let mut m = s;
+    let mut c = modpow(z, q, p);
+    let mut t = modpow(a, q, p);
+    let mut r = modpow(a, (q + 1) / 2, p);
+    while t != 1 {
+        let mut cur = t;
+        let mut i = p;
+        for j in 1..m {
+            cur = cur * cur % p;
+            if cur == 1 {
+                i = j;
+                break;
+            }
+        }
+        if i == p { return None; }
+        let b = modpow(c, modpow(2, m - i - 1, p - 1), p);
+        m = i;
+        c = b * b % p;
+        t = t * c % p;
+        r = r * b % p;
+    }
+    Some(r)
+}
+
+// TODO: Lehmer's algorithm
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn prime_brute(n: usize) -> Vec<u64> {
+    fn prime_brute(n: usize) -> Vec<i64> {
         let mut primes = Vec::new();
         for i in 2..=n {
             if (2..i).all(|j| i % j > 0) {
-                primes.push(i as u64);
+                primes.push(i as i64);
             }
         }
         primes
@@ -159,6 +198,31 @@ mod tests {
     fn test_atkin() {
         for i in (1..1000).step_by(100) {
             assert_eq!(atkin_sieve(i), prime_brute(i));
+        }
+    }
+
+    fn mod_sqrt_brute(modulo: usize) -> Vec<Option<i64>> {
+        let mut res = vec![None; modulo];
+        for i in 0..modulo {
+            if res[i * i % modulo].is_none() {
+                res[i * i % modulo] = Some(i as i64);
+            }
+        }
+        res
+    }
+
+    #[test]
+    fn test_mod_sqrt() {
+        for modulo in vec![3, 5, 7, 11, 13, 17].into_iter() {
+            let ans = mod_sqrt_brute(modulo as usize);
+            for i in 0..modulo {
+                let x = mod_sqrt(i, modulo);
+                if let Some(v) = x {
+                    assert_eq!(v * v % modulo, i);
+                } else {
+                    assert!(ans[i as usize].is_none())
+                }
+            }
         }
     }
 }
