@@ -150,11 +150,98 @@ pub fn sum_of_floor(mut n:i64, mut m:i64, mut a:i64, mut b:i64) -> i64 {
     s
 }
 
+// TODO: make test
+// O(N**2)
+pub fn lagrange_evaluation(xl: &[i64], yl: &[i64], x: i64, modulo: i64) -> i64 {
+    let n = xl.len();
+    let mut ret = 0;
+    for i in 0..n {
+        let mut t = 1;
+        for j in 0..n {
+            if i == j { continue; }
+            t = t * (x - xl[j]) * modinv(xl[i] - xl[j], modulo) % modulo;
+        }
+        ret = (ret + t * yl[i]) % modulo;
+    }
+    ret
+}
+
+// TODO: make test
+// xl[i] = a + d * i, O(NlogN)
+pub fn lagrange_evaluation_arithmetic(a: i64, d: i64, yl: &[i64], x: i64, modulo: i64) -> i64 {
+    let n = yl.len() as i64;
+    let mut ret = 0;
+    let mut ft = 1;
+    for i in 0..n {
+        ft = ft * (x - a - d * i) % modulo;
+    }
+    let mut f = 1;
+    for i in 1..n {
+        f = -f * i * d % modulo;
+    }
+    ret = (ret + yl[0] * ft * modinv(f * (x - a), modulo)) % modulo;
+    for i in 1..n {
+        f = f * d * i * modinv(d * (i - 1 - n), modulo) % modulo;
+        ret = (ret + yl[i as usize] * ft * modinv(f * (x - a - d * i), modulo)) % modulo
+    }
+    ret
+}
+
+// TODO: make tests
+pub fn lagrange_interpolation(xl: &[i64], yl: &[i64], modulo: i64) -> Vec<i64> {
+    let mut yl = yl.to_vec();
+    let n = xl.len();
+    for i in 0..n {
+        let mut t = 1;
+        for j in 0..n {
+            if i == j { continue; }
+            t = t * (xl[i] - xl[j]) % modulo;
+        }
+        yl[i] = yl[i] * modinv(t, modulo) % modulo;
+    }
+    let mut cur = vec![0; n + 1];
+    let mut nxt = vec![0; n + 1];
+    cur[0] = -xl[0];
+    cur[1] = 1;
+    for i in 1..n {
+        nxt[0] = cur[0] * -xl[i] % modulo;
+        for j in 1..=n {
+            nxt[j] = (cur[j] * -xl[i] + cur[j-1]) % modulo;
+        }
+        std::mem::swap(&mut cur, &mut nxt);
+    }
+    let xinv = xl.iter().map(|&v| modinv(v, modulo)).collect::<Vec<i64>>();
+    let mut ret = vec![0; n];
+    for i in 0..n {
+        if yl[i] == 0 { continue; }
+        if xl[i] == 0 {
+            for j in 0..n {
+                ret[j] = (ret[j] + cur[j+1] * yl[i]) % modulo;
+            }
+        } else {
+            ret[0] = (ret[0] - cur[0] * xinv[i] % modulo * yl[i]) % modulo;
+            let mut pre = -cur[0] * xinv[i] % modulo;
+            for j in 1..n {
+                ret[j] = (ret[j] - (cur[j] - pre) * xinv[i] % modulo * yl[i]) % modulo;
+                pre = (pre - cur[j]) * xinv[i] % modulo;
+            }
+        }
+    }
+    ret
+}
+
 #[cfg(test)]
 mod tests {
     // TODO: make tests
+
+    use super::*;
+
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    fn test_lagrange() {
+        let xl = vec![5, 6, 7, 8, 9];
+        let yl = vec![586, 985, 1534, 2257, 3178];
+        const MOD: i64 = 998244353;
+        let res = lagrange_interpolation(&xl, &yl, MOD);
+        assert_eq!(res, vec![1, 2, 3, 4, 0]);
     }
 }
