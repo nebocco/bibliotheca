@@ -73,12 +73,12 @@ mod tests {
     fn test_4x4() {
 		let a = vec![
 			vec![0, 1, 2, 3],
-			vec![2, 3, 0, 1],
-			vec![3, 0, 1, 2],
-			vec![1, 2, 3, 0],
+			vec![2, 3, -8, 1],
+			vec![3, -2, 8, 2],
+			vec![1, 2, 3, -990],
 		];
 		let (sc, x) = hungarian(&a);
-		assert_eq!(sc, 0);
+		assert_eq!(sc, -1000);
 		assert_eq!(x, vec![0, 2, 1, 3]);
     }
 }
