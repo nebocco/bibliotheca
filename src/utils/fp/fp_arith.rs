@@ -1,36 +1,52 @@
 use super::{ Fp, Mod };
-use crate::utils::algebraic_traits::{ Zero, Associative };
+use crate::utils::algebraic_traits::{ Zero, One, Associative };
 use std::ops::*;
 
-impl<M: Mod> Associative for Fp<M> {}
+impl<T: Mod> Associative for Fp<T> {}
 
-impl<M: Mod> Add for Fp<M> {
+impl<T: Mod> Zero for Fp<T> {
+    fn zero() -> Self {
+        Self::unchecked(0)
+    }
+    fn is_zero(&self) -> bool {
+        self.0 == 0
+    }
+}
+
+impl<T: Mod> One for Fp<T> {
+    fn one() -> Self {
+        Self::unchecked(1)
+    }
+    fn is_one(&self) -> bool {
+        self.0 == 1
+    }
+}
+
+impl<T: Mod> Add for Fp<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
-        Self(Self::normalize_from_the_bottom(
-            self.into_inner() + rhs.into_inner(),
-        ))
+        let res = self.0 + rhs.0;
+        Self::unchecked(if T::MOD <= res { res - T::MOD } else { res })
     }
 }
 
-impl<M: Mod> Sub for Fp<M> {
+impl<T: Mod> Sub for Fp<T> {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
-        Self(Self::normalize_from_the_top(
-            self.into_inner() - rhs.into_inner(),
-        ))
+        let res = self.0 - rhs.0;
+        Self::unchecked(if res < 0 { res + T::MOD } else { res })
     }
 }
 
-impl<M: Mod> Mul for Fp<M> {
+impl<T: Mod> Mul for Fp<T> {
     type Output = Self;
     fn mul(self, rhs: Self) -> Self {
-        Self::new(self.into_inner() * rhs.into_inner())
+        Self::new(self.0 * rhs.0)
     }
 }
 
 #[allow(clippy::suspicious_arithmetic_impl)]
-impl<M: Mod> Div for Fp<M> {
+impl<T: Mod> Div for Fp<T> {
     type Output = Self;
     fn div(self, rhs: Self) -> Self {
         self * rhs.inv()
@@ -40,21 +56,21 @@ impl<M: Mod> Div for Fp<M> {
 impl<M: Mod> Neg for Fp<M> {
     type Output = Self;
     fn neg(self) -> Self {
-        if self.into_inner() == M::Mod::zero() {
-            Self::zero()
+        if self.0 == 0 {
+            Self::unchecked(0)
         } else {
-            Self(M::MOD - self.into_inner())
+            Self::unchecked(M::MOD - self.0)
         }
     }
 }
 
 impl<M: Mod> Neg for &Fp<M> {
     type Output = Fp<M>;
-    fn neg(self) -> Fp<M> {
-        if self.into_inner() == M::Mod::zero() {
-            Fp::zero()
+    fn neg(self) -> Self::Output {
+        if self.0 == 0 {
+            Fp::unchecked(0)
         } else {
-            Fp(M::MOD - self.into_inner())
+            Fp::unchecked(M::MOD - self.0)
         }
     }
 }
@@ -80,23 +96,23 @@ forward_assign_biop! {
 macro_rules! forward_ref_binop {
     ($(impl $imp:ident, $method:ident)*) => {
         $(
-            impl<'a, M: Mod> $imp<Fp<M>> for &'a Fp<M> {
-                type Output = Fp<M>;
-                fn $method(self, other: Fp<M>) -> Self::Output {
+            impl<'a, T: Mod> $imp<Fp<T>> for &'a Fp<T> {
+                type Output = Fp<T>;
+                fn $method(self, other: Fp<T>) -> Self::Output {
                     $imp::$method(*self, other)
                 }
             }
 
-            impl<'a, M: Mod> $imp<&'a Fp<M>> for Fp<M> {
-                type Output = Fp<M>;
-                fn $method(self, other: &Fp<M>) -> Self::Output {
+            impl<'a, T: Mod> $imp<&'a Fp<T>> for Fp<T> {
+                type Output = Fp<T>;
+                fn $method(self, other: &Fp<T>) -> Self::Output {
                     $imp::$method(self, *other)
                 }
             }
 
-            impl<'a, M: Mod> $imp<&'a Fp<M>> for &'a Fp<M> {
-                type Output = Fp<M>;
-                fn $method(self, other: &Fp<M>) -> Self::Output {
+            impl<'a, T: Mod> $imp<&'a Fp<T>> for &'a Fp<T> {
+                type Output = Fp<T>;
+                fn $method(self, other: &Fp<T>) -> Self::Output {
                     $imp::$method(*self, *other)
                 }
             }

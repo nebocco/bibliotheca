@@ -1,232 +1,208 @@
-#![warn(missing_docs)]
-//! [`Add`] と [`Mul`] がなす環上の多項式です。中身は [`Vec`] です。
-//!
-//! # 構築
-//!
-//! [`new`] で構築して、[`into_inner`] で中身を取ります。
-//! [`new`] は trailing zeros を消去することに注意です。
-//!
-//! ```
-//! use bibliotheca::utils::polynomial::*;
-//! let mut f = Poly::new(vec![1, 0, 2]);
-//! let mut a = f.into_inner();
-//! a.sort_by_key(|&x| std::cmp::Reverse(x));
-//! let f = Poly::new(a);
-//! assert_eq!(f, Poly::new(vec![2, 1]));
-//! ```
-//!
-//! # トレイト実装
-//!
-//! - [`ops`] 系: [`Add`], [`AddAssign`], [`Sub`], [`SubAssign`], [`Mul`], [`MulAssign`]
-//! - [`fmt`] 系: [`Debug`]
-//! - [`type_traits`] 系: [`Zero`], [`One`]
-//!
-//!
-//! # ライブラリ連携
-//!
-//! [`fp`] に対応しています。
-//!
-//! ```
-//! use bibliotheca::utils::polynomial::*;
-//! type Fp = bibliotheca::utils::fp::aliases::F998244353;
-//! assert_eq!(
-//!     Poly::new(vec![Fp::new(1), Fp::new(1)]).pow(2),
-//!     Poly::new(vec![Fp::new(1), Fp::new(2), Fp::new(1)])
-//! );
-//! ```
-//!
-//! [`new`]: struct.Poly.html#method.new
-//! [`into_inner`]: struct.Poly.html#method.into_inner
-//!
-//! [`type_traits`]: ../type_traits/index.html
-//! [`Zero`]: ../type_traits/trait.Zero.html
-//! [`One`]: ../type_traits/trait.One.html
-//! [`fp`]: ../fp/indx.html
-//!
-//! [`slice`]: https://doc.rust-lang.org/std/primitive/slice.html
-//! [`ops`]: https://doc.rust-lang.org/std/ops/index.html
-//! [`fmt`]: https://doc.rust-lang.org/std/fmt/index.html
-//! [`Vec`]: https://doc.rust-lang.org/std/vec/struct.Vec.html
-//! [`Add`]: https://doc.rust-lang.org/std/ops/trait.Add.html
-//! [`Sub`]: https://doc.rust-lang.org/std/ops/trait.Sub.html
-//! [`Mul`]: https://doc.rust-lang.org/std/ops/trait.Mul.html
-//! [`AddAssign`]: https://doc.rust-lang.org/std/ops/trait.AddAssign.html
-//! [`SubAssign`]: https://doc.rust-lang.org/std/ops/trait.SubAssign.html
-//! [`MulAssign`]: https://doc.rust-lang.org/std/ops/trait.MulAssign.html
-//! [`Debug`]: https://doc.rust-lang.org/std/ops/trait.Debug.html
+use crate::utils::{
+    algebraic_traits::{ One, Zero },
+    fp::{ Fp, Mod },
+    transform,
+};
 
-use crate::utils::algebraic_traits::{ One, Ring, Zero };
+// ---------- begin polynomial ----------
 
 mod poly_arith;
 
-/// 多項式です。値型は [`Copy`](https://doc.rust-lang.org/std/ops/trait.Debug.html)
-/// と [`Ring`](../type_traits/traits.Ring.html) を満たすことが要求されます。
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Poly<T>(Vec<T>);
+#[derive(Clone, PartialEq, Eq)]
+pub struct Polynomial<T>(Vec<Fp<T>>);
 
-impl<T: Ring + Copy> Poly<T> {
-    /// [`Vec`](https://doc.rust-lang.org/std/vec/struct.Vec.html) から trailing zeros を消して
-    /// キャストします。
-    pub fn new(mut src: Vec<T>) -> Self {
-        Poly::remove_trailig_zeros(&mut src);
-        Poly(src)
+
+impl<T: Mod> Polynomial<T> {
+    pub fn new(a: Vec<Fp<T>>) -> Self {
+        let mut a = Self(a); a.fix();
+        a
     }
 
-    /// [`Vec`](https://doc.rust-lang.org/std/vec/struct.Vec.html) にキャストします。
-    pub fn into_inner(self) -> Vec<T> {
-        self.0
+    pub fn from_slice(a: &[Fp<T>]) -> Self {
+        Self::new(a.to_vec())
     }
 
-    /// 塁乗をします。
-    pub fn pow(mut self, mut b: u64) -> Poly<T> {
-        let mut res = Poly::one();
-        while b != 0 {
-            if b % 2 == 1 {
-                res *= self.clone();
+    pub fn get(&self, x: usize) -> Fp<T> {
+        self.0.get(x).cloned().unwrap_or(Fp::zero())
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    fn resize(&mut self, n: usize) {
+        self.0.resize(n, Fp::zero());
+    }
+
+    pub fn reverse(&self, n: usize) -> Self {
+        assert!(self.len() >= n);
+        let mut a = self.0.clone();
+        a.resize(n, Fp::zero());
+        a.reverse();
+        Self::new(a)
+    }
+
+    pub fn truncate(&self, n: usize) -> Self {
+        let mut b = self.0.clone();
+        b.truncate(n);
+        Polynomial::new(b)
+    }
+
+    pub fn eval(&self, x: Fp<T>) -> Fp<T> {
+        let mut ans = Fp::zero();
+        for a in self.0.iter().rev() {
+            ans = ans * x + *a;
+        }
+        ans
+    }
+
+    pub fn fix(&mut self) {
+        while self.0.last().map_or(false, Fp::is_zero) {
+            self.0.pop();
+        }
+    }
+
+    pub fn derivative(&self) -> Self {
+        if self.len() < 2 {
+            return Polynomial::zero();
+        }
+        let b = self.0.iter().skip(1).enumerate()
+        .map(|(i, a)| *a * Fp::new((i + 1) as i64)).collect();
+        Polynomial::new(b)
+    }
+
+    pub fn integral(&self) -> Self {
+        if self.len() < 1 {
+            return Polynomial::zero();
+        }
+        let mut b = vec![Fp::zero(); self.len() + 1];
+        let mut inv = vec![Fp::one(); self.len() + 1];
+        b[1] = self.0[0];
+        for (i, (b, a)) in b[1..].iter_mut().zip(self.0.iter()).enumerate().skip(1) {
+            let k = i + 1;
+            inv[k] = -inv[T::MOD as usize % k] * Fp::new(T::MOD / k as i64);
+            *b = *a * inv[k];
+        }
+        Polynomial::new(b)
+    }
+}
+impl<T: transform::NTTFriendly> Polynomial<T> {
+
+    pub fn inverse(&self, n: usize) -> Self {
+        let len = n.next_power_of_two();
+        assert!(2 * len <= T::order());
+        let mut b = Vec::with_capacity(len);
+        b.push(self.0[0].inv());
+        let mut f = Vec::with_capacity(2 * len);
+        let mut g = Vec::with_capacity(2 * len);
+        let mut size = 1;
+        while b.len() < n {
+            size <<= 1;
+            f.clear();
+            f.extend_from_slice(&b);
+            f.resize(2 * size, Fp::zero());
+            g.clear();
+            if self.0.len() >= size {
+                g.extend_from_slice(&self.0[..size]);
+            } else {
+                g.extend_from_slice(&self.0);
             }
-            self *= self.clone();
-            b /= 2
+            g.resize(2 * size, Fp::zero());
+            transform::ntt(&mut f);
+            transform::ntt(&mut g);
+            for (g, f) in g.iter_mut().zip(f.iter()) {
+                *g *= *f * *f;
+            }
+            transform::intt(&mut g);
+            b.resize(size, Fp::zero());
+            for (b, g) in b.iter_mut().zip(g.iter()) {
+                *b = *b + *b - *g;
+            }
         }
-        res
+        b.truncate(n);
+        Polynomial::new(b)
     }
 
-    fn remove_trailig_zeros(a: &mut Vec<T>) {
-        while a.last().map(T::is_zero).unwrap_or(false) {
-            a.pop();
+    pub fn div_rem(&self, rhs: &Self) -> (Self, Self) {
+        let n = self.len();
+        let m = rhs.len();
+        assert!(m > 0);
+        if n < m {
+            return (Polynomial::zero(), self.clone());
         }
+        let ia = self.reverse(n).truncate(n - m + 1);
+        let ib = rhs.reverse(m).inverse(n - m + 1);
+        let id = (ia * ib).truncate(n - m + 1);
+        let div = id.reverse(n - m + 1);
+        let rem = self - (rhs * &div).truncate(m - 1);
+        (div, rem)
+    }
+
+    pub fn rem(&self, rhs: &Self) -> Self {
+        self.div_rem(rhs).1
+    }
+
+    pub fn log(&self, n: usize) -> Self {
+        assert!(self.len() > 0 && self.0[0].is_one());
+        (self.derivative() * self.inverse(n)).truncate(n - 1).integral()
+    }
+
+    pub fn exp(&self, n: usize) -> Self {
+        assert!(self.0.get(0).map_or(true, Fp::is_zero) && n <= T::order());
+        let mut b = Polynomial::new(vec![Fp::one()]);
+        for size in std::iter::successors(Some(1), |&x| Some(x << 1)).take_while(|&x| x < n) {
+            let f = b.log(size);
+            let f = Polynomial::from_slice(&self.0[..std::cmp::min(self.len(), size)]) - f;
+            b += (&b * f).truncate(size);
+        }
+        b.truncate(n)
+    }
+
+    pub fn multi_eval(&self, x: &[Fp<T>]) -> Vec<Fp<T>> {
+        let size = x.len().next_power_of_two();
+        let mut seg = vec![Some(Polynomial::one()); 2 * size];
+        for (seg, x) in seg[size..].iter_mut().zip(x.iter()) {
+            *seg = Some(Polynomial::from_slice(&[-*x, Fp::one()]));
+        }
+        for i in (1..size).rev() {
+            seg[i] = Some(
+                seg[2 * i] .as_ref().unwrap() *
+                seg[2 * i + 1].as_ref().unwrap()
+            );
+        }
+        let mut rem = vec![None; 2 * size];
+        rem[1] = Some(self.rem(&seg[1].take().unwrap()));
+        for i in 1..size {
+            let a = rem[i].take().unwrap();
+            rem[2 * i] = Some(a.rem(&seg[2 * i].take().unwrap()));
+            rem[2 * i + 1] = Some(a.rem(&seg[2 * i + 1].take().unwrap()));
+        }
+        let mut ans = Vec::with_capacity(x.len());
+        for a in rem[size..].iter_mut().take(x.len()) {
+            ans.push(a.take().unwrap().get(0));
+        }
+        ans
+    }
+    pub fn interpolation(x: &[Fp<T>], y: &[Fp<T>]) -> Self {
+        assert!(x.len() > 0 && x.len() == y.len());
+        let size = x.len().next_power_of_two();
+        let mut p = vec![Polynomial::one(); 2 * size];
+        for (p, x) in p[size..].iter_mut().zip(x.iter()) {
+            *p = Polynomial::new(vec![-*x, Fp::one()]);
+        }
+        for i in (1..size).rev() {
+            p[i] = &p[2 * i] * &p[2 * i + 1];
+        }
+        let z = p[1].derivative().multi_eval(x);
+        let mut a = vec![Polynomial::zero(); 2 * size];
+        for (a, (z, y)) in a[size..].iter_mut().zip(z.iter().zip(y.iter())) {
+            *a = Polynomial::new(vec![*y * z.inv()]);
+        }
+        for i in (1..size).rev() {
+            a[i] = &a[2 * i] * &p[2 * i + 1] + &a[2 * i + 1] * &p[2 * i];
+        }
+        a.swap_remove(1)
     }
 }
 
-impl<T: Ring + Copy> Default for Poly<T> {
-    fn default() -> Poly<T> {
-        Poly(Vec::new())
-    }
-}
-
-impl<T: Ring + Copy> Zero for Poly<T> {
-    fn zero() -> Poly<T> {
-        Poly(Vec::new())
-    }
-    fn is_zero(&self) -> bool {
-        self == &Self::zero()
-    }
-}
-
-impl<T: Ring + Copy> One for Poly<T> {
-    fn one() -> Poly<T> {
-        Poly(vec![T::one()])
-    }
-    fn is_one(&self) -> bool {
-        self == &Self::one()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    type Fp = crate::utils::fp::F998244353;
-
-    #[test]
-    fn test_call_method_of_vec() {
-        let mut f = Poly::new(vec![1, 0, 2]);
-        f.0.sort();
-        assert_eq!(f, Poly::new(vec![0, 1, 2]));
-    }
-
-    #[test]
-    fn test_add_hand() {
-        // len(a) < len(b)
-        assert_eq!(
-            Poly::new(vec![0, 1]) + Poly::new(vec![2, 3, 4]),
-            Poly::new(vec![2, 4, 4])
-        );
-
-        // len(a) > len(b)
-        assert_eq!(
-            Poly::new(vec![0, 1, 2]) + Poly::new(vec![3, 4]),
-            Poly::new(vec![3, 5, 2])
-        );
-
-        // Trailing zeros
-        assert_eq!(
-            Poly::new(vec![0, 1, 2]) + Poly::new(vec![0, 1, -2]),
-            Poly::new(vec![0, 2])
-        );
-        assert_eq!(
-            Poly::new(vec![0, 1, 2]) + Poly::new(vec![0, -1, -2]),
-            Poly::new(Vec::new())
-        );
-    }
-
-    #[test]
-    fn test_sub_hand() {
-        // len(a) < len(b)
-        assert_eq!(
-            Poly::new(vec![0, 1]) - Poly::new(vec![2, 3, 4]),
-            Poly::new(vec![-2, -2, -4])
-        );
-
-        // len(a) > len(b)
-        assert_eq!(
-            Poly::new(vec![0, 1, 2]) - Poly::new(vec![3, 4]),
-            Poly::new(vec![-3, -3, 2])
-        );
-
-        // Trailing zeros
-        assert_eq!(
-            Poly::new(vec![0, 1, 2]) - Poly::new(vec![0, -1, 2]),
-            Poly::new(vec![0, 2])
-        );
-        assert_eq!(
-            Poly::new(vec![0, 1, 2]) - Poly::new(vec![0, 1, 2]),
-            Poly::new(Vec::new())
-        );
-    }
-
-    #[test]
-    fn test_mul_hand() {
-        assert_eq!(
-            Poly::new(vec![0, 1]) * Poly::new(vec![2, 3, 4]),
-            Poly::new(vec![0, 2, 3, 4])
-        );
-
-        assert_eq!(
-            Poly::new(vec![0, 1, 2]) * Poly::new(vec![3, 4]),
-            Poly::new(vec![0, 3, 10, 8])
-        );
-
-        assert_eq!(
-            Poly::new(vec![0, 1, 2]) * Poly::new(vec![0, -1, 2]),
-            Poly::new(vec![0, 0, -1, 0, 4])
-        );
-        assert_eq!(
-            Poly::new(vec![0, 1, 2]) * Poly::new(vec![0, 1, 2]),
-            Poly::new(vec![0, 0, 1, 4, 4])
-        );
-    }
-
-    #[test]
-    fn test_pow_hand() {
-        assert_eq!(Poly::new(vec![1, 2]).pow(0), Poly::one());
-        assert_eq!(Poly::new(vec![1, 2]).pow(1), Poly::new(vec![1, 2]));
-        assert_eq!(Poly::new(vec![1, 2]).pow(2), Poly::new(vec![1, 4, 4]));
-        assert_eq!(Poly::new(vec![1, 2]).pow(3), Poly::new(vec![1, 6, 12, 8]));
-    }
-
-    #[test]
-    fn test_fp() {
-        assert_eq!(Poly::new(vec![Fp::new(1), Fp::new(2)]).pow(0), Poly::one());
-        assert_eq!(
-            Poly::new(vec![Fp::new(1), Fp::new(2)]).pow(1),
-            Poly::new(vec![Fp::new(1), Fp::new(2)])
-        );
-        assert_eq!(
-            Poly::new(vec![Fp::new(1), Fp::new(2)]).pow(2),
-            Poly::new(vec![Fp::new(1), Fp::new(4), Fp::new(4)])
-        );
-        assert_eq!(
-            Poly::new(vec![Fp::new(1), Fp::new(2)]).pow(3),
-            Poly::new(vec![Fp::new(1), Fp::new(6), Fp::new(12), Fp::new(8)])
-        );
-    }
-}
+// ---------- begin polynomial ----------
