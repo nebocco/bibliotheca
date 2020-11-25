@@ -1,5 +1,5 @@
 pub fn gcd(mut a: i64, mut b: i64) -> i64 {
-    while b > 0 {
+    while b != 0 {
         a %= b;
         std::mem::swap(&mut a, &mut b);
     }
@@ -27,13 +27,15 @@ pub fn modpow(x: i64, mut y: i64, modulo: i64) -> i64 {
     ret
 }
 
-pub fn modinv(x: i64, modulo: i64) -> i64 {
+pub fn modinv(mut x: i64, modulo: i64) -> i64 {
+    x %= modulo;
+    if x < 0 { x += modulo; }
     let mut ret = extgcd(x, modulo).0 % modulo;
     if ret < 0 { ret += modulo; }
     ret
 }
 
-// return (x, y) s.t. a * x + b * y = 1
+// return (x, y) s.t. a * x + b * y = gcd(a, b)
 pub fn extgcd(a: i64, b: i64) -> (i64, i64) {
     let mut x1 = 1;
     let mut y1 = 0;
@@ -150,44 +152,27 @@ pub fn sum_of_floor(mut n:i64, mut m:i64, mut a:i64, mut b:i64) -> i64 {
     s
 }
 
-// TODO: make test
+
 // O(N**2)
 pub fn lagrange_evaluation(xl: &[i64], yl: &[i64], x: i64, modulo: i64) -> i64 {
     let n = xl.len();
     let mut ret = 0;
     for i in 0..n {
         let mut t = 1;
+        let mut inv = 1;
         for j in 0..n {
             if i == j { continue; }
-            t = t * (x - xl[j]) * modinv(xl[i] - xl[j], modulo) % modulo;
+            t = t * (x - xl[j]) % modulo;
+            inv = inv * ( xl[i] - xl[j] ) % modulo;
         }
+        t = t * modinv(inv, modulo) % modulo;
         ret = (ret + t * yl[i]) % modulo;
     }
+    if ret < 0 { ret += modulo; }
     ret
 }
 
-// TODO: make test
-// xl[i] = a + d * i, O(NlogN)
-pub fn lagrange_evaluation_arithmetic(a: i64, d: i64, yl: &[i64], x: i64, modulo: i64) -> i64 {
-    let n = yl.len() as i64;
-    let mut ret = 0;
-    let mut ft = 1;
-    for i in 0..n {
-        ft = ft * (x - a - d * i) % modulo;
-    }
-    let mut f = 1;
-    for i in 1..n {
-        f = -f * i * d % modulo;
-    }
-    ret = (ret + yl[0] * ft * modinv(f * (x - a), modulo)) % modulo;
-    for i in 1..n {
-        f = f * d * i * modinv(d * (i - 1 - n), modulo) % modulo;
-        ret = (ret + yl[i as usize] * ft * modinv(f * (x - a - d * i), modulo)) % modulo
-    }
-    ret
-}
-
-// TODO: make tests
+// O(N^2)
 pub fn lagrange_interpolation(xl: &[i64], yl: &[i64], modulo: i64) -> Vec<i64> {
     let mut yl = yl.to_vec();
     let n = xl.len();
@@ -227,21 +212,112 @@ pub fn lagrange_interpolation(xl: &[i64], yl: &[i64], modulo: i64) -> Vec<i64> {
             }
         }
     }
+    ret.iter_mut().for_each(|x| { if *x < 0 { *x += modulo; }});
     ret
 }
 
 #[cfg(test)]
 mod tests {
     // TODO: make tests
-
     use super::*;
+    use rand::Rng;
 
     #[test]
-    fn test_lagrange() {
+    fn test_extgcd() {
+        let query = vec![(7, 9), (-18, 8), (100, -9), (100, 178)];
+        for &(a, b) in &query {
+            let (x, y) = extgcd(a, b);
+            assert_eq!(a * x + b * y, gcd(a, b));
+        }
+    }
+
+    #[test]
+    fn rand_extgcd() {
+        let mut rng = rand::thread_rng();
+        let tasks = 1000;
+        for _ in 0..tasks {
+            let a = rng.gen::<i32>() as i64;
+            let b = rng.gen::<i32>() as i64;
+            let (x, y) = extgcd(a, b);
+            assert_eq!(a * x + b * y, gcd(a, b));
+        }
+    }
+
+    #[test]
+    fn rand_modinv() {
+        let mod1 = 998_244_353;
+        let mod2 = 1_000_000_007;
+        let mut rng = rand::thread_rng();
+        let tasks = 1000;
+        for _ in 0..tasks {
+            let a = rng.gen::<i32>() as i64;
+            assert_eq!((a * modinv(a, mod1) % mod1 + mod1) % mod1, 1);
+            assert_eq!((a * modinv(a, mod2) % mod2 + mod2) % mod2, 1);
+        }
+    }
+
+    #[test]
+    fn test_evaluation() {
+        let modulo = 1_000_000_007;
+        let coef = vec![7, 9, 1, 0, 5];
+        let xl = vec![8, 2, 3, 0, 1];
+        let yl = calculate_yl(&xl, &coef, modulo);
+        assert_eq!(lagrange_evaluation(&xl, &yl, 10, modulo), calculate_y(10, &coef, modulo));
+    }
+
+    #[test]
+    fn rand_evaluation() {
+        const MOD: i64 = 998244353;
+        let mut rng = rand::thread_rng();
+        let tasks = 300;
+        for _ in 0..tasks {
+            let n: usize = rng.gen_range(5, 300);
+            let coef: Vec<i64> = (0..n).map(|_| rng.gen::<i64>() % MOD).collect();
+            let xl: Vec<i64> = (0..n).map(|_| rng.gen::<i64>() % MOD).collect();
+            let x = rng.gen::<i64>() % MOD;
+            let yl = calculate_yl(&xl, &coef, MOD);
+            assert_eq!(lagrange_evaluation(&xl, &yl, x, MOD), calculate_y(x, &coef, MOD));
+
+        }
+    }
+
+    #[test]
+    fn test_interpolation() {
         let xl = vec![5, 6, 7, 8, 9];
         let yl = vec![586, 985, 1534, 2257, 3178];
         const MOD: i64 = 998244353;
         let res = lagrange_interpolation(&xl, &yl, MOD);
         assert_eq!(res, vec![1, 2, 3, 4, 0]);
+    }
+
+    #[test]
+    fn rand_interpolation() {
+        const MOD: i64 = 998244353;
+        let mut rng = rand::thread_rng();
+        let tasks = 200;
+        for _ in 0..tasks {
+            let n: usize = rng.gen_range(5, 300);
+            let mut coef: Vec<i64> = (0..n).map(|_| rng.gen::<i64>() % MOD).collect();
+            let xl: Vec<i64> = (0..n).map(|_| rng.gen::<i64>() % MOD).collect();
+            let yl = calculate_yl(&xl, &coef, MOD);
+            coef.iter_mut().for_each(|x| { if *x < 0 { *x += MOD; }});
+            assert_eq!(lagrange_interpolation(&xl, &yl, MOD), coef);
+
+        }
+    }
+
+    fn calculate_y(x: i64, coef: &[i64], modulo: i64) -> i64 {
+        let mut ret = 0;
+        let mut v = 1;
+        coef.iter().for_each(|&c| {
+            ret = (ret + c * v) % modulo;
+            v = v * x % modulo;
+        });
+        if ret < 0 { ret += modulo; }
+        ret
+    }
+
+    fn calculate_yl(xl: &[i64], coef: &[i64], modulo: i64) -> Vec<i64> {
+        xl.iter().map(|&x| calculate_y(x, coef, modulo)).collect()
     }
 }

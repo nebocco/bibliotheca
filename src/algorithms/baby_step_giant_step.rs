@@ -2,23 +2,46 @@ use crate::utils::math::modpow;
 
 use std::collections::HashMap;
 
+// * verified: https://judge.yosupo.jp/submission/30687
 /// solve k s.t. x.pow(k) === y (mod M)
 pub fn baby_giant(x: i64, y: i64, modulo: i64) -> Option<i64> {
-    let mut dic: HashMap<i64, i64> = HashMap::new();
-    dic.insert(1, 0);
-    let sq = (modulo as f64).sqrt() as i64 + 1;
-    let mut z = 1;
-    for i in 1..sq+1 {
-        z = z * x % modulo;
-        dic.insert(z, i);
-    }
-    let mut y = y;
-    let r = modpow(z, modulo - 2, modulo); // r = x ^ (-sq)
-    for i in 0..sq+1 {
-        if let Some(v) = dic.get(&y) {
-            return Some(v + i * sq);
+    if (y - 1) % modulo == 0 { return Some(0); }
+    if y == 0 {
+        let (mut lo, mut hi) = (0, modulo);
+        while hi - lo > 1 {
+            let mid = (hi + lo) / 2;
+            if modpow(x, mid, modulo) == 0 {
+                hi = mid;
+            } else {
+                lo = mid;
+            }
         }
-        y = y * r % modulo;
+        return if modpow(x, hi, modulo) == 0 {
+            Some(hi)
+        } else {
+            None
+        };
+    }
+    let mut dic: HashMap<i64, i64> = HashMap::new();
+    let sq = (modulo as f64).sqrt() as i64 + 1;
+    let mut z = y;
+    for i in 0..sq {
+        // dic[y * x ^ i] = i
+        dic.insert(z, i);
+        z = z * x % modulo;
+    }
+    let r = modpow(x, sq, modulo); // r = x ^ (-sq)
+    let mut c = 1;
+    for i in 1..=sq {
+        c = c * r % modulo;
+        if let Some(v) = dic.get(&c) {
+            let res = i * sq - v;
+            return if modpow(x, res, modulo) == y {
+                Some(res)
+            } else {
+                None
+            };
+        }
     }
     None
 }
