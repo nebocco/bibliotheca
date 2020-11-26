@@ -1,3 +1,5 @@
+// * verified: https://judge.yosupo.jp/submission/30784
+// TODO: should be faster
 // ------------ Li Chao Tree start ------------
 
 use std::ops::{ Add, Mul };
@@ -112,9 +114,20 @@ impl<T: LineNumber> LiChaoTree<T> {
 
 #[cfg(test)]
 mod tests {
-    // TODO: make tests
+    use super::*;
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    fn test_lct() {
+        let xs = vec![-5, -1, 0, 1, 2];
+        let mut lct = LiChaoTree::new(&xs);
+        lct.add_line(Line::new(-1, -1));
+        lct.add_line(Line::new(0, 1));
+        assert_eq!(lct.get_min(1).unwrap(), 0);
+        assert_eq!(lct.get_min(0).unwrap(), 1);
+        assert_eq!(lct.get_min(2).unwrap(), -1);
+        assert_eq!(lct.get_min(4).unwrap(), -3);
+        lct.add_line(Line::new(0, -10));
+        assert_eq!(lct.get_min(1).unwrap(), -10);
+        assert_eq!(lct.get_min(3).unwrap(), -10);
+        assert_eq!(lct.get_min(4).unwrap(), -10);
     }
 }
