@@ -41,7 +41,7 @@ impl HeavyLightDecomposition {
 			if v < n {
 				st.push(!v);
 				if let Some(k) = graph[v].iter().position(|&u| u == parent[v]) {
-					graph.swap_remove(k);
+					graph[v].swap_remove(k);
 				}
 				graph[v].iter().for_each(|&u| { parent[u] = v; st.push(u); });
 			} else {

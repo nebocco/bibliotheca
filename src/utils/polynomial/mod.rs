@@ -30,7 +30,7 @@ impl<T: Mod> Polynomial<T> {
         self.0.len()
     }
 
-    fn resize(&mut self, n: usize) {
+    pub fn resize(&mut self, n: usize) {
         self.0.resize(n, Fp::zero());
     }
 
@@ -196,7 +196,7 @@ impl<T: transform::NTTFriendly> Polynomial<T> {
         let z = p[1].derivative().multi_eval(x);
         let mut a = vec![Polynomial::zero(); 2 * size];
         for (a, (z, y)) in a[size..].iter_mut().zip(z.iter().zip(y.iter())) {
-            *a = Polynomial::new(vec![*y * z.inv()]);
+            *a = Polynomial::new(vec![y * z.inv()]);
         }
         for i in (1..size).rev() {
             a[i] = &a[2 * i] * &p[2 * i + 1] + &a[2 * i + 1] * &p[2 * i];

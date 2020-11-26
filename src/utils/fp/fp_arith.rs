@@ -5,21 +5,13 @@ use std::ops::*;
 impl<T: Mod> Associative for Fp<T> {}
 
 impl<T: Mod> Zero for Fp<T> {
-    fn zero() -> Self {
-        Self::unchecked(0)
-    }
-    fn is_zero(&self) -> bool {
-        self.0 == 0
-    }
+    fn zero() -> Self { Self::unchecked(0) }
+    fn is_zero(&self) -> bool { self.0 == 0 }
 }
 
 impl<T: Mod> One for Fp<T> {
-    fn one() -> Self {
-        Self::unchecked(1)
-    }
-    fn is_one(&self) -> bool {
-        self.0 == 1
-    }
+    fn one() -> Self { Self::unchecked(1) }
+    fn is_one(&self) -> bool { self.0 == 1 }
 }
 
 impl<T: Mod> Add for Fp<T> {

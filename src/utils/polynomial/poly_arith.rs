@@ -150,17 +150,20 @@ impl<'a, T: transform::NTTFriendly> Mul<&'a Polynomial<T>> for &'a Polynomial<T>
     }
 }
 
-// impl<T: Mod> AddAssign for Polynomial<T> {
-//     fn add_assign(&mut self, rhs: Self) {
-//         self.resize(std::cmp::max(self.len(), rhs.len()));
-//         for (ans, a) in self.0.iter_mut().zip(rhs.0.iter()) {
-//             *ans += *a;
-//         }
-//     }
-// }
-
 impl<T: Mod> AddAssign for Polynomial<T> {
     fn add_assign(&mut self, rhs: Self) {
-        *self = self + rhs;
+        *self = (self as &_) + rhs;
+    }
+}
+
+impl<T: Mod> SubAssign for Polynomial<T> {
+    fn sub_assign(&mut self, rhs: Self) {
+        *self = (self as &_) - rhs;
+    }
+}
+
+impl<T: transform::NTTFriendly> MulAssign for Polynomial<T> {
+    fn mul_assign(&mut self, rhs: Self) {
+        *self = (self as &_) * rhs;
     }
 }

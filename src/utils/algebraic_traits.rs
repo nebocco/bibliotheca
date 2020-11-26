@@ -1,5 +1,5 @@
 use std::marker::Sized;
-use std::ops::{Add, Mul, Div, Neg, AddAssign, MulAssign, DivAssign};
+use std::ops::*;
 
 /// 元
 pub trait Element: Sized + Clone + PartialEq {}

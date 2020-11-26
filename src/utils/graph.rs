@@ -19,27 +19,27 @@ pub trait Cost:
 }
 
 #[derive(Copy, Clone)]
-pub struct Edge<C: Cost> {
+pub struct Edge<C: Element> {
     // pub from: usize,
     pub to: usize,
     pub cost: C,
     // pub id: usize
 }
 
-pub struct UndirectedGraph<C: Cost>(pub Vec<Vec<Edge<C>>>);
-pub struct DirectedGraph<C: Cost>{
+pub struct UndirectedGraph<C: Element>(pub Vec<Vec<Edge<C>>>);
+pub struct DirectedGraph<C: Element>{
     pub forward: Vec<Vec<Edge<C>>>,
     pub backward: Vec<Vec<Edge<C>>>
 }
 
-pub trait Graph<C: Cost> {
+pub trait Graph<C: Element> {
     fn new(size: usize) -> Self;
     fn size(&self) -> usize;
     fn add_edge(&mut self, u: usize, v: usize, cost: C);
     fn edges_from(&self, v: usize) -> std::slice::Iter<Edge<C>>;
 }
 
-impl<C: Cost> Graph<C> for UndirectedGraph<C> {
+impl<C: Element> Graph<C> for UndirectedGraph<C> {
     fn new(size: usize) -> Self {
         Self(vec![Vec::<Edge<C>>::new(); size])
     }
@@ -49,8 +49,8 @@ impl<C: Cost> Graph<C> for UndirectedGraph<C> {
     }
 
     fn add_edge(&mut self, u: usize, v: usize, cost: C) {
-        self.0[u].push(Edge{ to: v, cost });
-        self.0[v].push(Edge{ to: u, cost });
+        self.0[u].push(Edge{ to: v, cost: cost.clone() });
+        self.0[v].push(Edge{ to: u, cost: cost.clone() });
     }
 
     fn edges_from(&self, v: usize) -> std::slice::Iter<Edge<C>> {
@@ -58,7 +58,7 @@ impl<C: Cost> Graph<C> for UndirectedGraph<C> {
     }
 }
 
-impl<C: Cost> Graph<C> for DirectedGraph<C> {
+impl<C: Element> Graph<C> for DirectedGraph<C> {
     fn new(size: usize) -> Self {
         Self {
             forward: vec![Vec::<Edge<C>>::new(); size],
@@ -71,8 +71,8 @@ impl<C: Cost> Graph<C> for DirectedGraph<C> {
     }
 
     fn add_edge(&mut self, u: usize, v: usize, cost: C) {
-        self.forward[u].push(Edge{ to: v, cost });
-        self.backward[v].push(Edge{ to: u, cost });
+        self.forward[u].push(Edge{ to: v, cost: cost.clone() });
+        self.backward[v].push(Edge{ to: u, cost: cost.clone() });
     }
 
     fn edges_from(&self, v: usize) -> std::slice::Iter<Edge<C>> {
