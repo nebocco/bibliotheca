@@ -73,10 +73,16 @@ macro_rules! impl_parse_int {
 			impl Scan for $t {
 				fn scan(s: &mut IO) -> Self {
 					let mut res = 0;
+					let mut neg = false;
 					for d in s.scan_raw() {
-						res *= 10;
-						res += (*d - b'0') as $t;
+						if *d == b'-' {
+							neg = true;
+						} else {
+							res *= 10;
+							res += (*d - b'0') as $t;
+						}
 					}
+					if neg { res = res.wrapping_neg(); }
 					res
 				}
 			}
@@ -84,7 +90,7 @@ macro_rules! impl_parse_int {
 	};
 }
 
-impl_parse_int!(i32, i64, isize, u32, u64, usize);
+impl_parse_int!(i16, i32, i64, isize, u16, u32, u64, usize);
 
 impl<T: Scan, U: Scan> Scan for (T, U) {
 	fn scan(s: &mut IO) -> Self {
@@ -95,6 +101,12 @@ impl<T: Scan, U: Scan> Scan for (T, U) {
 impl<T: Scan, U: Scan, V: Scan> Scan for (T, U, V) {
 	fn scan(s: &mut IO) -> Self {
 		(T::scan(s), U::scan(s), V::scan(s))
+	}
+}
+
+impl<T: Scan, U: Scan, V: Scan, W: Scan> Scan for (T, U, V, W) {
+	fn scan(s: &mut IO) -> Self {
+		(T::scan(s), U::scan(s), V::scan(s), W::scan(s))
 	}
 }
 
@@ -114,7 +126,7 @@ macro_rules! impl_print_int {
 	};
 }
 
-impl_print_int!(i32, i64, isize, u32, u64, usize);
+impl_print_int!(i16, i32, i64, isize, u16, u32, u64, usize);
 
 impl Print for u8 {
 	fn print(w: &mut IO, x: Self) {

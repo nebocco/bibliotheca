@@ -57,6 +57,7 @@ impl BitAnd for BitSet {
         self
     }
 }
+
 impl BitOr for BitSet {
     type Output = Self;
     fn bitor(mut self, rhs: Self) -> Self {
@@ -68,6 +69,7 @@ impl BitOr for BitSet {
         self
     }
 }
+
 impl BitXor for BitSet {
     type Output = Self;
     fn bitxor(mut self, rhs: Self) -> Self {
@@ -79,6 +81,7 @@ impl BitXor for BitSet {
         self
     }
 }
+
 impl Not for BitSet {
     type Output = Self;
     fn not(mut self) -> Self {
@@ -206,6 +209,4 @@ mod tests {
         a = a << 600;
         assert_eq!(a.collect(), vec![]);
     }
-
-
 }

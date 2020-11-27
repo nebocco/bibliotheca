@@ -78,6 +78,7 @@ macro_rules! forward_assign_biop {
         )*
     };
 }
+
 forward_assign_biop! {
     impl AddAssign, add_assign, add
     impl SubAssign, sub_assign, sub
@@ -111,6 +112,7 @@ macro_rules! forward_ref_binop {
         )*
     };
 }
+
 forward_ref_binop! {
     impl Add, add
     impl Sub, sub

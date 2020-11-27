@@ -43,21 +43,18 @@ impl<T: LineNumber> LiChaoTree<T> {
                 let br = line.get(self.xs[r - 1]) < li.get(self.xs[r - 1]);
                 if bm {
                     self.node[i] = Some(std::mem::replace(&mut line, li));
-                }
-                else {
+                } else {
                     self.node[i] = Some(li)
                 }
                 if bl == br { break; }
                 if bl != bm {
                     r = m;
                     i <<= 1;
-                }
-                else {
+                } else {
                     l = m;
                     i = (i << 1) + 1;
                 }
-            }
-            else {
+            } else {
                 self.node[i] = Some(line);
                 break
             };
