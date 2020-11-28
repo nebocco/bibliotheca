@@ -1,17 +1,17 @@
 use crate::utils::{
-    algebraic_traits::{ ComMonoid, ComGroup },
+    algebraic_traits::{ Monoid, Group },
     bounds::bounds_within,
 };
+use std::ops::{ Range, RangeBounds };
+
 
 // * verified: https://judge.yosupo.jp/submission/28326, https://judge.yosupo.jp/submission/29570
 // ------------ FenwickTree with generics start ------------
 
-use std::ops::{ Range, RangeBounds };
-
 #[derive(Clone, Debug)]
 pub struct FenwickTree<T>(Vec<T>);
 
-impl<T: ComMonoid> FenwickTree<T> {
+impl<T: Monoid> FenwickTree<T> {
     #[inline]
     fn lsb(x: usize) -> usize {
         x & x.wrapping_neg()
@@ -23,20 +23,39 @@ impl<T: ComMonoid> FenwickTree<T> {
 
     pub fn prefix_sum(&self, i: usize) -> T {
         std::iter::successors(Some(i), |&i| Some(i - Self::lsb(i)))
-            .take_while(|&i| i != 0)
-            .map(|i| self.0[i].clone())
-            .fold(T::zero(), |sum, x| sum + x)
+        .take_while(|&i| i != 0)
+        .map(|i| self.0[i].clone())
+        .fold(T::zero(), |sum, x| sum + x)
     }
 
     pub fn add(&mut self, i: usize, x: T) {
         let n = self.0.len();
         std::iter::successors(Some(i + 1), |&i| Some(i + Self::lsb(i)))
-            .take_while(|&i| i < n)
-            .for_each(|i| self.0[i] = self.0[i].clone() + x.clone());
+        .take_while(|&i| i < n)
+        .for_each(|i| self.0[i] = self.0[i].clone() + x.clone());
+    }
+
+    pub fn partition(&self, pred: impl Fn(usize, &T) -> bool) -> (usize, T) {
+        assert!(pred(0, &self.0[0]), "need to be pred(0, 0)");
+        let mut j = 0;
+        let mut current = self.0[0].clone();
+        let n = self.0.len();
+        for d in std::iter::successors(Some(n.next_power_of_two() >> 1), |&d| { Some(d >> 1)})
+            .take_while(|&d| d != 0)
+        {
+            if j + d < n {
+                let next = current.clone() + self.0[j + d].clone();
+                if pred(j + d, &next) {
+                    current = next;
+                    j += d;
+                }
+            }
+        }
+        (j, current)
     }
 }
 
-impl<T: ComMonoid> From<Vec<T>> for FenwickTree<T> {
+impl<T: Monoid> From<Vec<T>> for FenwickTree<T> {
     fn from(src: Vec<T>) -> Self {
         let mut table = std::iter::once(T::zero())
             .chain(src.into_iter())
@@ -52,7 +71,7 @@ impl<T: ComMonoid> From<Vec<T>> for FenwickTree<T> {
     }
 }
 
-impl<T: ComGroup> FenwickTree<T> {
+impl<T: Group> FenwickTree<T> {
     pub fn sum<R: RangeBounds<usize>>(&self, rng: R) -> T {
         let Range { start, end } = bounds_within(rng, self.0.len());
         self.prefix_sum(end) + -self.prefix_sum(start)
@@ -160,8 +179,10 @@ mod tests {
         bit.add(2, 4);
         bit.add(3, 8);
         bit.add(4, 16);
+        println!("{:?}", &bit.0);
         assert_eq!(bit.prefix_sum(5), 31);
         bit.set(0, 5);
+        println!("{:?}", &bit.0);
         assert_eq!(bit.prefix_sum(3), 11);
         assert_eq!(bit.access(0), 5);
         assert_eq!(bit.access(1), 2);

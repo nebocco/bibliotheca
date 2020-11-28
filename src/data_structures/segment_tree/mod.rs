@@ -5,23 +5,23 @@ use crate::utils::{
 	bounds::bounds_within,
 };
 
+use std::ops::{ Index, Range, RangeBounds };
+
 // * verified: https://judge.yosupo.jp/submission/28323, https://judge.yosupo.jp/submission/28333
 // ------------ Segment Tree start ------------
 
-use std::ops::Index;
-use std::ops::{ Range, RangeBounds };
-
 pub struct SegmentTree<T: Monoid> {
+    n: usize,
 	size: usize,
 	node: Vec<T>
 }
 
 impl<T: Monoid> SegmentTree<T> {
-	pub fn new(n0: usize) -> Self {
-		let size = n0.next_power_of_two();
+	pub fn new(n: usize) -> Self {
+		let size = n.next_power_of_two();
 		let node = vec![T::zero(); size * 2];
 		SegmentTree {
-			size, node
+			n, size, node
 		}
 	}
 
@@ -57,12 +57,36 @@ impl<T: Monoid> SegmentTree<T> {
 			r >>= 1;
 		}
 		vl + vr
-	}
+    }
+
+    /// (j, t) => pred(j-1) = true, pred(j) = false
+    pub fn partition(&self, pred: impl Fn(usize, &T) -> bool) -> (usize, T) {
+        assert!(pred(0, &T::zero()), "need to be pred(0, T::zero())");
+        if pred(self.n - 1, &self.node[1]) {
+            return (self.n - 1, self.node[1].clone())
+        }
+        let mut j = 1;
+        let mut current = T::zero();
+        let mut idx = 0;
+        let mut f = self.size;
+        while j < self.size {
+            j <<= 1;
+            f >>= 1;
+            let next = current.clone() + self.node[j].clone();
+            if pred(idx + f - 1, &next) {
+                current = next;
+                j |= 1;
+                idx += f;
+            }
+        }
+        (idx, current)
+    }
 }
 
 impl<T: Monoid> From<Vec<T>> for SegmentTree<T> {
 	fn from(vec: Vec<T>) -> Self {
-		let size = vec.len().next_power_of_two();
+        let n = vec.len();
+		let size = n.next_power_of_two();
 		let mut node = vec![T::zero(); size << 1];
 		for (i, e) in vec.iter().cloned().enumerate() {
 			node[i + size] = e;
@@ -71,7 +95,7 @@ impl<T: Monoid> From<Vec<T>> for SegmentTree<T> {
 			node[i] = node[i << 1].clone() + node[(i << 1) + 1].clone();
 		}
 		SegmentTree {
-			size, node
+			n, size, node
 		}
 	}
 }
