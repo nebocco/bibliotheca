@@ -1,14 +1,16 @@
 pub mod dinic;
 pub mod network_simplex;
+pub mod primal_dual;
 
 use crate::utils::algebraic_traits::{ Element, Zero, One };
+use std::ops::{ Add, AddAssign, Mul, Neg, Sub, SubAssign };
 
 use std::fmt::Display;
-use std::ops::{Add, AddAssign, Neg, Sub, SubAssign};
 
 pub trait Cost:
 	Element
-	+ Display
+    + Display
+    + Clone
     + Copy
     + Eq
     + Ord
@@ -17,6 +19,7 @@ pub trait Cost:
     + Add<Output = Self>
     + AddAssign
     + Sub<Output = Self>
+    + Mul<Output = Self>
     + Neg<Output = Self>
 {
     fn is_positive(&self) -> bool {
@@ -25,6 +28,8 @@ pub trait Cost:
     fn is_negative(&self) -> bool {
         self < &Self::zero()
     }
+
+    const MAX: Self;
 }
 
 pub trait Flow: Cost + SubAssign {
@@ -40,8 +45,11 @@ pub trait Flow: Cost + SubAssign {
 macro_rules! impl_flow {
     ($($T:ty,)*) => {
 		$(
-			impl Flow for $T {}
-			impl Cost for $T {}
+            impl Flow for $T {}
+
+			impl Cost for $T {
+                const MAX: $T = <$T>::MAX;
+            }
 		)*
     };
 }
