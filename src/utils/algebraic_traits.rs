@@ -1,3 +1,4 @@
+// ------------ algebraic traits start ------------
 use std::marker::Sized;
 use std::ops::*;
 
@@ -89,26 +90,4 @@ impl_integer! {
     i8, i16, i32, i64, i128, isize,
     u8, u16, u32, u64, u128, usize,
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    // TODO: make tests
-    #[test]
-    fn it_works() {
-        #[derive(Debug, Clone, PartialEq)]
-        struct Ele(usize);
-        impl Associative for Ele {}
-        impl Add for Ele {
-            type Output = Ele;
-            fn add(self, rhs: Self) -> Self::Output {
-                Self(std::cmp::max(self.0, rhs.0))
-            }
-        }
-        impl Zero for Ele {
-            fn zero() -> Self { Self(0) }
-
-            fn is_zero(&self) -> bool { self.0 == 0 }
-        }
-    }
-}
+// ------------ algebraic traits end ------------

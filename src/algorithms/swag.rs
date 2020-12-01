@@ -1,8 +1,7 @@
 use crate::utils::algebraic_traits::SemiGroup;
 
 // * verified: https://judge.yosupo.jp/submission/28460
-// ------------ module start ------------
-
+// ------------ SWAG start ------------
 #[derive(Default)]
 pub struct SWAG<T: SemiGroup> {
     front: Vec<(T, T)>,
@@ -63,7 +62,7 @@ impl<T: SemiGroup> SWAG<T> {
         }
     }
 }
-// ------------ module end ------------
+// ------------ SWAG end ------------
 
 #[cfg(test)]
 mod tests {
