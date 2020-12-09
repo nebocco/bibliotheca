@@ -43,12 +43,12 @@ pub trait Flow: Cost + SubAssign {
 }
 
 macro_rules! impl_flow {
-    ($($T:ty,)*) => {
+    ($($T:ident,)*) => {
 		$(
             impl Flow for $T {}
 
 			impl Cost for $T {
-                const MAX: $T = <$T>::MAX;
+                const MAX: Self = std::$T::MAX;
             }
 		)*
     };
