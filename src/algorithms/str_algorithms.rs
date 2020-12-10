@@ -28,40 +28,42 @@ pub fn z_algorithm<T: PartialEq>(s: &[T]) -> Vec<usize> {
 
 pub fn kmp_table<T: PartialEq>(pattern: &[T]) -> Vec<usize> {
     let n = pattern.len();
-    let mut ret = vec![0; n];
+    let mut table = vec![n; n+1];
     let mut j = 0;
     for i in 1..n {
-        ret[i] = j;
         if pattern[i] == pattern[j] {
-            j += 1;
+            table[i] = table[j];
         } else {
-            j = 0;
+            table[i] = j;
+            j = table[j];
+            while j < n && pattern[i] != pattern[j] {
+                j = table[j];
+            }
         }
+        j += 1; if j > n { j = 0; }
     }
-    ret
+    table[n] = j; table
 }
 
-pub fn kmp_search<T: PartialEq>(pattern: &[T], target: &[T]) -> Option<usize> {
+pub fn kmp_search<T: PartialEq>(pattern: &[T], target: &[T]) -> Vec<usize> {
     let n = pattern.len();
     let m = target.len();
     let table = kmp_table(&pattern);
-    let mut i = 0;
-    let mut p = 0;
-    while i < m && p < n {
-        if target[i] == pattern[p] {
-            i += 1;
-            p += 1;
-        } else if p == 0 {
-            i += 1;
+    let (mut j, mut k) = (0, 0);
+    let mut res = Vec::new();
+    while j < m {
+        if pattern[k] == target[j] {
+            j += 1; k += 1;
+            if k == n {
+                res.push(j - k);
+                k = table[k];
+            }
         } else {
-            p = table[p];
+            k = table[k];
+            if k > n { j += 1; k = 0; }
         }
     }
-    if p == n {
-        Some(i - p)
-    } else {
-        None
-    }
+    res
 }
 
 // ------------ KMP algorithm end ------------

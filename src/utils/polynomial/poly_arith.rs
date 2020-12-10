@@ -3,7 +3,7 @@ use std::ops::*;
 use crate::utils::{
     algebraic_traits::{ Associative, One, Zero },
     fp::{ Fp, Mod },
-    transform,
+    transform::*,
 };
 
 impl<T: Mod> Associative for Polynomial<T> {}
@@ -122,31 +122,31 @@ impl<'a, T: Mod> Sub<&'a Polynomial<T>> for &'a Polynomial<T> {
     }
 }
 
-impl<T: transform::NTTFriendly> Mul for Polynomial<T> {
+impl<T: NTTFriendly> Mul for Polynomial<T> {
     type Output = Self;
     fn mul(self, rhs: Self) -> Self::Output {
-        Self::new(transform::multiply(&self.0, &rhs.0))
+        Self::new(multiply(&self.0, &rhs.0))
     }
 }
 
-impl<'a, T: transform::NTTFriendly> Mul<&'a Polynomial<T>> for Polynomial<T> {
+impl<'a, T: NTTFriendly> Mul<&'a Polynomial<T>> for Polynomial<T> {
     type Output = Polynomial<T>;
     fn mul(self, rhs: &'a Polynomial<T>) -> Self::Output {
-        Polynomial::new(transform::multiply(&self.0, &rhs.0))
+        Polynomial::new(multiply(&self.0, &rhs.0))
     }
 }
 
-impl<'a, T: transform::NTTFriendly> Mul<Polynomial<T>> for &'a Polynomial<T> {
+impl<'a, T: NTTFriendly> Mul<Polynomial<T>> for &'a Polynomial<T> {
     type Output = Polynomial<T>;
     fn mul(self, rhs: Polynomial<T>) -> Self::Output {
-        Polynomial::new(transform::multiply(&self.0, &rhs.0))
+        Polynomial::new(multiply(&self.0, &rhs.0))
     }
 }
 
-impl<'a, T: transform::NTTFriendly> Mul<&'a Polynomial<T>> for &'a Polynomial<T> {
+impl<'a, T: NTTFriendly> Mul<&'a Polynomial<T>> for &'a Polynomial<T> {
     type Output = Polynomial<T>;
     fn mul(self, rhs: &'a Polynomial<T>) -> Self::Output {
-        Polynomial::new(transform::multiply(&self.0, &rhs.0))
+        Polynomial::new(multiply(&self.0, &rhs.0))
     }
 }
 
@@ -162,7 +162,7 @@ impl<T: Mod> SubAssign for Polynomial<T> {
     }
 }
 
-impl<T: transform::NTTFriendly> MulAssign for Polynomial<T> {
+impl<T: NTTFriendly> MulAssign for Polynomial<T> {
     fn mul_assign(&mut self, rhs: Self) {
         *self = (self as &_) * rhs;
     }

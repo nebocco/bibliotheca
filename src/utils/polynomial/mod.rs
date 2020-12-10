@@ -1,7 +1,7 @@
 use crate::utils::{
     algebraic_traits::{ One, Zero },
     fp::{ Fp, Mod },
-    transform,
+    transform::*,
 };
 
 // ---------- begin polynomial ----------
@@ -86,7 +86,7 @@ impl<T: Mod> Polynomial<T> {
         Polynomial::new(b)
     }
 }
-impl<T: transform::NTTFriendly> Polynomial<T> {
+impl<T: NTTFriendly> Polynomial<T> {
 
     pub fn inverse(&self, n: usize) -> Self {
         let len = n.next_power_of_two();
@@ -108,12 +108,12 @@ impl<T: transform::NTTFriendly> Polynomial<T> {
                 g.extend_from_slice(&self.0);
             }
             g.resize(2 * size, Fp::zero());
-            transform::ntt(&mut f);
-            transform::ntt(&mut g);
+            ntt(&mut f);
+            ntt(&mut g);
             for (g, f) in g.iter_mut().zip(f.iter()) {
                 *g *= *f * *f;
             }
-            transform::intt(&mut g);
+            intt(&mut g);
             b.resize(size, Fp::zero());
             for (b, g) in b.iter_mut().zip(g.iter()) {
                 *b = *b + *b - *g;
