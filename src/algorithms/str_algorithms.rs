@@ -28,7 +28,7 @@ pub fn z_algorithm<T: PartialEq>(s: &[T]) -> Vec<usize> {
 
 pub fn kmp_table<T: PartialEq>(pattern: &[T]) -> Vec<usize> {
     let n = pattern.len();
-    let mut table = vec![n; n+1];
+    let mut table = vec![n+1; n+1];
     let mut j = 0;
     for i in 1..n {
         if pattern[i] == pattern[j] {

@@ -53,7 +53,7 @@ impl<C: Cost> SCC for DirectedGraph<C> {
 
 // ------------ Strongly Connected Components end ------------
 
-pub struct TwoSat(DirectedGraph<i8>);
+pub struct TwoSat(DirectedGraph<Void>);
 
 impl TwoSat {
     pub fn new(n: usize) -> Self {
@@ -61,8 +61,8 @@ impl TwoSat {
     }
 
     pub fn add_clause(&mut self, i: usize, f: bool, j: usize, g: bool) {
-        self.0.add_edge(2 * i + !f as usize, 2 * j + g as usize, 0);
-        self.0.add_edge(2 * j + !g as usize, 2 * i + f as usize, 0);
+        self.0.add_edge(2 * i + !f as usize, 2 * j + g as usize, Void());
+        self.0.add_edge(2 * j + !g as usize, 2 * i + f as usize, Void());
     }
 
     pub fn solve(&self) -> Option<Vec<bool>> {
