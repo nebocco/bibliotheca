@@ -28,11 +28,8 @@ pub fn modpow(x: i64, mut y: i64, modulo: i64) -> i64 {
 }
 
 pub fn modinv(mut x: i64, modulo: i64) -> i64 {
-    x %= modulo;
-    if x < 0 { x += modulo; }
-    let mut ret = extgcd(x, modulo).0 % modulo;
-    if ret < 0 { ret += modulo; }
-    ret
+    x = x.rem_euclid(modulo);
+    extgcd(x, modulo).0.rem_euclid(modulo)
 }
 
 // return (x, y) s.t. a * x + b * y = gcd(a, b)
@@ -65,58 +62,66 @@ pub fn make_modinv_list(size: usize, modulo: i64) -> Vec<i64> {
 }
 
 pub struct Fact {
-    modulo: u64,
-    fact: Vec<u64>,
-    inv_fact: Vec<u64>
+    modulo: i64,
+    fact: Vec<i64>,
+    inv_fact: Vec<i64>
 }
 
 impl Fact {
-    pub fn new(size: usize, modulo: u64) -> Self {
+    pub fn new(size: usize, modulo: i64) -> Self {
         let mut fact = vec![1; size + 1];
         let mut inv_fact = vec![1; size + 1];
         for i in 1..size+1 {
-            fact[i] = fact[i-1] * i as u64 % modulo;
+            fact[i] = fact[i-1] * i as i64 % modulo;
         }
-        inv_fact[size] = Self::modpow(fact[size], modulo-2, modulo);
+        inv_fact[size] = Self::modinv(fact[size], modulo);
         for i in (1..size+1).rev() {
-            inv_fact[i-1] = inv_fact[i] * i as u64 % modulo;
+            inv_fact[i-1] = inv_fact[i] * i as i64 % modulo;
         }
         Fact {
             modulo, fact, inv_fact
         }
     }
 
-    fn modpow(mut x:u64, mut y:u64, m:u64) -> u64 {
-        let mut res: u64 = 1;
-        while y > 0 {
-            if y & 1 > 0 {
-                res = res * x % m;
-            }
-            x = x * x % m;
-            y >>= 1;
+    pub fn extgcd(a: i64, b: i64) -> (i64, i64) {
+        let mut x1 = 1;
+        let mut y1 = 0;
+        let mut m = a;
+        let mut x2 = 0;
+        let mut y2 = 1;
+        let mut n = b;
+        while m % n != 0 {
+            let q = m / n;
+            x1 -= q * x2;
+            y1 -= q * y2;
+            m -= q * n;
+            std::mem::swap(&mut x1, &mut x2);
+            std::mem::swap(&mut y1, &mut y2);
+            std::mem::swap(&mut m, &mut n);
         }
-        res
+        (x2, y2)
     }
 
-    pub fn modinv(x: u64, m: u64) -> u64 {
-        Self::modpow(x, m-2, m)
+    pub fn modinv(mut x: i64, modulo: i64) -> i64 {
+        x = x.rem_euclid(modulo);
+        Self::extgcd(x, modulo).0.rem_euclid(modulo)
     }
 
-    pub fn permutation(&self, n:usize, r:usize) -> u64 {
+    pub fn permutation(&self, n:usize, r:usize) -> i64 {
         assert!(r > n || n < self.fact.len(),
         "index out of range: length is {}, but given {}", self.fact.len(), n);
         if n < r { return 0 };
         self.fact[n] * self.inv_fact[n-r] % self.modulo
     }
 
-    pub fn combination(&self, n:usize, r:usize) -> u64 {
+    pub fn combination(&self, n:usize, r:usize) -> i64 {
         assert!(r > n || n < self.fact.len(),
         "index out of range: length is {}, but given {}", self.fact.len(), n);
         if n < r { return 0 };
         self.fact[n] * self.inv_fact[r] % self.modulo * self.inv_fact[n-r] % self.modulo
     }
 
-    pub fn multi(&self, l: &[usize]) -> u64 {
+    pub fn multi(&self, l: &[usize]) -> i64 {
         let n = l.iter().sum::<usize>();
         assert!(n < self.fact.len(),
         "index out of range: length is {}, but given {}", self.fact.len(), n);
