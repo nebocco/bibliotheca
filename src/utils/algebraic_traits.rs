@@ -49,13 +49,17 @@ impl<T: ComRing + Div<Output=Self> + DivAssign> Field for T {}
 /// 加法単元
 pub trait Zero: Element {
     fn zero() -> Self;
-    fn is_zero(&self) -> bool;
+    fn is_zero(&self) -> bool {
+        *self == Self::zero()
+    }
 }
 
 /// 乗法単元
 pub trait One: Element {
     fn one() -> Self;
-    fn is_one(&self) -> bool;
+    fn is_one(&self) -> bool {
+        *self == Self::one()
+    }
 }
 
 macro_rules! impl_integer {

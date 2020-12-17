@@ -1,7 +1,8 @@
 pub mod baby_step_giant_step;
 pub mod compress;
-pub mod flow;
+pub mod convex_hull;
 pub mod dp;
+pub mod flow;
 pub mod graph;
 pub mod hungarian;
 pub mod lsi;
