@@ -146,6 +146,12 @@ impl Print for &str {
 	}
 }
 
+impl Print for String {
+	fn print(w: &mut IO, x: Self) {
+		w.print(x.as_bytes());
+	}
+}
+
 impl<T: Print, U: Print> Print for (T, U) {
 	fn print(w: &mut IO, (x, y): Self) {
 		w.print(x);

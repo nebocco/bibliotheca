@@ -35,6 +35,7 @@ impl<T: Monoid> FenwickTree<T> {
         .for_each(|i| self.0[i] = self.0[i].clone() + x.clone());
     }
 
+    /// pred(j, sum(..j)) && !pred(j+1, sum(..j+1))
     pub fn partition(&self, pred: impl Fn(usize, &T) -> bool) -> (usize, T) {
         assert!(pred(0, &self.0[0]), "need to be pred(0, 0)");
         let mut j = 0;
@@ -73,7 +74,7 @@ impl<T: Monoid> From<Vec<T>> for FenwickTree<T> {
 
 impl<T: Group> FenwickTree<T> {
     pub fn sum<R: RangeBounds<usize>>(&self, rng: R) -> T {
-        let Range { start, end } = bounds_within(rng, self.0.len());
+        let Range { start, end } = bounds_within(rng, self.0.len() - 1);
         self.prefix_sum(end) + -self.prefix_sum(start)
     }
 }
@@ -117,6 +118,11 @@ impl Fenwick {
             .sum::<i64>()
     }
 
+    pub fn sum<R: RangeBounds<usize>>(&self, rng: R) -> i64 {
+        let Range { start, end } = bounds_within(rng, self.0.len() - 1);
+        self.prefix_sum(end) + -self.prefix_sum(start)
+    }
+
     pub fn add(&mut self, i: usize, x: i64) {
         let n = self.0.len();
         std::iter::successors(Some(i + 1), |&i| Some(i + Self::lsb(i)))
@@ -125,13 +131,13 @@ impl Fenwick {
     }
 
     fn partition(&self, pred: impl Fn(usize, i64) -> bool) -> (usize, i64) {
+        assert!(pred(0, self.0[0]), "need to be pred(0, 0)");
         let mut j = 0;
         let mut current = self.0[0];
         let n = self.0.len();
         for d in std::iter::successors(Some(n.next_power_of_two() >> 1), |&d| { Some(d >> 1)})
             .take_while(|&d| d != 0)
         {
-            assert!(pred(0, self.0[0]), "need to be pred(0, 0)");
             if j + d < n {
                 let next = current + self.0[j + d];
                 if pred(j + d, next) {
@@ -179,10 +185,12 @@ mod tests {
         bit.add(2, 4);
         bit.add(3, 8);
         bit.add(4, 16);
-        println!("{:?}", &bit.0);
         assert_eq!(bit.prefix_sum(5), 31);
+        assert_eq!(bit.sum(1..3), 6);
+        assert_eq!(bit.sum(..=3), 15);
+        assert_eq!(bit.sum(..), 31);
+
         bit.set(0, 5);
-        println!("{:?}", &bit.0);
         assert_eq!(bit.prefix_sum(3), 11);
         assert_eq!(bit.access(0), 5);
         assert_eq!(bit.access(1), 2);
@@ -205,6 +213,10 @@ mod tests {
         assert_eq!(bit.prefix_sum(3), 11);
         assert_eq!(bit.prefix_sum(4), 111);
         assert_eq!(bit.prefix_sum(5), 1111);
+        bit.add(0, 7);
+        assert_eq!(bit.sum(1..3), 11);
+        assert_eq!(bit.sum(..=3), 118);
+        assert_eq!(bit.sum(..), 1118);
     }
 
     #[test]
@@ -220,5 +232,6 @@ mod tests {
         assert_eq!(bit.lower_bound(14), 4);
         assert_eq!(bit.upper_bound(14), 5);
         assert_eq!(bit.lower_bound(15), 5);
+        assert_eq!(bit.lower_bound(200000), 9);
     }
 }
