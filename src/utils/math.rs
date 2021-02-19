@@ -14,7 +14,8 @@ pub fn lcm(a: i64, b: i64) -> i64 {
     }
 }
 
-pub fn modpow(x: i64, mut y: i64, modulo: i64) -> i64 {
+pub fn modpow(mut x: i64, mut y: i64, modulo: i64) -> i64 {
+	x %= modulo;
     let mut ret = 1;
     let mut cur = x;
     while y > 0 {
@@ -60,6 +61,8 @@ pub fn make_modinv_list(size: usize, modulo: i64) -> Vec<i64> {
     }
     inv_list
 }
+
+// ------------ struct Fact start ------------
 
 pub struct Fact {
     modulo: i64,
@@ -132,6 +135,9 @@ impl Fact {
         ans
     }
 }
+
+// ------------ struct Fact start ------------
+
 
 #[allow(clippy::many_single_char_names)]
 pub fn sum_of_floor(mut n:i64, mut m:i64, mut a:i64, mut b:i64) -> i64 {

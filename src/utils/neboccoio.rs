@@ -196,7 +196,7 @@ mod neboccoio_macro {
 			input!(@start $io @read @mut [] @rest $($rest)*)
 		};
 
-		(@start $io:tt @read @mut [$($mut:tt)?] @rest $var:tt: [$kind:tt; $len:tt] $($rest:tt)*) => {
+		(@start $io:tt @read @mut [$($mut:tt)?] @rest $var:tt: [$kind:tt; $len:expr] $($rest:tt)*) => {
 			let $($mut)* $var = $io.scan_vec::<$kind>($len);
 			input!(@start $io @read @rest $($rest)*)
 		};
