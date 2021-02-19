@@ -49,17 +49,107 @@ impl UnionFind {
 }
 // ------------ UnionFind end ------------
 
-use crate::utils::algebraic_traits::ComGroup;
+// use crate::utils::algebraic_traits::ComGroup;
+
+// // ------------ Potentialized UnionFind start ------------
+
+// #[derive(Clone, Debug)]
+// pub struct PotentializedUnionFind<T: ComGroup>{
+//     data: Vec<isize>,
+//     ws: Vec<T>
+// }
+
+// impl<T: ComGroup> PotentializedUnionFind<T> {
+//     pub fn new(len: usize) -> Self {
+//         Self{
+//             data: vec![-1; len],
+//             ws: vec![T::zero(); len]
+//         }
+//     }
+
+//     pub fn find(&mut self, i: usize) -> usize {
+//         self._climb(i).0
+//     }
+
+//     pub fn size(&mut self, i: usize) -> usize {
+//         self._climb(i).1
+//     }
+
+//     pub fn potential(&mut self, i: usize) -> T {
+//         self._climb(i).2
+//     }
+
+//     /// unite(u, v, w) -> u <==w== v
+//     pub fn unite(&mut self, u: usize, v: usize, mut w: T) -> Result<(), ()> {
+//         let (mut u, su, wu) = self._climb(u);
+//         let (mut v, sv, wv) = self._climb(v);
+//         w += wv + -wu;
+//         if u == v {
+// 			return if w.is_zero(){ Ok(()) } else { Err(()) };
+// 		}
+//         if su < sv {
+//             std::mem::swap(&mut u, &mut v);
+//             w = -w;
+//         }
+//         self.data[u] += self.data[v];
+//         self.data[v] = u as isize;
+//         self.ws[v] = w;
+//         Ok(())
+//     }
+
+//     pub fn is_same(&mut self, u: usize, v:usize) -> bool {
+//         self.find(u) == self.find(v)
+//     }
+
+//     pub fn diff(&mut self, u: usize, v: usize) -> Option<T> {
+//         let (u, _, wu) = self._climb(u);
+//         let (v, _, wv) = self._climb(v);
+//         if u == v {
+//             Some(wu + -wv)
+//         } else {
+//             None
+//         }
+//     }
+
+//     pub fn weight(&mut self, u: usize, w: T) {
+//         let p = self.find(u);
+//         self.ws[p] += w;
+//     }
+
+//     /// _climb(index) -> (root index, group size, potential)
+//     fn _climb(&mut self, i: usize) -> (usize, usize, T) {
+//         assert!(i < self.data.len());
+//         let mut v = i;
+//         let mut w = T::zero();
+//         while self.data[v] >= 0 {
+//             let p = self.data[v] as usize;
+//             if self.data[p] >= 0 {
+//                 self.data[v] = self.data[p];
+//                 self.ws[v] = self.ws[v].clone() + self.ws[p].clone();
+//                 w += self.ws[v].clone();
+//                 v = self.data[p] as usize;
+//             } else {
+//                 w += self.ws[v].clone();
+//                 v = p;
+//             }
+//         }
+//         w += self.ws[v].clone();
+//         (v, -self.data[v] as usize, w)
+//     }
+// }
+// // ------------ Potentialized UnionFind end ------------
+
+use crate::utils::algebraic_traits::Group;
 
 // ------------ Potentialized UnionFind start ------------
 
 #[derive(Clone, Debug)]
-pub struct PotentializedUnionFind<T: ComGroup>{
+pub struct PotentializedUnionFind<T>{
     data: Vec<isize>,
     ws: Vec<T>
 }
 
-impl<T: ComGroup> PotentializedUnionFind<T> {
+impl<T: Group> PotentializedUnionFind<T> {
     pub fn new(len: usize) -> Self {
         Self{
             data: vec![-1; len],
@@ -79,18 +169,18 @@ impl<T: ComGroup> PotentializedUnionFind<T> {
         self._climb(i).2
     }
 
-    /// unite(u, v, w) -> u <==w== v
     pub fn unite(&mut self, u: usize, v: usize, mut w: T) -> Result<(), ()> {
-        let (mut u, su, wu) = self._climb(u);
-        let (mut v, sv, wv) = self._climb(v);
-        w += wv + -wu;
-        if u == v {
-			return if w.is_zero(){ Ok(()) } else { Err(()) };
+        let (mut u, su, mut wu) = self._climb(u);
+        let (mut v, sv, mut wv) = self._climb(v);
+		if u == v {
+			return if w == -wu + wv { Ok(()) } else { Err(()) };
 		}
-        if su < sv {
+		if su < sv {
             std::mem::swap(&mut u, &mut v);
+            std::mem::swap(&mut wu, &mut wv);
             w = -w;
         }
+        w = wu + w + -wv;
         self.data[u] += self.data[v];
         self.data[v] = u as isize;
         self.ws[v] = w;
@@ -105,7 +195,7 @@ impl<T: ComGroup> PotentializedUnionFind<T> {
         let (u, _, wu) = self._climb(u);
         let (v, _, wv) = self._climb(v);
         if u == v {
-            Some(wu + -wv)
+            Some(-wu + wv)
         } else {
             None
         }
@@ -113,7 +203,7 @@ impl<T: ComGroup> PotentializedUnionFind<T> {
 
     pub fn weight(&mut self, u: usize, w: T) {
         let p = self.find(u);
-        self.ws[p] += w;
+        self.ws[p] = self.ws[p].clone() + w;
     }
 
     /// _climb(index) -> (root index, group size, potential)
@@ -125,15 +215,15 @@ impl<T: ComGroup> PotentializedUnionFind<T> {
             let p = self.data[v] as usize;
             if self.data[p] >= 0 {
                 self.data[v] = self.data[p];
-                self.ws[v] = self.ws[v].clone() + self.ws[p].clone();
-                w += self.ws[v].clone();
-                v = self.data[p] as usize;
+				w = self.ws[v].clone() + w;
+                self.ws[v] = self.ws[p].clone() + self.ws[v].clone();
+				v = self.data[p] as usize;
             } else {
-                w += self.ws[v].clone();
+                w = self.ws[v].clone() + w;
                 v = p;
             }
         }
-        w += self.ws[v].clone();
+        w = self.ws[v].clone() + w;
         (v, -self.data[v] as usize, w)
     }
 }
@@ -142,7 +232,7 @@ impl<T: ComGroup> PotentializedUnionFind<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::UnionFind;
+    use super::*;
 
     #[test]
     fn tset_union_find() {
@@ -158,5 +248,48 @@ mod tests {
         assert_eq!(uf.size(0), 3);
         assert_ne!(uf.find(5), uf.find(0));
         assert!(uf.is_same(1, 4));
+    }
+
+
+    #[test]
+    fn tset_potentialized_union_find() {
+        let mut puf = PotentializedUnionFind::<i32>::new(7);
+        assert_eq!(puf.size(2), 1);
+        assert_eq!(puf.find(5), 5);
+        assert_eq!(puf.potential(5), 0);
+        puf.weight(5, 5);
+        assert_eq!(puf.potential(5), 5);
+        assert!(puf.unite(0, 1, 30).is_ok()); //pot[v] - pot[u] = w
+        assert_eq!(puf.potential(0), 0);
+        assert_eq!(puf.potential(1), 30);
+        assert!(puf.unite(0, 2, -10).is_ok());
+        assert_eq!(puf.potential(0), 0);
+        assert_eq!(puf.potential(2), -10);
+        assert_eq!(puf.diff(2, 1), Some(40)); // pot[v] - pot[u]
+        puf.weight(2, 50);
+        assert_eq!(puf.potential(1), 80);
+        assert_eq!(puf.potential(2), 40);
+        assert!(puf.unite(1, 2, -40).is_ok());
+        assert_eq!(puf.potential(5), 5);
+        assert_eq!(puf.potential(3), 0);
+        puf.unite(3, 5, 0).ok();
+        assert_eq!(puf.potential(5), 5); // ??????????????
+        puf.unite(4, 5, 80).ok();
+        assert_eq!(puf.potential(5), 5);
+        puf.unite(6, 5, 10).ok();
+        assert_eq!(puf.potential(0), 50);
+        assert_eq!(puf.potential(5), 5);
+        puf.unite(0, 5, 20).ok();
+
+        // ?????????????????????????
+        assert_eq!(puf.potential(0), -75);
+        assert_eq!(puf.potential(1), 30);
+        assert_eq!(puf.potential(2), -10);
+        assert_eq!(puf.potential(3), 0);
+        assert_eq!(puf.potential(4), -85);
+        assert_eq!(puf.potential(5), -5);
+        assert_eq!(puf.potential(6), -15);
+        panic!()
+
     }
 }
