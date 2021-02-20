@@ -1,7 +1,4 @@
-//! from shino: https://judge.yosupo.jp/submission/27353
-
 // ------------ io module start ------------
-
 use std::io::{stdout, BufWriter, Read, StdoutLock, Write};
 
 pub struct IO {
@@ -23,20 +20,14 @@ impl IO {
 	fn scan_str(&mut self) -> &'static str {
 		self.iter.next().unwrap()
 	}
-	fn scan_raw(&mut self) -> &'static [u8] {
-		self.scan_str().as_bytes()
+	pub fn scan<T: Scan>(&mut self) -> <T as Scan>::Output {
+		<T as Scan>::scan(self)
 	}
-	pub fn scan<T: Scan>(&mut self) -> T {
-		T::scan(self)
+	pub fn scan_vec<T: Scan>(&mut self, n: usize) -> Vec<<T as Scan>::Output> {
+		(0..n).map(|_| self.scan::<T>()).collect()
 	}
-	pub fn scan_vec<T: Scan>(&mut self, n: usize) -> Vec<T> {
-		(0..n).map(|_| self.scan()).collect()
-	}
-}
-
-impl IO {
 	pub fn print<T: Print>(&mut self, x: T) {
-		T::print(self, x);
+		<T as Print>::print(self, x);
 	}
 	pub fn println<T: Print>(&mut self, x: T) {
 		self.print(x);
@@ -64,48 +55,66 @@ impl Default for IO {
 }
 
 pub trait Scan {
-	fn scan(io: &mut IO) -> Self;
+	type Output;
+	fn scan(io: &mut IO) -> Self::Output;
 }
 
-macro_rules! impl_parse_int {
+macro_rules! impl_scan {
 	($($t:tt),*) => {
 		$(
 			impl Scan for $t {
-				fn scan(s: &mut IO) -> Self {
-					let mut res = 0;
-					let mut neg = false;
-					for d in s.scan_raw() {
-						if *d == b'-' {
-							neg = true;
-						} else {
-							res *= 10;
-							res += (*d - b'0') as $t;
-						}
-					}
-					if neg { res = res.wrapping_neg(); }
-					res
+				type Output = Self;
+				fn scan(s: &mut IO) -> Self::Output {
+					s.scan_str().parse().unwrap()
 				}
 			}
 		)*
 	};
 }
 
-impl_parse_int!(i16, i32, i64, isize, u16, u32, u64, usize);
+impl_scan!(i16, i32, i64, isize, u16, u32, u64, usize, String);
+
+pub enum Bytes {}
+impl Scan for Bytes {
+	type Output = &'static [u8];
+	fn scan(s: &mut IO) -> Self::Output {
+		s.scan_str().as_bytes()
+	}
+}
+
+pub enum Chars {}
+impl Scan for Chars {
+	type Output = Vec<char>;
+	fn scan(s: &mut IO) -> Self::Output {
+		s.scan_str().chars().collect()
+	}
+}
+
+pub enum Usize1 {}
+impl Scan for Usize1 {
+	type Output = usize;
+	fn scan(s: &mut IO) -> Self::Output {
+		s.scan::<usize>().wrapping_sub(1)
+	}
+}
 
 impl<T: Scan, U: Scan> Scan for (T, U) {
-	fn scan(s: &mut IO) -> Self {
+	type Output = (T::Output, U::Output);
+	fn scan(s: &mut IO) -> Self::Output {
 		(T::scan(s), U::scan(s))
 	}
 }
 
 impl<T: Scan, U: Scan, V: Scan> Scan for (T, U, V) {
-	fn scan(s: &mut IO) -> Self {
+	type Output = (T::Output, U::Output, V::Output);
+	fn scan(s: &mut IO) -> Self::Output {
 		(T::scan(s), U::scan(s), V::scan(s))
 	}
 }
 
 impl<T: Scan, U: Scan, V: Scan, W: Scan> Scan for (T, U, V, W) {
-	fn scan(s: &mut IO) -> Self {
+	type Output = (T::Output, U::Output, V::Output, W::Output);
+	fn scan(s: &mut IO) -> Self::Output {
 		(T::scan(s), U::scan(s), V::scan(s), W::scan(s))
 	}
 }
@@ -170,25 +179,112 @@ impl<T: Print, U: Print, V: Print> Print for (T, U, V) {
 	}
 }
 
+mod neboccoio_macro {
+	#[macro_export]
+	macro_rules! input {
+		(@start $io:tt @read @rest) => {};
+
+		(@start $io:tt @read @rest, $($rest: tt)*) => {
+			input!(@start $io @read @rest $($rest)*)
+		};
+
+		(@start $io:tt @read @rest mut $($rest:tt)*) => {
+			input!(@start $io @read @mut [mut] @rest $($rest)*)
+		};
+
+		(@start $io:tt @read @rest $($rest:tt)*) => {
+			input!(@start $io @read @mut [] @rest $($rest)*)
+		};
+
+		(@start $io:tt @read @mut [$($mut:tt)?] @rest $var:tt: [$kind:tt; $len:expr] $($rest:tt)*) => {
+			let $($mut)* $var = $io.scan_vec::<$kind>($len);
+			input!(@start $io @read @rest $($rest)*)
+		};
+
+		(@start $io:tt @read @mut [$($mut:tt)?] @rest $var:tt: $kind:tt $($rest:tt)*) => {
+			let $($mut)* $var = $io.scan::<$kind>();
+			input!(@start $io @read @rest $($rest)*)
+		};
+
+		(from $io:tt $($rest:tt)*) => {
+			input!(@start $io @read @rest $($rest)*)
+		};
+	}
+}
+
 // ------------ io module end ------------
+
 
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::input;
+
 	#[test]
-	#[ignore]
-	fn test_ignore() {
-		let mut io = IO::new();
-		let (n, q) = io.scan();
-		let a: Vec<i32> = io.scan_vec(n);
+	fn test_input_ignore() {
+		let s =
+		"5 5
+		1 2 3 4 5
+		0 0
+		1 8 7
+		0 4
+		0 2
+		1 90 178189289
+		".to_string();
+		let mut io = IO {
+			iter: Box::leak(s.into_boxed_str()).split_ascii_whitespace(),
+			buf: BufWriter::new(Box::leak(Box::new(stdout())).lock()),
+		};
+		let (n, q) = io.scan::<(usize, usize)>();
+		assert_eq!(n, 5);
+		assert_eq!(q, 5);
+		let a = io.scan_vec::<Usize1>(n);
+		assert_eq!(a, vec![0, 1, 2, 3, 4]);
+		let mut buf = Vec::new();
 		for _ in 0..q {
 			if io.scan::<u32>() == 0 {
 				let idx: usize = io.scan::<usize>();
-				io.println::<i32>(a[idx]);
+				// io.println(a[idx]);
+				buf.push((idx, a[idx]))
 			} else {
-				let res: (usize, isize) = (io.scan(), io.scan());
-				io.println(res);
+				let res = (io.scan::<usize>(), io.scan::<usize>());
+				// io.println(res);
+				buf.push(res);
 			}
+		}
+		assert_eq!(buf, [(0, 0), (8, 7), (4, 4), (2, 2), (90, 178189289)]);
+	}
+
+	#[test]
+	fn test_input_macro_ignore() {
+		let s =
+		"5 5
+		1 2 3 4 5
+		5 apple
+		6 banana
+		9 chocolate
+		8 doughnut
+		3 egg
+		".to_string();
+		let mut io = IO {
+			iter: Box::leak(s.into_boxed_str()).split_ascii_whitespace(),
+			buf: BufWriter::new(Box::leak(Box::new(stdout())).lock()),
+		};
+		input! {
+			@start io @read @rest
+			n: usize, mut q: usize,
+			mut a: [Usize1; n],
+			query: [(usize, Chars); q]
+		}
+		assert_eq!(n, 5);
+		assert_eq!(q, 5);
+		q *= 10;
+		assert_eq!(q, 50);
+		assert_eq!(a, vec![0, 1, 2, 3, 4]);
+		a.push(5);
+		assert_eq!(a, vec![0, 1, 2, 3, 4, 5]);
+		for (v, c) in &query {
+			assert_eq!(*v, c.len());
 		}
 	}
 }

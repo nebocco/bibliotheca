@@ -49,10 +49,9 @@ impl UnionFind {
 }
 // ------------ UnionFind end ------------
 
+use crate::utils::algebraic_traits::ComGroup;
 
 // ------------ Potentialized UnionFind start ------------
-// TODO: verify
-use crate::utils::algebraic_traits::ComGroup;
 
 #[derive(Clone, Debug)]
 pub struct PotentializedUnionFind<T: ComGroup>{
@@ -85,7 +84,9 @@ impl<T: ComGroup> PotentializedUnionFind<T> {
         let (mut u, su, wu) = self._climb(u);
         let (mut v, sv, wv) = self._climb(v);
         w += wv + -wu;
-        if u == v { return Err(()); }
+        if u == v {
+			return if w.is_zero(){ Ok(()) } else { Err(()) };
+		}
         if su < sv {
             std::mem::swap(&mut u, &mut v);
             w = -w;
@@ -100,13 +101,13 @@ impl<T: ComGroup> PotentializedUnionFind<T> {
         self.find(u) == self.find(v)
     }
 
-    pub fn diff(&mut self, u: usize, v: usize) -> Result<T, ()> {
+    pub fn diff(&mut self, u: usize, v: usize) -> Option<T> {
         let (u, _, wu) = self._climb(u);
         let (v, _, wv) = self._climb(v);
         if u == v {
-            Ok(wu + -wv)
+            Some(wu + -wv)
         } else {
-            Err(())
+            None
         }
     }
 

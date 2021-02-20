@@ -1,6 +1,8 @@
 use crate::utils::graph::{ Cost, Graph, UndirectedGraph };
 use crate::data_structures::union_find::UnionFind;
 
+// ------------ Kruskal's algorithm start ------------
+
 pub fn kruskal<C: Cost>(graph: &mut UndirectedGraph<C>, edges: &mut [(usize, usize, C)]) -> Vec<(usize, usize, C)> {
     edges.sort_by_key(|x| x.2);
     let mut res = Vec::with_capacity(graph.size() - 1);
@@ -13,3 +15,5 @@ pub fn kruskal<C: Cost>(graph: &mut UndirectedGraph<C>, edges: &mut [(usize, usi
     }
     res
 }
+
+// ------------ Kruskal's algorithm end ------------
