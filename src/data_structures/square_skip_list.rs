@@ -50,7 +50,7 @@ impl SquareSkipList {
 		if idx0 == self.layer0[idx1].len() {
 			if self.layer1[idx1] == x {
 				let mut vec1 = self.layer0.remove(idx1+1);
-				self.layer0[idx0].append(&mut vec1);
+				self.layer0[idx1].append(&mut vec1);
 				self.layer1.remove(idx1);
 				Ok(())
 			} else {
