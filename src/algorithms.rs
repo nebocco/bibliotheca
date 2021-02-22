@@ -5,6 +5,7 @@ pub mod dp;
 pub mod flow;
 pub mod graph;
 pub mod hungarian;
+pub mod kitamasa;
 pub mod lsi;
 pub mod rerooting;
 pub mod rolling_hash;
