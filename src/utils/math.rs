@@ -14,6 +14,19 @@ pub fn lcm(a: i64, b: i64) -> i64 {
     }
 }
 
+pub fn sqrt_floor(x: i64) -> i64 {
+    let c = (64 - x.leading_zeros() + 1) / 2;
+    let mut v = if c < 32 {
+        1 << c
+    } else {
+        3_037_000_499
+    };
+    while v * v > x {
+        v = (v + x / v) / 2;
+    }
+    v
+}
+
 pub fn modpow(mut x: i64, mut y: i64, modulo: i64) -> i64 {
 	x %= modulo;
     let mut ret = 1;
@@ -242,11 +255,34 @@ pub fn lagrange_interpolation(xl: &[i64], yl: &[i64], modulo: i64) -> Vec<i64> {
     ret
 }
 
+
 #[cfg(test)]
 mod tests {
     // TODO: make tests
     use super::*;
     use rand::Rng;
+
+    #[test]
+    fn test_sqrt_floor() {
+        for x in 0..10_000_000 {
+            let v = sqrt_floor(x);
+            assert!(v * v <= x);
+            assert!((v + 1) * (v + 1) > x);
+        }
+
+        let mut rng = rand::thread_rng();
+        for _ in 0..1_000_000 {
+            let x = rng.gen::<i64>().abs();
+            let v = sqrt_floor(x);
+            assert!(v * v <= x);
+            assert!((v + 1) * (v + 1) > x);
+        }
+
+        let x = std::i64::MAX;
+        let v = sqrt_floor(x);
+        assert!(v * v <= x);
+        assert!(v + 1 > x / (v + 1));
+    }
 
     #[test]
     fn test_extgcd() {
