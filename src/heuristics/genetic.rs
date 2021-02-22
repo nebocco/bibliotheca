@@ -18,13 +18,13 @@ pub fn genetics<S: State, T: Metaheuristics<S>>(problem: &mut T, runtime: Durati
 			.collect::<Vec<f64>>();
 		let mut next_generation: Vec<StateWrapper<S>> = Vec::with_capacity(gen_size * 2);
 		for _ in 0..gen_size {
-			let rand_idx = rng.gen_range(0., scores.last().unwrap());
+			let rand_idx = rng.gen_range(0f64..*scores.last().unwrap());
 			let idx = scores.binary_search_by(|x| x.partial_cmp(&rand_idx).unwrap()).unwrap();
 			let gen_type = rng.gen::<f64>();
 			if gen_type < p_mutation {
 				next_generation.push(mutate(&current_generation[idx]))
 			} else if gen_type < p_mutation + p_cross {
-				let rand_idx_2 = rng.gen_range(0., scores.last().unwrap());
+				let rand_idx_2 = rng.gen_range(0f64..*scores.last().unwrap());
 				let idx_2 = scores.binary_search_by(|x| x.partial_cmp(&rand_idx_2).unwrap()).unwrap();
 				if idx == idx_2 {
 					next_generation.push(current_generation[idx].clone());

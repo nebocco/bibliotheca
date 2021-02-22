@@ -96,7 +96,6 @@ pub fn runlength<T>(l: &[T]) -> Vec<(T, usize)> where
 #[cfg(test)]
 mod tests {
     use super::z_algorithm;
-    use std::iter;
     use rand::prelude::*;
 
     fn z_brute<T: Ord>(s: &[T]) -> Vec<usize> {
@@ -120,9 +119,10 @@ mod tests {
     fn test_z_random() {
         let mut rng = StdRng::seed_from_u64(137);
         for _ in 0..20 {
-            let n = rng.gen_range(30, 100);
-            let s = iter::repeat_with(|| rng.sample(rand::distributions::Alphanumeric))
+            let n = rng.gen_range(30..100);
+            let s = (&mut rng).sample_iter(rand::distributions::Alphanumeric)
                 .take(n)
+                .map(char::from)
                 .collect::<String>();
             assert_eq!(z_brute(s.as_bytes()), z_algorithm(s.as_bytes()));
         }

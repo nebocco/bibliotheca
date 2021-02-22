@@ -88,8 +88,8 @@ mod tests {
         let a = (0..10000).map(|_| Am(rng.gen())).collect::<Vec<Am>>();
         let dsp = DisjointSparseTable::from(&a);
         for _ in 0..10000 {
-            let l = rng.gen_range(0, 10000);
-            let r = rng.gen_range(l+1, 10001);
+            let l = rng.gen_range(0..10000);
+            let r = rng.gen_range(l+1..10001);
             assert_eq!(dsp.fold(l..r), (l..r).fold(Am(std::i32::MAX), |sum, x| sum + a[x].clone()));
         }
 

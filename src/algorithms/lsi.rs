@@ -102,7 +102,7 @@ mod tests {
         const EDGES: usize = 4000;
         let mut rng = rand::thread_rng();
         for _ in 0..REPEAT {
-            let edges = (0..EDGES).map(|_| (rng.gen_range(0, SIZE - 1), rng.gen_range(0, SIZE - 1))).collect::<Vec<_>>();
+            let edges = (0..EDGES).map(|_| (rng.gen_range(0..SIZE), rng.gen_range(0..SIZE))).collect::<Vec<_>>();
             execute_even_degrees(SIZE, edges);
         }
     }
