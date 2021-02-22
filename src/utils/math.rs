@@ -163,6 +163,21 @@ pub fn sum_of_floor(mut n:i64, mut m:i64, mut a:i64, mut b:i64) -> i64 {
     s
 }
 
+pub fn mat_mult(a: &[Vec<i64>], b: &[Vec<i64>], modulo: i64) -> Vec<Vec<i64>> {
+	let n = a.len();
+	let m = a[0].len();
+	assert_eq!(b.len(), m);
+	let o = b[0].len();
+	let mut res = vec![vec![0; o]; n];
+	for i in 0..n {
+		for j in 0..m {
+			for k in 0..o {
+				res[i][k] = (res[i][k] + a[i][j] * b[j][k]) % modulo;
+			}
+		}
+	}
+	res
+}
 
 // O(N**2)
 pub fn lagrange_evaluation(xl: &[i64], yl: &[i64], x: i64, modulo: i64) -> i64 {
@@ -282,7 +297,7 @@ mod tests {
         let mut rng = rand::thread_rng();
         let tasks = 300;
         for _ in 0..tasks {
-            let n: usize = rng.gen_range(5, 300);
+            let n: usize = rng.gen_range(5..300);
             let coef: Vec<i64> = (0..n).map(|_| rng.gen::<i64>() % MOD).collect();
             let xl: Vec<i64> = (0..n).map(|_| rng.gen::<i64>() % MOD).collect();
             let x = rng.gen::<i64>() % MOD;
@@ -307,7 +322,7 @@ mod tests {
         let mut rng = rand::thread_rng();
         let tasks = 200;
         for _ in 0..tasks {
-            let n: usize = rng.gen_range(5, 300);
+            let n: usize = rng.gen_range(5..300);
             let mut coef: Vec<i64> = (0..n).map(|_| rng.gen::<i64>() % MOD).collect();
             let xl: Vec<i64> = (0..n).map(|_| rng.gen::<i64>() % MOD).collect();
             let yl = calculate_yl(&xl, &coef, MOD);
