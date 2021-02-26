@@ -1,3 +1,5 @@
+use crate::utils::algebraic_traits::Group;
+
 // * verified at https://judge.yosupo.jp/submission/26460
 // ------------ UnionFind start ------------
 #[derive(Clone, Debug)]
@@ -49,7 +51,6 @@ impl UnionFind {
 }
 // ------------ UnionFind end ------------
 
-use crate::utils::algebraic_traits::Group;
 
 // TODO: verify
 // ------------ Potentialized UnionFind start ------------
@@ -141,6 +142,70 @@ impl<T: Group> PotentializedUnionFind<T> {
     }
 }
 // ------------ Potentialized UnionFind end ------------
+
+
+// TODO: verify
+// ------------ Iterative UnionFind start ------------
+#[derive(Clone, Debug)]
+pub struct IterativeUnionFind(Vec<isize>, Vec<usize>);
+
+impl IterativeUnionFind {
+    pub fn new(len: usize) -> Self {
+        Self(vec![-1; len], (0..len).collect())
+    }
+
+    pub fn find(&mut self, i: usize) -> usize {
+        self._climb(i).0
+    }
+
+    pub fn size(&mut self, i: usize) -> usize {
+        self._climb(i).1
+    }
+
+    pub fn unite(&mut self, u: usize, v: usize) -> Result<(), ()> {
+        let (mut u, su) = self._climb(u);
+        let (mut v, sv) = self._climb(v);
+        if u == v { return Err(()); }
+        if su < sv {
+            std::mem::swap(&mut u, &mut v);
+        }
+        self.0[u] += self.0[v];
+        self.0[v] = u as isize;
+        self.1.swap(u, v);
+        Ok(())
+    }
+
+    pub fn is_same(&mut self, u: usize, v:usize) -> bool {
+        self.find(u) == self.find(v)
+    }
+
+    pub fn iter_group(&mut self, u: usize) -> Vec<usize> {
+        let mut res = Vec::with_capacity(self.size(u));
+        res.push(u);
+        let mut v = self.1[u];
+        while v != u {
+            res.push(v);
+            v = self.1[v];
+        }
+        res
+    }
+
+    fn _climb(&mut self, i: usize) -> (usize, usize) {
+        assert!(i < self.0.len());
+        let mut v = i;
+        while self.0[v] >= 0 {
+            let p = self.0[v] as usize;
+            if self.0[p] >= 0 {
+                self.0[v] = self.0[p];
+                v = self.0[p] as usize;
+            } else {
+                v = p;
+            }
+        }
+        (v, -self.0[v] as usize)
+    }
+}
+// ------------ Iterative UnionFind end ------------
 
 
 #[cfg(test)]
