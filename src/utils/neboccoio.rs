@@ -72,7 +72,7 @@ macro_rules! impl_scan {
 	};
 }
 
-impl_scan!(i16, i32, i64, isize, u16, u32, u64, usize, String);
+impl_scan!(i16, i32, i64, isize, u16, u32, u64, usize, String, f32, f64);
 
 pub enum Bytes {}
 impl Scan for Bytes {
@@ -135,7 +135,7 @@ macro_rules! impl_print_int {
 	};
 }
 
-impl_print_int!(i16, i32, i64, isize, u16, u32, u64, usize);
+impl_print_int!(i16, i32, i64, isize, u16, u32, u64, usize, f32, f64);
 
 impl Print for u8 {
 	fn print(w: &mut IO, x: Self) {

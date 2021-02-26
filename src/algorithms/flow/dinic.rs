@@ -1,4 +1,6 @@
 use super::Flow;
+
+// ------------ Dinic's algorithm start ------------
 use std::cmp::{max, min};
 
 struct Edge<F> {
@@ -164,6 +166,9 @@ impl<F: Flow> Dinic<F> {
         self.edges[e.0][e.1].flow
     }
 }
+
+// ------------ Dinic's algorithm start ------------
+
 
 #[cfg(test)]
 mod test {

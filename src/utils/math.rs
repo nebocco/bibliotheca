@@ -29,6 +29,7 @@ pub fn sqrt_floor(x: i64) -> i64 {
 
 pub fn modpow(mut x: i64, mut y: i64, modulo: i64) -> i64 {
 	x %= modulo;
+    if x == 0 { return 0; }
     let mut ret = 1;
     let mut cur = x;
     while y > 0 {
@@ -149,7 +150,7 @@ impl Fact {
     }
 }
 
-// ------------ struct Fact start ------------
+// ------------ struct Fact end ------------
 
 
 #[allow(clippy::many_single_char_names)]
