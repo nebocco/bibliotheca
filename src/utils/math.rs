@@ -47,8 +47,8 @@ pub fn modinv(mut x: i64, modulo: i64) -> i64 {
     extgcd(x, modulo).0.rem_euclid(modulo)
 }
 
-// return (x, y) s.t. a * x + b * y = gcd(a, b)
-pub fn extgcd(a: i64, b: i64) -> (i64, i64) {
+// return (x, y, gcd(a, b)) s.t. a * x + b * y = gcd(a, b)
+pub fn extgcd(a: i64, b: i64) -> (i64, i64, i64) {
     let mut x1 = 1;
     let mut y1 = 0;
     let mut m = a;
@@ -64,7 +64,45 @@ pub fn extgcd(a: i64, b: i64) -> (i64, i64) {
         std::mem::swap(&mut y1, &mut y2);
         std::mem::swap(&mut m, &mut n);
     }
-    (x2, y2)
+    (x2, y2, n)
+}
+
+// TODO: verify
+/// return (x, lcm(m_i)) satisfies x % m_i == r_i for all i
+/// l = &[(r_1, m_1), (r_2, m_2), ...]
+pub fn chinese_remainder(l: &[(i64, i64)]) -> Option<(i64, i64)> {
+	let mut cr = 0;
+    let mut cm = 1;
+    for &(r, m) in l {
+        let (p, _, d) = extgcd(cm, m);
+        if (cr - r) % d != 0 { return None; }
+        let tmp = (r - cr) / d * p % (m / d);
+        cr += cm * tmp;
+        cm *= m / d;
+    }
+    Some((cr.rem_euclid(cm), cm))
+}
+
+// TODO: verify
+/// Garner のアルゴリズム, x % modulo, lcm(m_i) % modulo を求める (m は互いに素でなければならない)
+/// for each step, we solve "coeffs[k] * t[k] + constants[k] = r_k (mod. m_k)"
+///      coeffs[k] = m_0 * m_1 *...* m_{k-1}
+///      constants[k] = t[0] + t[1] * m_0 + ... + t[k-1] * m_0 * m_1 *...* m_{k-2}
+/// l = &[(r_1, m_1), (r_2, m_2), ...]
+pub fn garner(l: &[(i64, i64)], modulo: i64) -> i64 {
+    let n = l.len();
+    let mut coeffs = vec![1; n+1];
+    let mut constants = vec![0; n + 1];
+	for k in 0..n {
+        let t = ((l[k].0 - constants[k]) * modinv(coeffs[k], l[k].1)).rem_euclid(l[k].1);
+        for j in k+1..n {
+            constants[j] = (constants[j] + t * coeffs[j]) % l[j].1;
+            coeffs[j] = (coeffs[j] * l[k].1) % l[j].1;
+        }
+        constants[n] = (constants[n] + t * coeffs[n]) % modulo;
+        coeffs[n] = (coeffs[n] * l[k].1) % modulo;
+    }
+    *constants.last().unwrap()
 }
 
 pub fn make_modinv_list(size: usize, modulo: i64) -> Vec<i64> {
@@ -193,6 +231,24 @@ pub fn mat_mult(a: &[Vec<i64>], b: &[Vec<i64>], modulo: i64) -> Vec<Vec<i64>> {
 	res
 }
 
+pub fn mat_pow(a: &[Vec<i64>], mut k: i64, modulo: i64) -> Vec<Vec<i64>> {
+	let n = a.len();
+	assert_eq!(a[0].len(), n);
+	let mut res = vec![vec![0; n]; n];
+    for i in 0..n {
+        res[i][i] = 1;
+    }
+    let mut v = a.to_owned();
+	while k > 0 {
+        if k & 1 == 1 {
+            res = mat_mult(&v, &res, modulo);
+        }
+        v = mat_mult(&v, &v, modulo);
+        k >>= 1;
+    }
+	res
+}
+
 // O(N**2)
 pub fn lagrange_evaluation(xl: &[i64], yl: &[i64], x: i64, modulo: i64) -> i64 {
     let n = xl.len();
@@ -289,8 +345,9 @@ mod tests {
     fn test_extgcd() {
         let query = vec![(7, 9), (-18, 8), (100, -9), (100, 178)];
         for &(a, b) in &query {
-            let (x, y) = extgcd(a, b);
-            assert_eq!(a * x + b * y, gcd(a, b));
+            let (x, y, d) = extgcd(a, b);
+            assert_eq!(gcd(a, b), d);
+            assert_eq!(a * x + b * y, d);
         }
     }
 
@@ -301,8 +358,9 @@ mod tests {
         for _ in 0..tasks {
             let a = rng.gen::<i32>() as i64;
             let b = rng.gen::<i32>() as i64;
-            let (x, y) = extgcd(a, b);
-            assert_eq!(a * x + b * y, gcd(a, b));
+            let (x, y, d) = extgcd(a, b);
+            assert_eq!(gcd(a, b), d);
+            assert_eq!(a * x + b * y, d);
         }
     }
 
