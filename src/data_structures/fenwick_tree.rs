@@ -83,8 +83,6 @@ impl<T: Group> FenwickTree<T> {
 
 
 // * verified: https://judge.yosupo.jp/submission/28227
-// ------------ FenwickTree without generics start ------------
-
 pub struct Fenwick(Vec<i64>);
 
 impl Fenwick {
@@ -168,7 +166,6 @@ impl Fenwick {
 
 }
 
-// ------------ FenwickTree without generics end ------------
 
 #[cfg(test)]
 mod tests {

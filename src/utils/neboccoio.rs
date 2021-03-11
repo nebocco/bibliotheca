@@ -74,6 +74,13 @@ macro_rules! impl_scan {
 
 impl_scan!(i16, i32, i64, isize, u16, u32, u64, usize, String, f32, f64);
 
+impl Scan for char {
+	type Output = char;
+	fn scan(s: &mut IO) -> Self::Output {
+		s.scan_str().chars().next().unwrap()
+	}
+}
+
 pub enum Bytes {}
 impl Scan for Bytes {
 	type Output = &'static [u8];

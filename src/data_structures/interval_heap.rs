@@ -16,8 +16,8 @@ impl<T: Element + Ord> DoublePriorityHeap<T> {
 		l
 	}
 
-	pub fn push(&mut self, x: &T) {
-		self.0.push(x.clone());
+	pub fn push(&mut self, x: T) {
+		self.0.push(x);
 		self.up(self.0.len() - 1, 1);
 	}
 
@@ -135,14 +135,14 @@ mod tests {
     #[test]
     fn new_i32() {
 		let mut hq = DoublePriorityHeap::<i32>::new();
-		for i in 0..6 { hq.push(&i); }
+		for i in 0..6 { hq.push(i); }
         assert_eq!(hq.get_min(), Some(&0));
         assert_eq!(hq.get_max(), Some(&5));
         assert_eq!(hq.pop_min(), Some(0));
 		assert_eq!(hq.pop_min(), Some(1));
         assert_eq!(hq.get_min(), Some(&2));
 		for i in 0..6 {
-			hq.push(&i);
+			hq.push(i);
 		}
 		assert_eq!(hq.pop_max(), Some(5));
 		assert_eq!(hq.get_max(), Some(&5));
@@ -159,7 +159,7 @@ mod tests {
 		assert_eq!(hq.pop_min(), Some(1));
         assert_eq!(hq.get_min(), Some(&2));
 		for i in 0..6 {
-			hq.push(&i);
+			hq.push(i);
 		}
 		assert_eq!(hq.pop_max(), Some(7));
 		assert_eq!(hq.get_max(), Some(&6));

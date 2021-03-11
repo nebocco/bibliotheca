@@ -28,6 +28,7 @@ pub fn dijkstra_01<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Vec<C> {
 	dist
 }
 
+// ------------ Dijkstra's algorithm start ------------
 
 #[allow(clippy::many_single_char_names)]
 pub fn dijkstra_heap<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Vec<C> {
@@ -55,6 +56,9 @@ pub fn dijkstra_heap<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Vec<C> {
 	}
 	dist
 }
+
+// ------------ Dijkstra's algorithm end ------------
+
 
 /// Computes single-source shortest paths with Dijkstra algorithm
 /// O(V^2)
