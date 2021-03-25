@@ -1,5 +1,9 @@
-use std::ops::{Mul, Range};
-use crate::utils::algebraic_traits::Monoid;
+use crate::utils::{
+    algebraic_traits::Monoid,
+    bounds::bounds_within
+};
+
+use std::ops::{ Mul, Range, RangeBounds };
 
 // * verified: https://judge.yosupo.jp/submission/28350
 // TODO: it might be able to make it faster
@@ -79,9 +83,8 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
         self.infuse(rng.end + self.size);
     }
 
-    pub fn fold(&mut self, rng: Range<usize>) -> T {
-        let mut l = rng.start + self.size;
-        let mut r = rng.end + self.size;
+    pub fn fold<R: RangeBounds<usize>>(&mut self, rng: R) -> T {
+        let Range { start: mut l, end: mut r } = bounds_within(rng, self.size);
         self.infiltrate(l);
         self.infiltrate(r);
         let mut lx = T::zero();

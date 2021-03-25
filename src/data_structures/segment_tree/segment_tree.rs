@@ -108,8 +108,6 @@ impl<T: Monoid> Index<usize> for SegmentTree<T> {
 
 // ------------ Segment Tree end ------------
 
-// ------------ Segment Tree with function start ------------
-
 pub struct SegmentTree2<T: Element, F: Fn(&T, &T) -> T> {
 	size: usize,
 	node: Vec<T>,
@@ -180,8 +178,6 @@ impl<T: Element, F: Fn(&T, &T) -> T> Index<usize> for SegmentTree2<T, F> {
 		&self.node[i + self.size]
 	}
 }
-
-// ------------ Segment Tree with function end ------------
 
 
 #[cfg(test)]
