@@ -180,6 +180,103 @@ pub fn mod_sqrt(mut a: i64, p: i64) -> Option<i64> {
 
 // TODO: Lehmer's algorithm
 
+///エラトステネスの篩
+pub struct Eratosthenes {
+    flags: Vec<u8>,
+    n: usize,
+}
+impl Eratosthenes {
+    const K_MASK: [[u8; 8]; 8] = [
+        [0xfe, 0xfd, 0xfb, 0xf7, 0xef, 0xdf, 0xbf, 0x7f],
+        [0xfd, 0xdf, 0xef, 0xfe, 0x7f, 0xf7, 0xfb, 0xbf],
+        [0xfb, 0xef, 0xfe, 0xbf, 0xfd, 0x7f, 0xf7, 0xdf],
+        [0xf7, 0xfe, 0xbf, 0xdf, 0xfb, 0xfd, 0x7f, 0xef],
+        [0xef, 0x7f, 0xfd, 0xfb, 0xdf, 0xbf, 0xfe, 0xf7],
+        [0xdf, 0xf7, 0x7f, 0xfd, 0xbf, 0xfe, 0xef, 0xfb],
+        [0xbf, 0xfb, 0xf7, 0x7f, 0xfe, 0xef, 0xdf, 0xfd],
+        [0x7f, 0xbf, 0xdf, 0xef, 0xf7, 0xfb, 0xfd, 0xfe],
+    ];
+
+    const C0: [[usize; 8]; 8] = [
+        [0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 0, 1, 1, 1, 1],
+        [2, 2, 0, 2, 0, 2, 2, 1],
+        [3, 1, 1, 2, 1, 1, 3, 1],
+        [3, 3, 1, 2, 1, 3, 3, 1],
+        [4, 2, 2, 2, 2, 2, 4, 1],
+        [5, 3, 1, 4, 1, 3, 5, 1],
+        [6, 4, 2, 4, 2, 4, 6, 1],
+    ];
+    const K_MOD_30: [usize; 8] = [1, 7, 11, 13, 17, 19, 23, 29];
+    const C1: [usize; 8] = [6, 4, 2, 4, 2, 4, 6, 2];
+
+    pub fn new(n: usize) -> Self {
+        if n > 10_000_000_000 { panic!(); }
+        let size = (n + 30 - 1) / 30;
+        let mut flags = vec![0xff; size];
+        flags[0] = 0xfe;
+
+        let r = n % 30;
+        flags[size - 1] = match r {
+            1..=1 => 0x0,
+            2..=7 => 0x1,
+            8..=11 => 0x3,
+            12..=13 => 0x7,
+            14..=17 => 0xf,
+            18..=19 => 0x1f,
+            20..=23 => 0x3f,
+            24..=29 => 0x7f,
+            _ => panic!(),
+        };
+
+        let quart_x = sqrt_floor(n as i64) as usize / 30 + 1;
+
+        for i in 0..quart_x {
+            let mut f: u8 = flags[i];
+
+            while f != 0 {
+                let i_bit = (f & f.wrapping_neg()).trailing_zeros() as usize;
+                let m = Eratosthenes::K_MOD_30[i_bit];
+                let mut k = i_bit;
+                let mut j = i * (30 * i + 2 * m) + (m * m) / 30;
+                while j < size {
+                    flags[j] &= Eratosthenes::K_MASK[i_bit][k];
+                    j += i * Eratosthenes::C1[k] + Eratosthenes::C0[i_bit][k];
+                    k = (k + 1) & 7;
+                }
+                f &= f - 1;
+            }
+        }
+
+        Eratosthenes { flags, n }
+    }
+
+    pub fn count(&self) -> usize {
+        if self.n < 6 {
+            (self.n + 1) >> 1 // count 2, 3, 5
+        } else {
+            3 + self.flags.iter().map(|x| x.count_ones()).sum::<u32>() as usize
+        }
+    }
+
+    pub fn primes(&self) -> Vec<i64> {
+        let mut ret = Vec::new();
+        [2, 3, 5]
+            .iter()
+            .take_while(|&&x| self.n > x)
+            .for_each(|&x| ret.push(x as i64));
+
+        for (i, &f) in self.flags.iter().enumerate() {
+            for (ii, &m) in Eratosthenes::K_MOD_30.iter().enumerate() {
+                if (f & (1 << ii)) != 0 {
+                    ret.push((30 * i + m) as i64);
+                }
+            }
+        }
+        ret
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
