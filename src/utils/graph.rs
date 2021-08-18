@@ -59,7 +59,7 @@ impl<C: Element> Graph<C> for UndirectedGraph<C> {
         });
         self.0[v].push(Edge {
             to: u,
-            cost: cost.clone(),
+            cost,
             id: self.1,
         });
         self.1 += 1;
@@ -91,7 +91,7 @@ impl<C: Element> Graph<C> for DirectedGraph<C> {
         });
         self.backward[v].push(Edge {
             to: u,
-            cost: cost.clone(),
+            cost,
             id: self.count,
         });
         self.count += 1;

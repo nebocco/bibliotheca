@@ -11,8 +11,8 @@ use std::{
 };
 
 // NOTE: `crate::` がないとうまく展開できません。
-crate::define_fp!(pub F998244353, Mod998244353, 998244353);
-crate::define_fp!(pub F1000000007, Mod1000000007, 1000000007);
+crate::define_fp!(pub F998244353, Mod998244353, 998_244_353);
+crate::define_fp!(pub F1000000007, Mod1000000007, 1_000_000_007);
 
 #[derive(Clone, PartialEq, Copy, Eq, Hash)]
 pub struct Fp<T>(i64, PhantomData<T>);
@@ -166,18 +166,20 @@ impl<T: Mod> One for Fp<T> {
     }
 }
 
+#[allow(clippy::suspicious_arithmetic_impl)]
 impl<T: Mod> Add for Fp<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
-        let res = self.0 + rhs.0;
+        let res: i64 = self.0 + rhs.0;
         Self::unchecked(if T::MOD <= res { res - T::MOD } else { res })
     }
 }
 
+#[allow(clippy::suspicious_arithmetic_impl)]
 impl<T: Mod> Sub for Fp<T> {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
-        let res = self.0 - rhs.0;
+        let res: i64 = self.0 - rhs.0;
         Self::unchecked(if res < 0 { res + T::MOD } else { res })
     }
 }

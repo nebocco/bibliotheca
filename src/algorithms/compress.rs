@@ -10,6 +10,7 @@ pub fn compress<T: Clone + Ord + Hash>(l: &[T], start: usize) -> (HashMap<T, usi
     (dict, res)
 }
 
+#[allow(clippy::type_complexity)]
 pub fn compress_2d<T: Clone + Ord + Hash>(
     l: &[(T, T)],
     start: usize,

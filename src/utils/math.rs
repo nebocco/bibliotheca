@@ -239,9 +239,9 @@ pub fn mat_mult(a: &[Vec<i64>], b: &[Vec<i64>], modulo: i64) -> Vec<Vec<i64>> {
     let o = b[0].len();
     let mut res = vec![vec![0; o]; n];
     for i in 0..n {
-        for j in 0..m {
-            for k in 0..o {
-                res[i][k] = (res[i][k] + a[i][j] * b[j][k]) % modulo;
+        for (j, bj) in b.iter().enumerate() {
+            for (k, bjk) in bj.iter().enumerate() {
+                res[i][k] = (res[i][k] + a[i][j] * bjk) % modulo;
             }
         }
     }
@@ -252,8 +252,8 @@ pub fn mat_pow(a: &[Vec<i64>], mut k: i64, modulo: i64) -> Vec<Vec<i64>> {
     let n = a.len();
     assert_eq!(a[0].len(), n);
     let mut res = vec![vec![0; n]; n];
-    for i in 0..n {
-        res[i][i] = 1;
+    for (i, resi) in res.iter_mut().enumerate() {
+        resi[i] = 1;
     }
     let mut v = a.to_owned();
     while k > 0 {
@@ -307,10 +307,10 @@ pub fn lagrange_interpolation(xl: &[i64], yl: &[i64], modulo: i64) -> Vec<i64> {
     let mut nxt = vec![0; n + 1];
     cur[0] = -xl[0];
     cur[1] = 1;
-    for i in 1..n {
-        nxt[0] = cur[0] * -xl[i] % modulo;
+    for &xli in xl.iter().skip(1) {
+        nxt[0] = cur[0] * -xli % modulo;
         for j in 1..=n {
-            nxt[j] = (cur[j] * -xl[i] + cur[j - 1]) % modulo;
+            nxt[j] = (cur[j] * -xli + cur[j - 1]) % modulo;
         }
         std::mem::swap(&mut cur, &mut nxt);
     }

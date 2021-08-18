@@ -8,24 +8,30 @@ impl XorShift {
     }
 
     fn next(&mut self) -> i64 {
-        self.0 ^= (self.0 & 0x7ffff) << 13;
+        self.0 ^= (self.0 & 0x0007_ffff) << 13;
         self.0 ^= self.0 >> 17;
-        self.0 ^= (self.0 & 0x7ffffff) << 5;
+        self.0 ^= (self.0 & 0x07ff_ffff) << 5;
         self.0
     }
 }
 
 pub struct SquareSkipList {
     square: i64,
-    layer0: Vec<Box<Vec<i64>>>,
+    layer0: Vec<Vec<i64>>,
     layer1: Vec<i64>,
     rand: XorShift,
+}
+
+impl Default for SquareSkipList {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl SquareSkipList {
     pub fn new() -> Self {
         let square = 1000;
-        let layer0 = vec![Box::new(Vec::new())];
+        let layer0 = vec![Vec::new()];
         let layer1 = vec![std::i64::MAX];
         let rand = XorShift::new(42);
         Self {
@@ -42,7 +48,7 @@ impl SquareSkipList {
         if self.rand.next() % self.square == 0 {
             self.layer1.insert(idx1, x);
             let vec1 = self.layer0[idx1].split_off(idx0);
-            self.layer0.insert(idx1 + 1, Box::new(vec1));
+            self.layer0.insert(idx1 + 1, vec1);
         } else {
             self.layer0[idx1].insert(idx0, x);
         }
@@ -61,13 +67,11 @@ impl SquareSkipList {
             } else {
                 Err(())
             }
+        } else if self.layer0[idx1][idx0] == x {
+            self.layer0[idx1].remove(idx0);
+            Ok(())
         } else {
-            if self.layer0[idx1][idx0] == x {
-                self.layer0[idx1].remove(idx0);
-                Ok(())
-            } else {
-                Err(())
-            }
+            Err(())
         }
     }
 

@@ -24,7 +24,7 @@ pub struct Section<T: Monoid> {
 
 impl<T: Monoid> Leaf<T> {
     fn new(i: usize, x: T) -> Self {
-        Leaf { i: i, val: x }
+        Leaf { i, val: x }
     }
     fn fold(&self) -> T {
         self.val.clone()
@@ -60,10 +60,10 @@ impl<T: Monoid> Node<T> {
         std::mem::replace(self, Node::None)
     }
     fn fold(&self) -> T {
-        match self {
-            &Node::Section(ref sec) => sec.as_ref().fold(),
-            &Node::Leaf(ref leaf) => leaf.fold(),
-            &Node::None => T::zero(),
+        match *self {
+            Node::Section(ref sec) => sec.as_ref().fold(),
+            Node::Leaf(ref leaf) => leaf.fold(),
+            Node::None => T::zero(),
         }
     }
     fn update(self, i: usize, x: T, l: usize, r: usize) -> Self {
@@ -91,25 +91,25 @@ impl<T: Monoid> Node<T> {
         }
     }
     fn range_fold(&self, a: usize, b: usize, l: usize, r: usize) -> T {
-        match self {
-            &Node::Section(ref sec) => {
+        match *self {
+            Node::Section(ref sec) => {
                 if b <= l || r <= a {
                     T::zero()
                 } else if a <= l && r <= b {
                     sec.fold()
                 } else {
                     let m = (l + r) >> 1;
-                    return sec.left.range_fold(a, b, l, m) + sec.right.range_fold(a, b, m, r);
+                    sec.left.range_fold(a, b, l, m) + sec.right.range_fold(a, b, m, r)
                 }
             }
-            &Node::Leaf(ref leaf) => {
+            Node::Leaf(ref leaf) => {
                 if a <= leaf.i && leaf.i < b {
                     leaf.fold()
                 } else {
                     T::zero()
                 }
             }
-            &Node::None => T::zero(),
+            Node::None => T::zero(),
         }
     }
 }

@@ -23,11 +23,15 @@ impl<T: Mod> Polynomial<T> {
     }
 
     pub fn get(&self, x: usize) -> Fp<T> {
-        self.0.get(x).cloned().unwrap_or(Fp::zero())
+        self.0.get(x).cloned().unwrap_or_else(Fp::zero)
     }
 
     pub fn len(&self) -> usize {
         self.0.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
 
     pub fn resize(&mut self, n: usize) {
@@ -77,7 +81,7 @@ impl<T: Mod> Polynomial<T> {
     }
 
     pub fn integral(&self) -> Self {
-        if self.len() < 1 {
+        if self.is_empty() {
             return Polynomial::zero();
         }
         let mut b = vec![Fp::zero(); self.len() + 1];
@@ -147,7 +151,7 @@ impl<T: NTTFriendly> Polynomial<T> {
     }
 
     pub fn log(&self, n: usize) -> Self {
-        assert!(self.len() > 0 && self.0[0].is_one());
+        assert!(!self.is_empty() && self.0[0].is_one());
         (self.derivative() * self.inverse(n))
             .truncate(n - 1)
             .integral()
@@ -187,7 +191,7 @@ impl<T: NTTFriendly> Polynomial<T> {
         ans
     }
     pub fn interpolation(x: &[Fp<T>], y: &[Fp<T>]) -> Self {
-        assert!(x.len() > 0 && x.len() == y.len());
+        assert!(!x.is_empty() && x.len() == y.len());
         let size = x.len().next_power_of_two();
         let mut p = vec![Polynomial::one(); 2 * size];
         for (p, x) in p[size..].iter_mut().zip(x.iter()) {

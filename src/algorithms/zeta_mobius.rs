@@ -1,3 +1,4 @@
+#![allow(clippy::assign_op_pattern)]
 use crate::utils::algebraic_traits::{ComGroup, Field, Group, Ring};
 
 // ------------ zeta & mobius start ------------

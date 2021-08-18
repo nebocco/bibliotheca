@@ -15,7 +15,7 @@ impl SingleRollingHash {
     pub fn from(string: &[u8], base: i64, modulo: i64) -> Self {
         let n = string.len();
         let mut data = vec![0; n + 1];
-        for (i, &e) in string.into_iter().enumerate() {
+        for (i, &e) in string.iter().enumerate() {
             data[i + 1] = (data[i] * base + e as i64) % modulo;
         }
         let mut pow = vec![1; n + 1];

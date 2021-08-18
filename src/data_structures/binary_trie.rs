@@ -1,5 +1,6 @@
 // * verified: https://judge.yosupo.jp/submission/30795
 // ------------ Binary Trie start ------------
+#[derive(Default)]
 pub struct BinaryTrie {
     cnt: usize,
     lch: Option<Box<BinaryTrie>>,

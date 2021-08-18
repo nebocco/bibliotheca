@@ -13,7 +13,7 @@ impl BitSet {
     }
 
     pub fn fill(&mut self) {
-        self.data.iter_mut().for_each(|x| *x = 0xffffffff);
+        self.data.iter_mut().for_each(|x| *x = 0xffff_ffff);
     }
 
     pub fn access(&self, pos: usize) -> bool {

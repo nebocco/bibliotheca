@@ -1,3 +1,4 @@
+#![allow(clippy::many_single_char_names)]
 use super::{Cost, Flow};
 
 pub struct MinCostFlow<F: Flow, C: Cost> {
@@ -23,7 +24,7 @@ impl<F: Flow + Into<C>, C: Cost> MinCostFlow<F, C> {
         let rev_s = self.g[dst].len();
         let rev_d = self.g[src].len() + if src == dst { 1 } else { 0 };
         self.g[src].push(Edge {
-            dst: dst,
+            dst,
             rev: rev_s,
             cap,
             cost,

@@ -6,10 +6,13 @@
 /// calculate a_n
 /// O(k^2 logk)
 pub fn kitamasa(a: &[i64], c: &[i64], n: i64, modulo: i64) -> i64 {
+    assert_eq!(a.len(), c.len());
+
     /// x = f(s): a_s = f(s) * a[0..k]
     /// calculate f(s+1) from f(s)
     /// O(k)
     fn plus_one(x: &[i64], c: &[i64], modulo: i64) -> Vec<i64> {
+        assert_eq!(x.len(), c.len());
         let k = c.len();
         let mut res = vec![0; k];
         for i in 1..k {
@@ -22,12 +25,13 @@ pub fn kitamasa(a: &[i64], c: &[i64], n: i64, modulo: i64) -> i64 {
     /// calculate f(s*2) from f(s), f(s+1), ..., f(s+k-1)
     /// O(k^2)
     fn mult_two(x: &[i64], c: &[i64], modulo: i64) -> Vec<i64> {
+        assert_eq!(x.len(), c.len());
         let k = c.len();
         let mut res = vec![0; k];
         let mut v = x.to_owned();
-        for i in 0..k {
+        for &xx in x {
             for j in 0..k {
-                res[j] = (res[j] + x[i] * v[j]) % modulo;
+                res[j] = (res[j] + xx * v[j]) % modulo;
             }
             v = plus_one(&v, c, modulo);
         }

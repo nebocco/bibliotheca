@@ -95,11 +95,11 @@ impl<T: Group> PotentializedUnionFind<T> {
             self.data[v] += self.data[u];
             self.data[u] = v as isize;
             self.ws[v] = self.ws[u].clone() + w.clone();
-            self.ws[u] = -w.clone();
+            self.ws[u] = -w;
         } else {
             self.data[u] += self.data[v];
             self.data[v] = u as isize;
-            self.ws[v] = w.clone();
+            self.ws[v] = w;
         }
         Ok(())
     }
