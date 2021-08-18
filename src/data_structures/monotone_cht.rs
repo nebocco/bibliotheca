@@ -1,4 +1,4 @@
-use crate::data_structures::li_chao_tree::{ Line, LineNumber };
+use crate::data_structures::li_chao_tree::{Line, LineNumber};
 
 use std::collections::VecDeque;
 
@@ -7,15 +7,19 @@ pub struct MonotoneCHT<T: LineNumber> {
     lines: VecDeque<Line<T>>,
 }
 
-impl<T: LineNumber + std::ops::Sub<Output=T>> MonotoneCHT<T> {
+impl<T: LineNumber + std::ops::Sub<Output = T>> MonotoneCHT<T> {
     pub fn new() -> Self {
-        MonotoneCHT { lines: VecDeque::new() }
+        MonotoneCHT {
+            lines: VecDeque::new(),
+        }
     }
 
     fn check(ln0: &Line<T>, ln1: &Line<T>, ln2: &Line<T>) -> bool {
-        if ln0.a == ln1.a { ln0.b < ln1.b }
-        else if ln1.a == ln2.a { ln1.b > ln2.b }
-        else {
+        if ln0.a == ln1.a {
+            ln0.b < ln1.b
+        } else if ln1.a == ln2.a {
+            ln1.b > ln2.b
+        } else {
             (ln1.b - ln0.b) * (ln1.a - ln2.a) >= (ln2.b - ln1.b) * (ln0.a - ln1.a)
         }
     }
@@ -26,7 +30,13 @@ impl<T: LineNumber + std::ops::Sub<Output=T>> MonotoneCHT<T> {
         self.lines.push_front(ln);
     }
     pub fn push_back(&mut self, ln: Line<T>) {
-        while 1 < self.lines.len() && MonotoneCHT::check(&self.lines[self.lines.len() - 2], &self.lines[self.lines.len() - 1], &ln) {
+        while 1 < self.lines.len()
+            && MonotoneCHT::check(
+                &self.lines[self.lines.len() - 2],
+                &self.lines[self.lines.len() - 1],
+                &ln,
+            )
+        {
             self.lines.pop_back();
         }
         self.lines.push_back(ln);
@@ -39,18 +49,27 @@ impl<T: LineNumber + std::ops::Sub<Output=T>> MonotoneCHT<T> {
             let mid = (ok + ng) / 2;
             let ln0 = &self.lines[mid - 1];
             let ln1 = &self.lines[mid];
-            if  (ln1.b - ln0.b) <= x * (ln0.a - ln1.a) {
+            if (ln1.b - ln0.b) <= x * (ln0.a - ln1.a) {
                 ok = mid;
-            }
-            else {
+            } else {
                 ng = mid;
             }
         }
         self.lines[ok].get(x)
     }
 
-    pub fn incl_query(&self) -> MonotoneCHTInclQuery<T> { MonotoneCHTInclQuery { lines: &self.lines, i: 0 } }
-    pub fn deq_query(&self) -> MonotoneCHTDeqQuery<T> { MonotoneCHTDeqQuery { lines: &self.lines, i: self.lines.len() - 1 } }
+    pub fn incl_query(&self) -> MonotoneCHTInclQuery<T> {
+        MonotoneCHTInclQuery {
+            lines: &self.lines,
+            i: 0,
+        }
+    }
+    pub fn deq_query(&self) -> MonotoneCHTDeqQuery<T> {
+        MonotoneCHTDeqQuery {
+            lines: &self.lines,
+            i: self.lines.len() - 1,
+        }
+    }
 }
 
 pub struct MonotoneCHTInclQuery<'a, T: LineNumber> {
@@ -60,7 +79,9 @@ pub struct MonotoneCHTInclQuery<'a, T: LineNumber> {
 
 impl<'a, T: LineNumber> MonotoneCHTInclQuery<'a, T> {
     pub fn min_value(&mut self, x: T) -> T {
-        while self.i + 1 < self.lines.len() && self.lines[self.i].get(x) >= self.lines[self.i + 1].get(x) {
+        while self.i + 1 < self.lines.len()
+            && self.lines[self.i].get(x) >= self.lines[self.i + 1].get(x)
+        {
             self.i += 1;
         }
         self.lines[self.i].get(x)

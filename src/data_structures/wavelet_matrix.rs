@@ -1,12 +1,14 @@
 use crate::data_structures::bit_vector::BitVector;
 
 pub struct WaveletMatrix {
-    _table: BitVector
+    _table: BitVector,
 }
 
 impl WaveletMatrix {
     pub fn new() -> Self {
-        WaveletMatrix{ _table: BitVector::new(1) }
+        WaveletMatrix {
+            _table: BitVector::new(1),
+        }
     }
 }
 

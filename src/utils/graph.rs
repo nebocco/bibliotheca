@@ -1,14 +1,19 @@
-use std::ops::{ Add, AddAssign, Sub, Neg };
-use crate::utils::algebraic_traits::{ Element, One, Zero };
+use crate::utils::algebraic_traits::{Element, One, Zero};
+use std::ops::{Add, AddAssign, Neg, Sub};
 
 // ------------ Graph impl start ------------
 
 pub trait Cost:
     Element
-    + Clone + Copy + std::fmt::Display
-    + Eq + Ord
-    + Zero + One
-    + Add<Output = Self> + AddAssign
+    + Clone
+    + Copy
+    + std::fmt::Display
+    + Eq
+    + Ord
+    + Zero
+    + One
+    + Add<Output = Self>
+    + AddAssign
     + Sub<Output = Self>
     + Neg<Output = Self>
 {
@@ -20,11 +25,11 @@ pub struct Edge<C = Void> {
     // pub from: usize,
     pub to: usize,
     pub cost: C,
-    pub id: usize
+    pub id: usize,
 }
 
 pub struct UndirectedGraph<C>(pub Vec<Vec<Edge<C>>>, pub usize);
-pub struct DirectedGraph<C>{
+pub struct DirectedGraph<C> {
     pub forward: Vec<Vec<Edge<C>>>,
     pub backward: Vec<Vec<Edge<C>>>,
     pub count: usize,
@@ -47,8 +52,16 @@ impl<C: Element> Graph<C> for UndirectedGraph<C> {
     }
 
     fn add_edge(&mut self, u: usize, v: usize, cost: C) {
-        self.0[u].push(Edge{ to: v, cost: cost.clone(), id: self.1 });
-        self.0[v].push(Edge{ to: u, cost: cost.clone(), id: self.1 });
+        self.0[u].push(Edge {
+            to: v,
+            cost: cost.clone(),
+            id: self.1,
+        });
+        self.0[v].push(Edge {
+            to: u,
+            cost: cost.clone(),
+            id: self.1,
+        });
         self.1 += 1;
     }
 
@@ -62,7 +75,7 @@ impl<C: Element> Graph<C> for DirectedGraph<C> {
         Self {
             forward: vec![Vec::<Edge<C>>::new(); size],
             backward: vec![Vec::<Edge<C>>::new(); size],
-            count: 0
+            count: 0,
         }
     }
 
@@ -71,8 +84,16 @@ impl<C: Element> Graph<C> for DirectedGraph<C> {
     }
 
     fn add_edge(&mut self, u: usize, v: usize, cost: C) {
-        self.forward[u].push(Edge{ to: v, cost: cost.clone(), id: self.count });
-        self.backward[v].push(Edge{ to: u, cost: cost.clone(), id: self.count });
+        self.forward[u].push(Edge {
+            to: v,
+            cost: cost.clone(),
+            id: self.count,
+        });
+        self.backward[v].push(Edge {
+            to: u,
+            cost: cost.clone(),
+            id: self.count,
+        });
         self.count += 1;
     }
 
@@ -117,18 +138,28 @@ impl std::fmt::Display for Void {
 }
 
 impl Zero for Void {
-    fn zero() -> Self { Void() }
-    fn is_zero(&self) -> bool { true }
+    fn zero() -> Self {
+        Void()
+    }
+    fn is_zero(&self) -> bool {
+        true
+    }
 }
 
 impl One for Void {
-    fn one() -> Self { Void() }
-    fn is_one(&self) -> bool { true }
+    fn one() -> Self {
+        Void()
+    }
+    fn is_one(&self) -> bool {
+        true
+    }
 }
 
 impl Add for Void {
     type Output = Self;
-    fn add(self, _: Self) -> Self { Void() }
+    fn add(self, _: Self) -> Self {
+        Void()
+    }
 }
 
 impl AddAssign for Void {
@@ -137,14 +168,20 @@ impl AddAssign for Void {
 
 impl Sub for Void {
     type Output = Self;
-    fn sub(self, _: Self) -> Self { Void() }
+    fn sub(self, _: Self) -> Self {
+        Void()
+    }
 }
 
 impl Neg for Void {
     type Output = Self;
-    fn neg(self) -> Self { Void() }
+    fn neg(self) -> Self {
+        Void()
+    }
 }
 
-impl Cost for Void { const MAX: Self = Void(); }
+impl Cost for Void {
+    const MAX: Self = Void();
+}
 
 // ------------ Graph impl end ------------

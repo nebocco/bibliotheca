@@ -6,7 +6,6 @@ https://github.com/ngtkana/ac-adapter-rs/blob/master/crates/algolib/sparse_table
 
 use crate::utils::bounds::bounds_within;
 
-
 // ------------ SparseTable start ------------
 
 use std::ops;
@@ -38,7 +37,7 @@ impl<T: Ord> SparseTableArgmin<T> {
                 }
             })
         }
-	}
+    }
 
     #[inline]
     pub fn min(&self, range: impl ops::RangeBounds<usize>) -> Option<&T> {
@@ -87,7 +86,6 @@ impl<T: Ord> From<Vec<T>> for SparseTableArgmin<T> {
 }
 
 // ------------ SparseTable end ------------
-
 
 #[cfg(test)]
 mod tests {

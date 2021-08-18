@@ -17,10 +17,14 @@ pub fn hill_climb<S: State, T: Metaheuristics<S>>(problem: &mut T, runtime: Dura
     best_candidate.state
 }
 
-pub fn hill_climb_retry<S: State, T: Metaheuristics<S>>(problem: &mut T, runtime: Duration, probability: f64) -> S {
+pub fn hill_climb_retry<S: State, T: Metaheuristics<S>>(
+    problem: &mut T,
+    runtime: Duration,
+    probability: f64,
+) -> S {
     let mut rng = thread_rng();
     let mut current_candidate = problem.generate();
-	let mut best_candidate = current_candidate.clone();
+    let mut best_candidate = current_candidate.clone();
     let start_time = Instant::now();
 
     while Instant::now().duration_since(start_time) < runtime {
@@ -32,10 +36,10 @@ pub fn hill_climb_retry<S: State, T: Metaheuristics<S>>(problem: &mut T, runtime
         let mut next_candidate = problem.neighbor(&current_candidate);
 
         if problem.evaluate(&mut next_candidate) > problem.evaluate(&mut current_candidate) {
-			current_candidate = next_candidate;
-			if problem.evaluate(&mut current_candidate) > problem.evaluate(&mut best_candidate) {
-				best_candidate = current_candidate.clone();
-			}
+            current_candidate = next_candidate;
+            if problem.evaluate(&mut current_candidate) > problem.evaluate(&mut best_candidate) {
+                best_candidate = current_candidate.clone();
+            }
         }
     }
     best_candidate.state

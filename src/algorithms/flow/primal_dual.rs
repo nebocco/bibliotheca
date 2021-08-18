@@ -1,4 +1,4 @@
-use super::{ Flow, Cost };
+use super::{Cost, Flow};
 
 pub struct MinCostFlow<F: Flow, C: Cost> {
     g: Vec<Vec<Edge<F, C>>>,
@@ -64,7 +64,9 @@ impl<F: Flow + Into<C>, C: Cost> MinCostFlow<F, C> {
                     }
                 }
             }
-            if prev[t].0 == !0 {  break; }
+            if prev[t].0 == !0 {
+                break;
+            }
 
             for u in 0..n {
                 if dist[u] != C::MAX {

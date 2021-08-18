@@ -28,7 +28,12 @@ impl Traversal {
     }
 
     pub fn post_order<C: Cost>(graph: &[Vec<Edge<C>>]) -> Self {
-        fn _dfs<C: Cost>(graph: &[Vec<Edge<C>>], x: usize, ckd: &mut [bool], res: &mut PermutationBuilder) {
+        fn _dfs<C: Cost>(
+            graph: &[Vec<Edge<C>>],
+            x: usize,
+            ckd: &mut [bool],
+            res: &mut PermutationBuilder,
+        ) {
             for &y in graph[x].iter() {
                 if !std::mem::replace(&mut ckd[y.to], true) {
                     _dfs(graph, y.to, ckd, res);

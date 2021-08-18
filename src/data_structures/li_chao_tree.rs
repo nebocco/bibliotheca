@@ -2,18 +2,25 @@
 // TODO: should be faster
 // ------------ Li Chao Tree start ------------
 
-use std::ops::{ Add, Mul };
+use std::ops::{Add, Mul};
 
-pub trait LineNumber: Add<Output=Self> + Mul<Output=Self> + Copy + PartialOrd {}
+pub trait LineNumber: Add<Output = Self> + Mul<Output = Self> + Copy + PartialOrd {}
 impl LineNumber for i64 {}
 impl LineNumber for f64 {}
 
 #[derive(Clone, Debug)]
-pub struct Line<T> { pub a: T, pub b: T, }
+pub struct Line<T> {
+    pub a: T,
+    pub b: T,
+}
 
 impl<T: LineNumber> Line<T> {
-    pub fn new(a: T, b: T) -> Self { Line { a, b } }
-    pub fn get(&self, x: T) -> T { self.a * x + self.b }
+    pub fn new(a: T, b: T) -> Self {
+        Line { a, b }
+    }
+    pub fn get(&self, x: T) -> T {
+        self.a * x + self.b
+    }
 }
 
 pub struct LiChaoTree<T> {
@@ -46,7 +53,9 @@ impl<T: LineNumber> LiChaoTree<T> {
                 } else {
                     self.node[i] = Some(li)
                 }
-                if bl == br { break; }
+                if bl == br {
+                    break;
+                }
                 if bl != bm {
                     r = m;
                     i <<= 1;
@@ -56,7 +65,7 @@ impl<T: LineNumber> LiChaoTree<T> {
                 }
             } else {
                 self.node[i] = Some(line);
-                break
+                break;
             };
         }
     }
@@ -107,7 +116,6 @@ impl<T: LineNumber> LiChaoTree<T> {
 }
 
 // ------------ Li Chao Tree end ------------
-
 
 #[cfg(test)]
 mod tests {

@@ -3,7 +3,7 @@
 pub struct BinaryTrie {
     cnt: usize,
     lch: Option<Box<BinaryTrie>>,
-    rch: Option<Box<BinaryTrie>>
+    rch: Option<Box<BinaryTrie>>,
 }
 
 impl BinaryTrie {
@@ -11,21 +11,27 @@ impl BinaryTrie {
         Self {
             cnt: 0,
             lch: None,
-            rch: None
+            rch: None,
         }
     }
 
-    pub fn size(&self) -> usize { self.cnt }
+    pub fn size(&self) -> usize {
+        self.cnt
+    }
 
     pub fn contains(&mut self, mut val: u32) -> bool {
         let mut node = self;
         val = val.reverse_bits();
         for _ in 0..32 {
             node = if val & 1 == 0 {
-                if node.lch.is_none() { return false; }
+                if node.lch.is_none() {
+                    return false;
+                }
                 node.lch.as_deref_mut().unwrap()
             } else {
-                if node.rch.is_none() { return false; }
+                if node.rch.is_none() {
+                    return false;
+                }
                 node.rch.as_deref_mut().unwrap()
             };
             val >>= 1;
@@ -34,7 +40,9 @@ impl BinaryTrie {
     }
 
     pub fn insert(&mut self, mut val: u32) {
-        if self.contains(val) { return; }
+        if self.contains(val) {
+            return;
+        }
         self.cnt += 1;
         let mut node = self;
         val = val.reverse_bits();
@@ -56,7 +64,9 @@ impl BinaryTrie {
     }
 
     pub fn erase(&mut self, mut val: u32) {
-        if !self.contains(val) { return; }
+        if !self.contains(val) {
+            return;
+        }
         self.cnt -= 1;
         let mut node = self;
         val = val.reverse_bits();
@@ -98,9 +108,13 @@ impl BinaryTrie {
         res
     }
 
-    pub fn max(&mut self) -> u32 { self.xor_min(!0) }
+    pub fn max(&mut self) -> u32 {
+        self.xor_min(!0)
+    }
 
-    pub fn min(&mut self) -> u32 { self.xor_min(0) }
+    pub fn min(&mut self) -> u32 {
+        self.xor_min(0)
+    }
 
     pub fn count_lower_than(&mut self, mut val: u32) -> usize {
         let mut node = self;
@@ -111,10 +125,14 @@ impl BinaryTrie {
                 res += node.lch.as_deref().unwrap().cnt;
             }
             node = if val & 1 == 0 {
-                if node.lch.is_none() { return res; }
+                if node.lch.is_none() {
+                    return res;
+                }
                 node.lch.as_deref_mut().unwrap()
             } else {
-                if node.rch.is_none() { return res; }
+                if node.rch.is_none() {
+                    return res;
+                }
                 node.rch.as_deref_mut().unwrap()
             };
             val >>= 1;
@@ -124,7 +142,6 @@ impl BinaryTrie {
 }
 
 // ------------ Binary Trie end ------------
-
 
 #[cfg(test)]
 mod tests {

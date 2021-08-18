@@ -2,17 +2,21 @@ use crate::utils::bitset::BitSet;
 use crate::utils::math::*;
 
 pub fn atkin_sieve(n: usize) -> Vec<i64> {
-    let mut sieve = BitSet::new(n+1);
+    let mut sieve = BitSet::new(n + 1);
     let lim = (n as f64).sqrt() as usize + 1;
 
     for z in (1..6).step_by(4) {
         for y in (z..lim).step_by(6) {
             for x in 1..lim {
-                if 4 * x * x + y * y > n { break; }
+                if 4 * x * x + y * y > n {
+                    break;
+                }
                 sieve.flip(4 * x * x + y * y);
             }
-            for x in (y+1..lim).step_by(2) {
-                if 3 * x * x - y * y > n { break; }
+            for x in (y + 1..lim).step_by(2) {
+                if 3 * x * x - y * y > n {
+                    break;
+                }
                 sieve.flip(3 * x * x - y * y);
             }
         }
@@ -21,11 +25,15 @@ pub fn atkin_sieve(n: usize) -> Vec<i64> {
     for z in (2..5).step_by(2) {
         for y in (z..lim).step_by(6) {
             for x in (1..lim).step_by(2) {
-                if 3 * x * x + y * y > n { break; }
+                if 3 * x * x + y * y > n {
+                    break;
+                }
                 sieve.flip(3 * x * x + y * y);
             }
-            for x in (y+1..lim).step_by(2) {
-                if 3 * x * x - y * y > n { break; }
+            for x in (y + 1..lim).step_by(2) {
+                if 3 * x * x - y * y > n {
+                    break;
+                }
                 sieve.flip(3 * x * x - y * y);
             }
         }
@@ -34,7 +42,9 @@ pub fn atkin_sieve(n: usize) -> Vec<i64> {
     for z in 1..3 {
         for y in (3..lim).step_by(6) {
             for x in (z..lim).step_by(3) {
-                if 4 * x * x + y * y > n { break; }
+                if 4 * x * x + y * y > n {
+                    break;
+                }
                 sieve.flip(4 * x * x + y * y);
             }
         }
@@ -42,7 +52,7 @@ pub fn atkin_sieve(n: usize) -> Vec<i64> {
 
     for i in 5..lim {
         if sieve.access(i) {
-            for j in (i*i..n+1).step_by(i*i) {
+            for j in (i * i..n + 1).step_by(i * i) {
                 sieve.set(j, false);
             }
         }
@@ -52,12 +62,13 @@ pub fn atkin_sieve(n: usize) -> Vec<i64> {
     sieve.collect().into_iter().map(|x| x as i64).collect()
 }
 
-
 pub fn factorize(x: i64) -> Vec<(i64, usize)> {
     let mut y = x;
     let mut res = Vec::new();
-    for i in 2..x+1 {
-        if i * i > x { break; }
+    for i in 2..x + 1 {
+        if i * i > x {
+            break;
+        }
         if y % i == 0 {
             let mut cnt = 0;
             while y % i == 0 {
@@ -67,14 +78,18 @@ pub fn factorize(x: i64) -> Vec<(i64, usize)> {
             res.push((i, cnt));
         }
     }
-    if y > 1 { res.push((y, 1)); }
+    if y > 1 {
+        res.push((y, 1));
+    }
     res
 }
 
 pub fn divisor(x: i64) -> Vec<i64> {
     let mut res = Vec::new();
-    for i in 1..x+1 {
-        if i * i > x { break; }
+    for i in 1..x + 1 {
+        if i * i > x {
+            break;
+        }
         if x % i == 0 {
             res.push(i);
             if i * i < x {
@@ -95,7 +110,9 @@ pub fn totient(x: i64) -> i64 {
 
 #[allow(clippy::many_single_char_names)]
 pub fn pollard_rho(v: i64, seed: i64) -> i64 {
-    if v == 0 { return 1;}
+    if v == 0 {
+        return 1;
+    }
     let seed = seed.wrapping_mul(v);
     let c = seed & 0xff;
     let u = c & 0x7f;
@@ -147,7 +164,9 @@ pub fn pollard_rho(v: i64, seed: i64) -> i64 {
 #[allow(clippy::many_single_char_names)]
 pub fn mod_sqrt(mut a: i64, p: i64) -> Option<i64> {
     a %= p;
-    if a < 2 { return Some(a); }
+    if a < 2 {
+        return Some(a);
+    }
     let s = (p - 1).trailing_zeros() as i64;
     let q = (p - 1) >> s;
     let mut z = 1;
@@ -168,7 +187,9 @@ pub fn mod_sqrt(mut a: i64, p: i64) -> Option<i64> {
                 break;
             }
         }
-        if i == p { return None; }
+        if i == p {
+            return None;
+        }
         let b = modpow(c, modpow(2, m - i - 1, p - 1), p);
         m = i;
         c = b * b % p;
@@ -211,7 +232,9 @@ impl Eratosthenes {
     const C1: [usize; 8] = [6, 4, 2, 4, 2, 4, 6, 2];
 
     pub fn new(n: usize) -> Self {
-        if n > 10_000_000_000 { panic!(); }
+        if n > 10_000_000_000 {
+            panic!();
+        }
         let size = (n + 30 - 1) / 30;
         let mut flags = vec![0xff; size];
         flags[0] = 0xfe;

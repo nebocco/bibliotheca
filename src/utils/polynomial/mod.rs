@@ -1,6 +1,6 @@
 use crate::utils::{
-    algebraic_traits::{ One, Zero },
-    fp::{ Fp, Mod },
+    algebraic_traits::{One, Zero},
+    fp::{Fp, Mod},
     transform::*,
 };
 
@@ -11,10 +11,10 @@ mod poly_arith;
 #[derive(Clone, PartialEq, Eq)]
 pub struct Polynomial<T>(Vec<Fp<T>>);
 
-
 impl<T: Mod> Polynomial<T> {
     pub fn new(a: Vec<Fp<T>>) -> Self {
-        let mut a = Self(a); a.fix();
+        let mut a = Self(a);
+        a.fix();
         a
     }
 
@@ -66,8 +66,13 @@ impl<T: Mod> Polynomial<T> {
         if self.len() < 2 {
             return Polynomial::zero();
         }
-        let b = self.0.iter().skip(1).enumerate()
-        .map(|(i, a)| *a * Fp::new((i + 1) as i64)).collect();
+        let b = self
+            .0
+            .iter()
+            .skip(1)
+            .enumerate()
+            .map(|(i, a)| *a * Fp::new((i + 1) as i64))
+            .collect();
         Polynomial::new(b)
     }
 
@@ -87,7 +92,6 @@ impl<T: Mod> Polynomial<T> {
     }
 }
 impl<T: NTTFriendly> Polynomial<T> {
-
     pub fn inverse(&self, n: usize) -> Self {
         let len = n.next_power_of_two();
         assert!(2 * len <= T::order());
@@ -144,7 +148,9 @@ impl<T: NTTFriendly> Polynomial<T> {
 
     pub fn log(&self, n: usize) -> Self {
         assert!(self.len() > 0 && self.0[0].is_one());
-        (self.derivative() * self.inverse(n)).truncate(n - 1).integral()
+        (self.derivative() * self.inverse(n))
+            .truncate(n - 1)
+            .integral()
     }
 
     pub fn exp(&self, n: usize) -> Self {
@@ -165,10 +171,7 @@ impl<T: NTTFriendly> Polynomial<T> {
             *seg = Some(Polynomial::from_slice(&[-*x, Fp::one()]));
         }
         for i in (1..size).rev() {
-            seg[i] = Some(
-                seg[2 * i] .as_ref().unwrap() *
-                seg[2 * i + 1].as_ref().unwrap()
-            );
+            seg[i] = Some(seg[2 * i].as_ref().unwrap() * seg[2 * i + 1].as_ref().unwrap());
         }
         let mut rem = vec![None; 2 * size];
         rem[1] = Some(self.rem(&seg[1].take().unwrap()));
