@@ -58,9 +58,9 @@ impl TwoSat {
 
     pub fn add_clause(&mut self, i: usize, f: bool, j: usize, g: bool) {
         self.0
-            .add_edge(2 * i + !f as usize, 2 * j + g as usize, Void());
+            .add_edge(2 * i + !f as usize, 2 * j + g as usize, Void);
         self.0
-            .add_edge(2 * j + !g as usize, 2 * i + f as usize, Void());
+            .add_edge(2 * j + !g as usize, 2 * i + f as usize, Void);
     }
 
     pub fn solve(&self) -> Option<Vec<bool>> {

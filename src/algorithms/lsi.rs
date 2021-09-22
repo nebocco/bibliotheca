@@ -87,7 +87,7 @@ mod tests {
         let mut c = vec![Xor(false); n];
         let mut g = DirectedGraph::new(n);
         for &(u, v) in &edges {
-            g.add_edge(u, v, Void());
+            g.add_edge(u, v, Void);
             c[u] = c[u] + Xor(true);
         }
         let res = solve_lsi(&g, &c).unwrap();

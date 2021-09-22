@@ -129,17 +129,17 @@ impl_cost! {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Void();
+pub struct Void;
 
 impl std::fmt::Display for Void {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "")
+        write!(f, "Void")
     }
 }
 
 impl Zero for Void {
     fn zero() -> Self {
-        Void()
+        Self
     }
     fn is_zero(&self) -> bool {
         true
@@ -148,7 +148,7 @@ impl Zero for Void {
 
 impl One for Void {
     fn one() -> Self {
-        Void()
+        Self
     }
     fn is_one(&self) -> bool {
         true
@@ -158,7 +158,7 @@ impl One for Void {
 impl Add for Void {
     type Output = Self;
     fn add(self, _: Self) -> Self {
-        Void()
+        self
     }
 }
 
@@ -169,19 +169,19 @@ impl AddAssign for Void {
 impl Sub for Void {
     type Output = Self;
     fn sub(self, _: Self) -> Self {
-        Void()
+        self
     }
 }
 
 impl Neg for Void {
     type Output = Self;
     fn neg(self) -> Self {
-        Void()
+        self
     }
 }
 
 impl Cost for Void {
-    const MAX: Self = Void();
+    const MAX: Self = Void;
 }
 
 // ------------ Graph impl end ------------
