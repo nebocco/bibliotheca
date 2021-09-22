@@ -140,6 +140,28 @@ impl BinaryTrie {
         }
         res
     }
+
+    pub fn kth(&mut self, mut k: usize) -> u32 {
+        k += 1;
+        let mut node = self;
+        let mut val = 0;
+        for _ in 0..32 {
+            val <<= 1;
+            node = if let Some(lch) = node.lch.as_deref_mut() {
+                if k > lch.cnt {
+                    k -= lch.cnt;
+                    val |= 1;
+                    node.rch.as_deref_mut().unwrap()
+                } else {
+                    lch
+                }
+            } else {
+                val |= 1;
+                node.rch.as_deref_mut().unwrap()
+            };
+        }
+        val
+    }
 }
 
 // ------------ Binary Trie end ------------
@@ -155,9 +177,12 @@ mod tests {
         trie.insert(100);
         assert_eq!(trie.size(), 3);
         assert!(trie.contains(10));
+        assert_eq!(trie.kth(0), 1);
+        assert_eq!(trie.kth(2), 100);
         trie.insert(1000);
         trie.insert(10000);
         trie.erase(10);
+        assert_eq!(trie.kth(2), 1000);
         assert_eq!(trie.min(), 1);
         assert_eq!(trie.max(), 10000);
         assert_eq!(trie.xor_min(96), 100);
@@ -166,6 +191,8 @@ mod tests {
         trie.insert(1000000);
         trie.insert(10000000);
         trie.erase(1);
+        assert_eq!(trie.kth(2), 10000);
+        assert_eq!(trie.kth(4), 1000000);
         assert!(trie.contains(100000));
         assert!(!trie.contains(10));
         assert_eq!(trie.count_lower_than(5000), 2);
