@@ -3,6 +3,17 @@ use std::ops::{Add, Div, Mul, Sub};
 
 // ------------ geometry start ------------
 
+
+pub fn argument_sort(a: &mut [(i32, i32)]) {
+    a.sort_by(|&(x1, y1), &(x2, y2)| {
+        (y1 >= 0)
+            .cmp(&(y2 >= 0))
+            .then_with(|| (x2 as i64 * y1 as i64 - x1 as i64 * y2 as i64).cmp(&0))
+            .then_with(|| y1.cmp(&y2)) // (0, 0)
+            .then_with(|| x2.cmp(&x1)) // (x1, 0), (x2, 0)
+    });
+}
+
 #[derive(Clone, Copy)]
 pub struct Point(f64, f64);
 
