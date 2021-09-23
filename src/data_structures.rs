@@ -1,5 +1,6 @@
 pub mod binary_trie;
 pub mod bit_vector;
+pub mod decrimental_predecessor;
 pub mod disjoint_sparse_table;
 pub mod fenwick_tree;
 pub mod heavy_light_decomposition;
