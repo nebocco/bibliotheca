@@ -186,7 +186,7 @@ impl<T: Print, U: Print, V: Print> Print for (T, U, V) {
 	}
 }
 
-mod neboccoio_macro {
+pub mod neboccoio_macro {
 	#[macro_export]
 	macro_rules! input {
 		(@start $io:tt @read @rest) => {};
@@ -201,6 +201,11 @@ mod neboccoio_macro {
 
 		(@start $io:tt @read @rest $($rest:tt)*) => {
 			input!(@start $io @read @mut [] @rest $($rest)*)
+		};
+
+		(@start $io:tt @read @mut [$($mut:tt)?] @rest $var:tt: [[$kind:tt; $len1:expr]; $len2:expr] $($rest:tt)*) => {
+			let $($mut)* $var = (0..$len2).map(|_| $io.scan_vec::<$kind>($len1)).collect::<Vec<Vec<$kind>>>();
+			input!(@start $io @read @rest $($rest)*)
 		};
 
 		(@start $io:tt @read @mut [$($mut:tt)?] @rest $var:tt: [$kind:tt; $len:expr] $($rest:tt)*) => {

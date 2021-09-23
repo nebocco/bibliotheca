@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
-pub fn compress<T: Clone + Ord + Hash>(l: &[T], start: usize)-> (HashMap<T, usize>, Vec<usize>) {
+pub fn compress<T>(l: &[T], start: usize) -> (
+    std::collections::HashMap<T, usize>,
+    Vec<usize>
+) where T: Clone + Ord + std::hash::Hash {
     let mut f = l.to_owned(); f.sort(); f.dedup();
     let dict: HashMap<T, usize> = f.iter().cloned().zip(start..f.len()+start).collect();
     let res: Vec<usize> = l.iter().map(|x| *dict.get(x).unwrap()).collect();
@@ -16,4 +19,3 @@ pub fn compress_2d<T: Clone + Ord + Hash>(l: &[(T, T)], start: usize)
     let res = x_comp.into_iter().zip(y_comp.into_iter()).collect();
     ((x_dict, y_dict), res)
 }
-

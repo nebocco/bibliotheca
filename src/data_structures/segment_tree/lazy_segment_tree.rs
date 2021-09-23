@@ -3,7 +3,7 @@ use crate::utils::{
     bounds::bounds_within
 };
 
-use std::ops::{ Mul, Range, RangeBounds };
+use std::ops::{ Mul, RangeBounds };
 
 // * verified: https://judge.yosupo.jp/submission/28350
 // TODO: it might be able to make it faster
@@ -62,7 +62,8 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
         }
 	}
 
-	pub fn update(&mut self, rng: Range<usize>, e: E) {
+	pub fn update<R: RangeBounds<usize>>(&mut self, rng: R, e: E) {
+        let rng = bounds_within(rng, self.size);
         let mut l = rng.start + self.size;
         let mut r = rng.end + self.size;
         self.infiltrate(l);
@@ -84,7 +85,9 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
     }
 
     pub fn fold<R: RangeBounds<usize>>(&mut self, rng: R) -> T {
-        let Range { start: mut l, end: mut r } = bounds_within(rng, self.size);
+        let rng = bounds_within(rng, self.size);
+        let mut l = rng.start + self.size;
+        let mut r = rng.end + self.size;
         self.infiltrate(l);
         self.infiltrate(r);
         let mut lx = T::zero();
