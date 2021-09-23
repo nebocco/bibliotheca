@@ -16,11 +16,7 @@ pub fn lcm(a: i64, b: i64) -> i64 {
 
 pub fn sqrt_floor(x: i64) -> i64 {
     let c = (64 - x.leading_zeros() + 1) / 2;
-    let mut v = if c < 32 {
-        1 << c
-    } else {
-        3_037_000_499
-    };
+    let mut v = if c < 32 { 1 << c } else { 3_037_000_499 };
     while v * v > x {
         v = (v + x / v) / 2;
     }
@@ -28,8 +24,10 @@ pub fn sqrt_floor(x: i64) -> i64 {
 }
 
 pub fn modpow(mut x: i64, mut y: i64, modulo: i64) -> i64 {
-	x %= modulo;
-    if x == 0 { return 0; }
+    x %= modulo;
+    if x == 0 {
+        return 0;
+    }
     let mut ret = 1;
     let mut cur = x;
     while y > 0 {
@@ -71,11 +69,13 @@ pub fn extgcd(a: i64, b: i64) -> (i64, i64, i64) {
 /// return (x, lcm(m_i)) satisfies x % m_i == r_i for all i
 /// l = &[(r_1, m_1), (r_2, m_2), ...]
 pub fn chinese_remainder(l: &[(i64, i64)]) -> Option<(i64, i64)> {
-	let mut cr = 0;
+    let mut cr = 0;
     let mut cm = 1;
     for &(r, m) in l {
         let (p, _, d) = extgcd(cm, m);
-        if (cr - r) % d != 0 { return None; }
+        if (cr - r) % d != 0 {
+            return None;
+        }
         let tmp = (r - cr) / d * p % (m / d);
         cr += cm * tmp;
         cm *= m / d;
@@ -91,11 +91,11 @@ pub fn chinese_remainder(l: &[(i64, i64)]) -> Option<(i64, i64)> {
 /// l = &[(r_1, m_1), (r_2, m_2), ...]
 pub fn garner(l: &[(i64, i64)], modulo: i64) -> i64 {
     let n = l.len();
-    let mut coeffs = vec![1; n+1];
+    let mut coeffs = vec![1; n + 1];
     let mut constants = vec![0; n + 1];
-	for k in 0..n {
+    for k in 0..n {
         let t = ((l[k].0 - constants[k]) * modinv(coeffs[k], l[k].1)).rem_euclid(l[k].1);
-        for j in k+1..n {
+        for j in k + 1..n {
             constants[j] = (constants[j] + t * coeffs[j]) % l[j].1;
             coeffs[j] = (coeffs[j] * l[k].1) % l[j].1;
         }
@@ -106,7 +106,7 @@ pub fn garner(l: &[(i64, i64)], modulo: i64) -> i64 {
 }
 
 pub fn make_modinv_list(size: usize, modulo: i64) -> Vec<i64> {
-    let mut inv_list = vec![0; size+1];
+    let mut inv_list = vec![0; size + 1];
     inv_list[1] = 1;
     for i in 2..=size {
         inv_list[i] = modulo - modulo / i as i64 * inv_list[modulo as usize % i] % modulo;
@@ -119,22 +119,24 @@ pub fn make_modinv_list(size: usize, modulo: i64) -> Vec<i64> {
 pub struct Fact {
     modulo: i64,
     fact: Vec<i64>,
-    inv_fact: Vec<i64>
+    inv_fact: Vec<i64>,
 }
 
 impl Fact {
     pub fn new(size: usize, modulo: i64) -> Self {
         let mut fact = vec![1; size + 1];
         let mut inv_fact = vec![1; size + 1];
-        for i in 1..size+1 {
-            fact[i] = fact[i-1] * i as i64 % modulo;
+        for i in 1..size + 1 {
+            fact[i] = fact[i - 1] * i as i64 % modulo;
         }
         inv_fact[size] = Self::modinv(fact[size], modulo);
-        for i in (1..size+1).rev() {
-            inv_fact[i-1] = inv_fact[i] * i as i64 % modulo;
+        for i in (1..size + 1).rev() {
+            inv_fact[i - 1] = inv_fact[i] * i as i64 % modulo;
         }
         Fact {
-            modulo, fact, inv_fact
+            modulo,
+            fact,
+            inv_fact,
         }
     }
 
@@ -162,24 +164,40 @@ impl Fact {
         Self::extgcd(x, modulo).0.rem_euclid(modulo)
     }
 
-    pub fn permutation(&self, n:usize, r:usize) -> i64 {
-        assert!(r > n || n < self.fact.len(),
-        "index out of range: length is {}, but given {}", self.fact.len(), n);
-        if n < r { return 0 };
-        self.fact[n] * self.inv_fact[n-r] % self.modulo
+    pub fn permutation(&self, n: usize, r: usize) -> i64 {
+        assert!(
+            r > n || n < self.fact.len(),
+            "index out of range: length is {}, but given {}",
+            self.fact.len(),
+            n
+        );
+        if n < r {
+            return 0;
+        };
+        self.fact[n] * self.inv_fact[n - r] % self.modulo
     }
 
-    pub fn combination(&self, n:usize, r:usize) -> i64 {
-        assert!(r > n || n < self.fact.len(),
-        "index out of range: length is {}, but given {}", self.fact.len(), n);
-        if n < r { return 0 };
-        self.fact[n] * self.inv_fact[r] % self.modulo * self.inv_fact[n-r] % self.modulo
+    pub fn combination(&self, n: usize, r: usize) -> i64 {
+        assert!(
+            r > n || n < self.fact.len(),
+            "index out of range: length is {}, but given {}",
+            self.fact.len(),
+            n
+        );
+        if n < r {
+            return 0;
+        };
+        self.fact[n] * self.inv_fact[r] % self.modulo * self.inv_fact[n - r] % self.modulo
     }
 
     pub fn multi(&self, l: &[usize]) -> i64 {
         let n = l.iter().sum::<usize>();
-        assert!(n < self.fact.len(),
-        "index out of range: length is {}, but given {}", self.fact.len(), n);
+        assert!(
+            n < self.fact.len(),
+            "index out of range: length is {}, but given {}",
+            self.fact.len(),
+            n
+        );
         let mut ans = self.fact[n];
         for &x in l {
             ans = ans * self.inv_fact[x] % self.modulo;
@@ -190,9 +208,8 @@ impl Fact {
 
 // ------------ struct Fact end ------------
 
-
 #[allow(clippy::many_single_char_names)]
-pub fn sum_of_floor(mut n:i64, mut m:i64, mut a:i64, mut b:i64) -> i64 {
+pub fn sum_of_floor(mut n: i64, mut m: i64, mut a: i64, mut b: i64) -> i64 {
     // return sum_{i=0}^{n-1} (a*i+b)/m
     let mut s = 0;
     while n > 0 {
@@ -216,37 +233,37 @@ pub fn sum_of_floor(mut n:i64, mut m:i64, mut a:i64, mut b:i64) -> i64 {
 }
 
 pub fn mat_mult(a: &[Vec<i64>], b: &[Vec<i64>], modulo: i64) -> Vec<Vec<i64>> {
-	let n = a.len();
-	let m = a[0].len();
-	assert_eq!(b.len(), m);
-	let o = b[0].len();
-	let mut res = vec![vec![0; o]; n];
-	for i in 0..n {
-		for j in 0..m {
-			for k in 0..o {
-				res[i][k] = (res[i][k] + a[i][j] * b[j][k]) % modulo;
-			}
-		}
-	}
-	res
+    let n = a.len();
+    let m = a[0].len();
+    assert_eq!(b.len(), m);
+    let o = b[0].len();
+    let mut res = vec![vec![0; o]; n];
+    for i in 0..n {
+        for (j, bj) in b.iter().enumerate() {
+            for (k, bjk) in bj.iter().enumerate() {
+                res[i][k] = (res[i][k] + a[i][j] * bjk) % modulo;
+            }
+        }
+    }
+    res
 }
 
 pub fn mat_pow(a: &[Vec<i64>], mut k: i64, modulo: i64) -> Vec<Vec<i64>> {
-	let n = a.len();
-	assert_eq!(a[0].len(), n);
-	let mut res = vec![vec![0; n]; n];
-    for i in 0..n {
-        res[i][i] = 1;
+    let n = a.len();
+    assert_eq!(a[0].len(), n);
+    let mut res = vec![vec![0; n]; n];
+    for (i, resi) in res.iter_mut().enumerate() {
+        resi[i] = 1;
     }
     let mut v = a.to_owned();
-	while k > 0 {
+    while k > 0 {
         if k & 1 == 1 {
             res = mat_mult(&v, &res, modulo);
         }
         v = mat_mult(&v, &v, modulo);
         k >>= 1;
     }
-	res
+    res
 }
 
 // O(N**2)
@@ -257,14 +274,18 @@ pub fn lagrange_evaluation(xl: &[i64], yl: &[i64], x: i64, modulo: i64) -> i64 {
         let mut t = 1;
         let mut inv = 1;
         for j in 0..n {
-            if i == j { continue; }
+            if i == j {
+                continue;
+            }
             t = t * (x - xl[j]) % modulo;
-            inv = inv * ( xl[i] - xl[j] ) % modulo;
+            inv = inv * (xl[i] - xl[j]) % modulo;
         }
         t = t * modinv(inv, modulo) % modulo;
         ret = (ret + t * yl[i]) % modulo;
     }
-    if ret < 0 { ret += modulo; }
+    if ret < 0 {
+        ret += modulo;
+    }
     ret
 }
 
@@ -275,7 +296,9 @@ pub fn lagrange_interpolation(xl: &[i64], yl: &[i64], modulo: i64) -> Vec<i64> {
     for i in 0..n {
         let mut t = 1;
         for j in 0..n {
-            if i == j { continue; }
+            if i == j {
+                continue;
+            }
             t = t * (xl[i] - xl[j]) % modulo;
         }
         yl[i] = yl[i] * modinv(t, modulo) % modulo;
@@ -284,20 +307,22 @@ pub fn lagrange_interpolation(xl: &[i64], yl: &[i64], modulo: i64) -> Vec<i64> {
     let mut nxt = vec![0; n + 1];
     cur[0] = -xl[0];
     cur[1] = 1;
-    for i in 1..n {
-        nxt[0] = cur[0] * -xl[i] % modulo;
+    for &xli in xl.iter().skip(1) {
+        nxt[0] = cur[0] * -xli % modulo;
         for j in 1..=n {
-            nxt[j] = (cur[j] * -xl[i] + cur[j-1]) % modulo;
+            nxt[j] = (cur[j] * -xli + cur[j - 1]) % modulo;
         }
         std::mem::swap(&mut cur, &mut nxt);
     }
     let xinv = xl.iter().map(|&v| modinv(v, modulo)).collect::<Vec<i64>>();
     let mut ret = vec![0; n];
     for i in 0..n {
-        if yl[i] == 0 { continue; }
+        if yl[i] == 0 {
+            continue;
+        }
         if xl[i] == 0 {
             for j in 0..n {
-                ret[j] = (ret[j] + cur[j+1] * yl[i]) % modulo;
+                ret[j] = (ret[j] + cur[j + 1] * yl[i]) % modulo;
             }
         } else {
             ret[0] = (ret[0] - cur[0] * xinv[i] % modulo * yl[i]) % modulo;
@@ -308,10 +333,13 @@ pub fn lagrange_interpolation(xl: &[i64], yl: &[i64], modulo: i64) -> Vec<i64> {
             }
         }
     }
-    ret.iter_mut().for_each(|x| { if *x < 0 { *x += modulo; }});
+    ret.iter_mut().for_each(|x| {
+        if *x < 0 {
+            *x += modulo;
+        }
+    });
     ret
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -383,7 +411,10 @@ mod tests {
         let coef = vec![7, 9, 1, 0, 5];
         let xl = vec![8, 2, 3, 0, 1];
         let yl = calculate_yl(&xl, &coef, modulo);
-        assert_eq!(lagrange_evaluation(&xl, &yl, 10, modulo), calculate_y(10, &coef, modulo));
+        assert_eq!(
+            lagrange_evaluation(&xl, &yl, 10, modulo),
+            calculate_y(10, &coef, modulo)
+        );
     }
 
     #[test]
@@ -397,8 +428,10 @@ mod tests {
             let xl: Vec<i64> = (0..n).map(|_| rng.gen::<i64>() % MOD).collect();
             let x = rng.gen::<i64>() % MOD;
             let yl = calculate_yl(&xl, &coef, MOD);
-            assert_eq!(lagrange_evaluation(&xl, &yl, x, MOD), calculate_y(x, &coef, MOD));
-
+            assert_eq!(
+                lagrange_evaluation(&xl, &yl, x, MOD),
+                calculate_y(x, &coef, MOD)
+            );
         }
     }
 
@@ -421,9 +454,12 @@ mod tests {
             let mut coef: Vec<i64> = (0..n).map(|_| rng.gen::<i64>() % MOD).collect();
             let xl: Vec<i64> = (0..n).map(|_| rng.gen::<i64>() % MOD).collect();
             let yl = calculate_yl(&xl, &coef, MOD);
-            coef.iter_mut().for_each(|x| { if *x < 0 { *x += MOD; }});
+            coef.iter_mut().for_each(|x| {
+                if *x < 0 {
+                    *x += MOD;
+                }
+            });
             assert_eq!(lagrange_interpolation(&xl, &yl, MOD), coef);
-
         }
     }
 
@@ -434,7 +470,9 @@ mod tests {
             ret = (ret + c * v) % modulo;
             v = v * x % modulo;
         });
-        if ret < 0 { ret += modulo; }
+        if ret < 0 {
+            ret += modulo;
+        }
         ret
     }
 

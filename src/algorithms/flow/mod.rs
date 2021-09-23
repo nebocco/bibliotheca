@@ -2,13 +2,13 @@ pub mod dinic;
 pub mod network_simplex;
 pub mod primal_dual;
 
-use crate::utils::algebraic_traits::{ Element, Zero, One };
-use std::ops::{ Add, AddAssign, Mul, Neg, Sub, SubAssign };
+use crate::utils::algebraic_traits::{Element, One, Zero};
+use std::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 
 use std::fmt::Display;
 
 pub trait Cost:
-	Element
+    Element
     + Display
     + Clone
     + Copy
@@ -54,6 +54,4 @@ macro_rules! impl_flow {
     };
 }
 
-impl_flow!(
-	i8, i16, i32, i64, i128, isize,
-);
+impl_flow!(i8, i16, i32, i64, i128, isize,);

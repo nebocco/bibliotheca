@@ -5,7 +5,9 @@ use std::collections::HashMap;
 // * verified: https://judge.yosupo.jp/submission/30687
 /// solve k s.t. x.pow(k) === y (mod M)
 pub fn baby_giant(x: i64, y: i64, modulo: i64) -> Option<i64> {
-    if (y - 1) % modulo == 0 { return Some(0); }
+    if (y - 1) % modulo == 0 {
+        return Some(0);
+    }
     if y == 0 {
         let (mut lo, mut hi) = (0, modulo);
         while hi - lo > 1 {

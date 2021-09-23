@@ -1,4 +1,5 @@
-use super::{ Flow, Cost };
+#![allow(clippy::many_single_char_names)]
+use super::{Cost, Flow};
 
 pub struct MinCostFlow<F: Flow, C: Cost> {
     g: Vec<Vec<Edge<F, C>>>,
@@ -23,7 +24,7 @@ impl<F: Flow + Into<C>, C: Cost> MinCostFlow<F, C> {
         let rev_s = self.g[dst].len();
         let rev_d = self.g[src].len() + if src == dst { 1 } else { 0 };
         self.g[src].push(Edge {
-            dst: dst,
+            dst,
             rev: rev_s,
             cap,
             cost,
@@ -64,7 +65,9 @@ impl<F: Flow + Into<C>, C: Cost> MinCostFlow<F, C> {
                     }
                 }
             }
-            if prev[t].0 == !0 {  break; }
+            if prev[t].0 == !0 {
+                break;
+            }
 
             for u in 0..n {
                 if dist[u] != C::MAX {

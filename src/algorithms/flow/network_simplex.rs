@@ -1,8 +1,8 @@
+use super::{Cost, Flow};
 use crate::utils::algebraic_traits::Zero;
-use super::{ Cost, Flow };
-use std::cmp::{ max, min };
+use std::cmp::{max, min};
 use std::collections::HashSet;
-use std::ops::{ Add, Mul };
+use std::ops::{Add, Mul};
 
 struct Edge<F, C> {
     src: usize,

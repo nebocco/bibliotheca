@@ -1,9 +1,8 @@
 use crate::utils::{
-    algebraic_traits::{ Monoid, Group },
+    algebraic_traits::{Group, Monoid},
     bounds::bounds_within,
 };
-use std::ops::{ Range, RangeBounds };
-
+use std::ops::{Range, RangeBounds};
 
 // * verified: https://judge.yosupo.jp/submission/28326, https://judge.yosupo.jp/submission/29570
 // ------------ FenwickTree with generics start ------------
@@ -18,21 +17,21 @@ impl<T: Monoid> FenwickTree<T> {
     }
 
     pub fn new(n: usize) -> Self {
-        Self(vec![T::zero(); n+1])
+        Self(vec![T::zero(); n + 1])
     }
 
     pub fn prefix_sum(&self, i: usize) -> T {
         std::iter::successors(Some(i), |&i| Some(i - Self::lsb(i)))
-        .take_while(|&i| i != 0)
-        .map(|i| self.0[i].clone())
-        .fold(T::zero(), |sum, x| sum + x)
+            .take_while(|&i| i != 0)
+            .map(|i| self.0[i].clone())
+            .fold(T::zero(), |sum, x| sum + x)
     }
 
     pub fn add(&mut self, i: usize, x: T) {
         let n = self.0.len();
         std::iter::successors(Some(i + 1), |&i| Some(i + Self::lsb(i)))
-        .take_while(|&i| i < n)
-        .for_each(|i| self.0[i] = self.0[i].clone() + x.clone());
+            .take_while(|&i| i < n)
+            .for_each(|i| self.0[i] = self.0[i].clone() + x.clone());
     }
 
     /// pred(j, sum(..j)) && !pred(j+1, sum(..j+1))
@@ -41,7 +40,7 @@ impl<T: Monoid> FenwickTree<T> {
         let mut j = 0;
         let mut current = self.0[0].clone();
         let n = self.0.len();
-        for d in std::iter::successors(Some(n.next_power_of_two() >> 1), |&d| { Some(d >> 1)})
+        for d in std::iter::successors(Some(n.next_power_of_two() >> 1), |&d| Some(d >> 1))
             .take_while(|&d| d != 0)
         {
             if j + d < n {
@@ -80,7 +79,6 @@ impl<T: Group> FenwickTree<T> {
 }
 
 // ------------ FenwickTree with generics end ------------
-
 
 // * verified: https://judge.yosupo.jp/submission/28227
 pub struct Fenwick(Vec<i64>);
@@ -133,7 +131,7 @@ impl Fenwick {
         let mut j = 0;
         let mut current = self.0[0];
         let n = self.0.len();
-        for d in std::iter::successors(Some(n.next_power_of_two() >> 1), |&d| { Some(d >> 1)})
+        for d in std::iter::successors(Some(n.next_power_of_two() >> 1), |&d| Some(d >> 1))
             .take_while(|&d| d != 0)
         {
             if j + d < n {
@@ -156,16 +154,19 @@ impl Fenwick {
     }
 
     pub fn access(&self, i: usize) -> i64 {
-        assert!(i < self.0.len() - 1, "index out of range: vector length is {}, but got index {}", self.0.len() - 1, i );
+        assert!(
+            i < self.0.len() - 1,
+            "index out of range: vector length is {}, but got index {}",
+            self.0.len() - 1,
+            i
+        );
         self.prefix_sum(i + 1) - self.prefix_sum(i)
     }
 
     pub fn set(&mut self, i: usize, x: i64) {
         self.add(i, x - self.access(i));
     }
-
 }
-
 
 #[cfg(test)]
 mod tests {

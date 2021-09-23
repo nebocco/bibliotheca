@@ -6,10 +6,11 @@ pub struct Rerooting<Edge, Value, Func> {
 }
 
 impl<Edge, Value, Func> Rerooting<Edge, Value, Func>
-where Edge: Clone,
-      Value: Clone,
-      Func: Fn(&Value, &Value, &Edge) -> Value {
-
+where
+    Edge: Clone,
+    Value: Clone,
+    Func: Fn(&Value, &Value, &Edge) -> Value,
+{
     pub fn new(size: usize, initial: Value, merge: Func) -> Self {
         Self {
             size,

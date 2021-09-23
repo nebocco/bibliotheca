@@ -21,7 +21,9 @@ impl UnionFind {
     pub fn unite(&mut self, u: usize, v: usize) -> Result<(), ()> {
         let (mut u, su) = self._climb(u);
         let (mut v, sv) = self._climb(v);
-        if u == v { return Err(()); }
+        if u == v {
+            return Err(());
+        }
         if su < sv {
             std::mem::swap(&mut u, &mut v);
         }
@@ -30,7 +32,7 @@ impl UnionFind {
         Ok(())
     }
 
-    pub fn is_same(&mut self, u: usize, v:usize) -> bool {
+    pub fn is_same(&mut self, u: usize, v: usize) -> bool {
         self.find(u) == self.find(v)
     }
 
@@ -51,21 +53,20 @@ impl UnionFind {
 }
 // ------------ UnionFind end ------------
 
-
 // TODO: verify
 // ------------ Potentialized UnionFind start ------------
 
 #[derive(Clone, Debug)]
-pub struct PotentializedUnionFind<T>{
+pub struct PotentializedUnionFind<T> {
     data: Vec<isize>,
-    ws: Vec<T>
+    ws: Vec<T>,
 }
 
 impl<T: Group> PotentializedUnionFind<T> {
     pub fn new(len: usize) -> Self {
-        Self{
+        Self {
             data: vec![-1; len],
-            ws: vec![T::zero(); len]
+            ws: vec![T::zero(); len],
         }
     }
 
@@ -86,24 +87,24 @@ impl<T: Group> PotentializedUnionFind<T> {
     pub fn unite(&mut self, u: usize, v: usize, mut w: T) -> Result<(), ()> {
         let (u, su, wu) = self._climb(u);
         let (v, sv, wv) = self._climb(v);
-		if u == v {
-			return if w == -wu + wv { Ok(()) } else { Err(()) };
-		}
+        if u == v {
+            return if w == -wu + wv { Ok(()) } else { Err(()) };
+        }
         w = -self.ws[u].clone() + wu + w + self.ws[v].clone() + -wv;
-		if su < sv {
+        if su < sv {
             self.data[v] += self.data[u];
             self.data[u] = v as isize;
             self.ws[v] = self.ws[u].clone() + w.clone();
-            self.ws[u] = -w.clone();
+            self.ws[u] = -w;
         } else {
             self.data[u] += self.data[v];
             self.data[v] = u as isize;
-            self.ws[v] = w.clone();
+            self.ws[v] = w;
         }
         Ok(())
     }
 
-    pub fn is_same(&mut self, u: usize, v:usize) -> bool {
+    pub fn is_same(&mut self, u: usize, v: usize) -> bool {
         self.find(u) == self.find(v)
     }
 
@@ -129,7 +130,7 @@ impl<T: Group> PotentializedUnionFind<T> {
         let mut v = i;
         let mut w = T::zero();
         while self.data[v] >= 0 {
-			w = self.ws[v].clone() + w;
+            w = self.ws[v].clone() + w;
             let p = self.data[v] as usize;
             if self.data[p] >= 0 {
                 self.data[v] = self.data[p];
@@ -142,7 +143,6 @@ impl<T: Group> PotentializedUnionFind<T> {
     }
 }
 // ------------ Potentialized UnionFind end ------------
-
 
 // TODO: verify
 // ------------ Iterative UnionFind start ------------
@@ -165,7 +165,9 @@ impl IterativeUnionFind {
     pub fn unite(&mut self, u: usize, v: usize) -> Result<(), ()> {
         let (mut u, su) = self._climb(u);
         let (mut v, sv) = self._climb(v);
-        if u == v { return Err(()); }
+        if u == v {
+            return Err(());
+        }
         if su < sv {
             std::mem::swap(&mut u, &mut v);
         }
@@ -175,7 +177,7 @@ impl IterativeUnionFind {
         Ok(())
     }
 
-    pub fn is_same(&mut self, u: usize, v:usize) -> bool {
+    pub fn is_same(&mut self, u: usize, v: usize) -> bool {
         self.find(u) == self.find(v)
     }
 
@@ -207,7 +209,6 @@ impl IterativeUnionFind {
 }
 // ------------ Iterative UnionFind end ------------
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -227,7 +228,6 @@ mod tests {
         assert_ne!(uf.find(5), uf.find(0));
         assert!(uf.is_same(1, 4));
     }
-
 
     #[test]
     fn tset_potentialized_union_find() {

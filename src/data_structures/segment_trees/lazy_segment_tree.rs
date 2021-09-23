@@ -1,56 +1,60 @@
-use crate::utils::{
-    algebraic_traits::Monoid,
-    bounds::bounds_within
-};
+use crate::utils::{algebraic_traits::Monoid, bounds::bounds_within};
 
-use std::ops::{ Mul, RangeBounds };
+use std::ops::{Mul, RangeBounds};
 
 // * verified: https://judge.yosupo.jp/submission/28350
 // TODO: it might be able to make it faster
 // ------------ Lazy Segment Tree start ------------
 
 #[derive(Clone)]
-struct Node<T: Monoid + Mul<E, Output=T>, E: Monoid> {
-	val: T,
-	lazy: E
+struct Node<T: Monoid + Mul<E, Output = T>, E: Monoid> {
+    val: T,
+    lazy: E,
 }
 
-pub struct LazySegmentTree<T: Monoid + Mul<E, Output=T>, E: Monoid> {
-	node: Box<[Node<T, E>]>,
-	size: usize,
-	dep: usize
+pub struct LazySegmentTree<T: Monoid + Mul<E, Output = T>, E: Monoid> {
+    node: Box<[Node<T, E>]>,
+    size: usize,
+    dep: usize,
 }
 
-impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
-	pub fn new(n: usize) -> Self {
-		let size = n.next_power_of_two();
-		let dep = size.trailing_zeros() as usize + 1;
-        let node = vec![Node { val: T::zero(), lazy: E::zero() }; size << 1];
-		Self {
+impl<T: Monoid + Mul<E, Output = T>, E: Monoid> LazySegmentTree<T, E> {
+    pub fn new(n: usize) -> Self {
+        let size = n.next_power_of_two();
+        let dep = size.trailing_zeros() as usize + 1;
+        let node = vec![
+            Node {
+                val: T::zero(),
+                lazy: E::zero()
+            };
+            size << 1
+        ];
+        Self {
             node: node.into_boxed_slice(),
-            size, dep
+            size,
+            dep,
         }
-	}
+    }
 
     fn effect(&mut self, i: usize, e: &E) {
         if i < self.size << 1 {
             self.node[i].val = self.node[i].val.clone() * e.clone();
             self.node[i].lazy = self.node[i].lazy.clone() + e.clone();
         }
-	}
+    }
 
-	fn push(&mut self, i: usize) {
-		let e = std::mem::replace(&mut self.node[i].lazy, E::zero());
-		self.effect(i << 1, &e);
-		self.effect((i << 1) + 1, &e);
-	}
+    fn push(&mut self, i: usize) {
+        let e = std::mem::replace(&mut self.node[i].lazy, E::zero());
+        self.effect(i << 1, &e);
+        self.effect((i << 1) + 1, &e);
+    }
 
-	fn infuse(&mut self, mut i: usize) {
+    fn infuse(&mut self, mut i: usize) {
         i >>= i.trailing_zeros();
         while i > 1 {
             i >>= 1;
             self.node[i].val = self.node[i << 1].val.clone() + self.node[(i << 1) + 1].val.clone();
-		}
+        }
     }
 
     fn infiltrate(&mut self, i: usize) {
@@ -60,9 +64,9 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
                 self.push(i >> j);
             }
         }
-	}
+    }
 
-	pub fn update<R: RangeBounds<usize>>(&mut self, rng: R, e: E) {
+    pub fn update<R: RangeBounds<usize>>(&mut self, rng: R, e: E) {
         let rng = bounds_within(rng, self.size);
         let mut l = rng.start + self.size;
         let mut r = rng.end + self.size;
@@ -108,87 +112,93 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid> LazySegmentTree<T, E> {
     }
 }
 
-impl<T: Monoid + Mul<E, Output=T>, E: Monoid> From<&Vec<T>> for LazySegmentTree<T, E> {
+impl<T: Monoid + Mul<E, Output = T>, E: Monoid> From<&Vec<T>> for LazySegmentTree<T, E> {
     fn from(arr: &Vec<T>) -> Self {
         let size = arr.len().next_power_of_two();
         let dep = size.trailing_zeros() as usize + 1;
-        let mut node = vec![Node { val: T::zero(), lazy: E::zero() }; size << 1];
+        let mut node = vec![
+            Node {
+                val: T::zero(),
+                lazy: E::zero()
+            };
+            size << 1
+        ];
         for i in 0..arr.len() {
-			node[i + size].val = arr[i].clone();
-		}
+            node[i + size].val = arr[i].clone();
+        }
         for i in (1..size).rev() {
-			node[i].val = node[i << 1].val.clone() + node[(i << 1) + 1].val.clone();
-		}
+            node[i].val = node[i << 1].val.clone() + node[(i << 1) + 1].val.clone();
+        }
         Self {
             node: node.into_boxed_slice(),
-            size, dep
+            size,
+            dep,
         }
-	}
+    }
 }
 
 // ------------ Lazy Segment Tree end ------------
 
-
 #[cfg(test)]
 mod rmq_ruq_test {
-	use std::cmp::min;
-	use std::ops::{Add, Mul};
-	use crate::utils::algebraic_traits::*;
     use super::*;
+    use crate::utils::algebraic_traits::*;
+    use std::cmp::min;
+    use std::ops::{Add, Mul};
 
     #[derive(Clone, PartialEq)]
     struct Mm(usize);
 
     impl Add for Mm {
-		type Output = Self;
+        type Output = Self;
         fn add(self, right: Self) -> Self {
-			Mm(min(self.0, right.0))
-		}
+            Mm(min(self.0, right.0))
+        }
     }
 
-	impl Associative for Mm {}
+    impl Associative for Mm {}
 
     impl Zero for Mm {
         fn zero() -> Self {
-			Mm(std::usize::MAX)
-		}
+            Mm(std::usize::MAX)
+        }
         fn is_zero(&self) -> bool {
-			self.0 == std::usize::MAX
-		}
+            self.0 == std::usize::MAX
+        }
     }
 
-	#[derive(Clone, PartialEq)]
+    #[derive(Clone, PartialEq)]
     struct Uq(Option<usize>);
 
     impl Add for Uq {
-		type Output = Self;
+        type Output = Self;
         fn add(self, right: Self) -> Self {
             if right.0.is_none() {
-				self.clone()
-			} else {
-				right.clone()
-			}
+                self.clone()
+            } else {
+                right.clone()
+            }
         }
     }
-	impl Associative for Uq {}
+    impl Associative for Uq {}
 
     impl Zero for Uq {
         fn zero() -> Self {
-			Uq(None)
-		}
-		fn is_zero(&self) -> bool {
-			self.0.is_none()
-		}
-	}
+            Uq(None)
+        }
+        fn is_zero(&self) -> bool {
+            self.0.is_none()
+        }
+    }
 
     impl Mul<Uq> for Mm {
-		type Output = Mm;
+        type Output = Mm;
         fn mul(self, u: Uq) -> Self::Output {
             if let Some(x) = u.0 {
-				Mm(x)
-			} else {
-				self
-			}
+                Mm(x)
+            } else {
+                self
+            }
         }
     }
 

@@ -9,6 +9,7 @@ pub mod kitamasa;
 pub mod lsi;
 pub mod rerooting;
 pub mod rolling_hash;
+pub mod sa_is;
 pub mod str_algorithms;
 pub mod swag;
 pub mod traversal;

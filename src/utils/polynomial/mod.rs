@@ -1,6 +1,6 @@
 use crate::utils::{
-    algebraic_traits::{ One, Zero },
-    fp::{ Fp, Mod },
+    algebraic_traits::{One, Zero},
+    fp::{Fp, Mod},
     transform::*,
 };
 
@@ -11,10 +11,10 @@ mod poly_arith;
 #[derive(Clone, PartialEq, Eq)]
 pub struct Polynomial<T>(Vec<Fp<T>>);
 
-
 impl<T: Mod> Polynomial<T> {
     pub fn new(a: Vec<Fp<T>>) -> Self {
-        let mut a = Self(a); a.fix();
+        let mut a = Self(a);
+        a.fix();
         a
     }
 
@@ -23,11 +23,15 @@ impl<T: Mod> Polynomial<T> {
     }
 
     pub fn get(&self, x: usize) -> Fp<T> {
-        self.0.get(x).cloned().unwrap_or(Fp::zero())
+        self.0.get(x).cloned().unwrap_or_else(Fp::zero)
     }
 
     pub fn len(&self) -> usize {
         self.0.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
 
     pub fn resize(&mut self, n: usize) {
@@ -66,13 +70,18 @@ impl<T: Mod> Polynomial<T> {
         if self.len() < 2 {
             return Polynomial::zero();
         }
-        let b = self.0.iter().skip(1).enumerate()
-        .map(|(i, a)| *a * Fp::new((i + 1) as i64)).collect();
+        let b = self
+            .0
+            .iter()
+            .skip(1)
+            .enumerate()
+            .map(|(i, a)| *a * Fp::new((i + 1) as i64))
+            .collect();
         Polynomial::new(b)
     }
 
     pub fn integral(&self) -> Self {
-        if self.len() < 1 {
+        if self.is_empty() {
             return Polynomial::zero();
         }
         let mut b = vec![Fp::zero(); self.len() + 1];
@@ -87,7 +96,6 @@ impl<T: Mod> Polynomial<T> {
     }
 }
 impl<T: NTTFriendly> Polynomial<T> {
-
     pub fn inverse(&self, n: usize) -> Self {
         let len = n.next_power_of_two();
         assert!(2 * len <= T::order());
@@ -143,8 +151,10 @@ impl<T: NTTFriendly> Polynomial<T> {
     }
 
     pub fn log(&self, n: usize) -> Self {
-        assert!(self.len() > 0 && self.0[0].is_one());
-        (self.derivative() * self.inverse(n)).truncate(n - 1).integral()
+        assert!(!self.is_empty() && self.0[0].is_one());
+        (self.derivative() * self.inverse(n))
+            .truncate(n - 1)
+            .integral()
     }
 
     pub fn exp(&self, n: usize) -> Self {
@@ -165,10 +175,7 @@ impl<T: NTTFriendly> Polynomial<T> {
             *seg = Some(Polynomial::from_slice(&[-*x, Fp::one()]));
         }
         for i in (1..size).rev() {
-            seg[i] = Some(
-                seg[2 * i] .as_ref().unwrap() *
-                seg[2 * i + 1].as_ref().unwrap()
-            );
+            seg[i] = Some(seg[2 * i].as_ref().unwrap() * seg[2 * i + 1].as_ref().unwrap());
         }
         let mut rem = vec![None; 2 * size];
         rem[1] = Some(self.rem(&seg[1].take().unwrap()));
@@ -184,7 +191,7 @@ impl<T: NTTFriendly> Polynomial<T> {
         ans
     }
     pub fn interpolation(x: &[Fp<T>], y: &[Fp<T>]) -> Self {
-        assert!(x.len() > 0 && x.len() == y.len());
+        assert!(!x.is_empty() && x.len() == y.len());
         let size = x.len().next_power_of_two();
         let mut p = vec![Polynomial::one(); 2 * size];
         for (p, x) in p[size..].iter_mut().zip(x.iter()) {

@@ -169,7 +169,6 @@ impl<F: Flow> Dinic<F> {
 
 // ------------ Dinic's algorithm start ------------
 
-
 #[cfg(test)]
 mod test {
     use super::*;

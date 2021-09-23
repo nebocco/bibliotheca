@@ -1,4 +1,4 @@
-use crate::utils::algebraic_traits::{ Zero, One, Associative };
+use crate::utils::algebraic_traits::{Associative, One, Zero};
 use std::ops::*;
 
 // ------------ fp start ------------
@@ -11,8 +11,8 @@ use std::{
 };
 
 // NOTE: `crate::` がないとうまく展開できません。
-crate::define_fp!(pub F998244353, Mod998244353, 998244353);
-crate::define_fp!(pub F1000000007, Mod1000000007, 1000000007);
+crate::define_fp!(pub F998244353, Mod998244353, 998_244_353);
+crate::define_fp!(pub F1000000007, Mod1000000007, 1_000_000_007);
 
 #[derive(Clone, PartialEq, Copy, Eq, Hash)]
 pub struct Fp<T>(i64, PhantomData<T>);
@@ -149,27 +149,37 @@ macro_rules! define_fp {
 impl<T: Mod> Associative for Fp<T> {}
 
 impl<T: Mod> Zero for Fp<T> {
-    fn zero() -> Self { Self::unchecked(0) }
-    fn is_zero(&self) -> bool { self.0 == 0 }
+    fn zero() -> Self {
+        Self::unchecked(0)
+    }
+    fn is_zero(&self) -> bool {
+        self.0 == 0
+    }
 }
 
 impl<T: Mod> One for Fp<T> {
-    fn one() -> Self { Self::unchecked(1) }
-    fn is_one(&self) -> bool { self.0 == 1 }
+    fn one() -> Self {
+        Self::unchecked(1)
+    }
+    fn is_one(&self) -> bool {
+        self.0 == 1
+    }
 }
 
+#[allow(clippy::suspicious_arithmetic_impl)]
 impl<T: Mod> Add for Fp<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
-        let res = self.0 + rhs.0;
+        let res: i64 = self.0 + rhs.0;
         Self::unchecked(if T::MOD <= res { res - T::MOD } else { res })
     }
 }
 
+#[allow(clippy::suspicious_arithmetic_impl)]
 impl<T: Mod> Sub for Fp<T> {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
-        let res = self.0 - rhs.0;
+        let res: i64 = self.0 - rhs.0;
         Self::unchecked(if res < 0 { res + T::MOD } else { res })
     }
 }
@@ -264,11 +274,9 @@ forward_ref_binop! {
     impl Div, div
 }
 
-
 // ------------ impl arith end ------------
 
 // ------------ fp end ------------
-
 
 #[cfg(test)]
 mod tests {

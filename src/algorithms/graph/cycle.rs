@@ -1,7 +1,4 @@
-use crate::utils::{
-    algebraic_traits::Element,
-    graph::Graph,
-};
+use crate::utils::{algebraic_traits::Element, graph::Graph};
 
 pub fn detect_cycle<C: Element, G: Graph<C>>(graph: &G) -> Option<Vec<usize>> {
     let n = graph.size();
@@ -10,7 +7,9 @@ pub fn detect_cycle<C: Element, G: Graph<C>>(graph: &G) -> Option<Vec<usize>> {
     let mut c = 0;
     let mut st = Vec::new();
     for i in 0..graph.size() {
-        if seen[i] > 0 { continue; }
+        if seen[i] > 0 {
+            continue;
+        }
         c += 1;
         seen[i] = c;
         st.push(i);

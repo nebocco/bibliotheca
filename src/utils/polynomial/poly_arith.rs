@@ -1,10 +1,10 @@
 use super::Polynomial;
-use std::ops::*;
 use crate::utils::{
-    algebraic_traits::{ Associative, One, Zero },
-    fp::{ Fp, Mod },
+    algebraic_traits::{Associative, One, Zero},
+    fp::{Fp, Mod},
     transform::*,
 };
+use std::ops::*;
 
 impl<T: Mod> Associative for Polynomial<T> {}
 

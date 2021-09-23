@@ -1,5 +1,5 @@
 use crate::utils::bounds::bounds_within;
-use std::ops::{ Range, RangeBounds };
+use std::ops::{Range, RangeBounds};
 
 // ------------ Rolling Hash start ------------
 
@@ -8,27 +8,36 @@ pub struct SingleRollingHash {
     base: i64,
     modulo: i64,
     data: Vec<i64>,
-    pow: Vec<i64>
+    pow: Vec<i64>,
 }
 
 impl SingleRollingHash {
     pub fn from(string: &[u8], base: i64, modulo: i64) -> Self {
         let n = string.len();
-        let mut data = vec![0; n+1];
-        for (i, &e) in string.into_iter().enumerate() {
-            data[i+1] = (data[i] * base + e as i64) % modulo;
+        let mut data = vec![0; n + 1];
+        for (i, &e) in string.iter().enumerate() {
+            data[i + 1] = (data[i] * base + e as i64) % modulo;
         }
-        let mut pow = vec![1; n+1];
+        let mut pow = vec![1; n + 1];
         for i in 1..=n {
-            pow[i] = pow[i-1] * base % modulo;
+            pow[i] = pow[i - 1] * base % modulo;
         }
-        Self { base, modulo, data, pow }
+        Self {
+            base,
+            modulo,
+            data,
+            pow,
+        }
     }
 
     pub fn hash<R: RangeBounds<usize>>(&self, rng: R) -> i64 {
         let Range { start, end } = bounds_within(rng, self.data.len() - 1);
         let res = self.data[end] - self.data[start] * self.pow[end - start] % self.modulo;
-        if res < 0 { res + self.modulo } else { res }
+        if res < 0 {
+            res + self.modulo
+        } else {
+            res
+        }
     }
 }
 
@@ -39,7 +48,7 @@ pub struct RollingHash {
     mod1: i64,
     mod2: i64,
     hash1: SingleRollingHash,
-    hash2: SingleRollingHash
+    hash2: SingleRollingHash,
 }
 
 impl RollingHash {
@@ -49,7 +58,10 @@ impl RollingHash {
         let mod1 = 1_000_000_009;
         let mod2 = 998_244_353;
         Self {
-            base1, base2, mod1, mod2,
+            base1,
+            base2,
+            mod1,
+            mod2,
             hash1: SingleRollingHash::from(string, base1, mod1),
             hash2: SingleRollingHash::from(string, base2, mod2),
         }

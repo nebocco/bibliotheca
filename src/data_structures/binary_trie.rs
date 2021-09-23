@@ -1,9 +1,10 @@
 // * verified: https://judge.yosupo.jp/submission/30795
 // ------------ Binary Trie start ------------
+#[derive(Default)]
 pub struct BinaryTrie {
     cnt: usize,
     lch: Option<Box<BinaryTrie>>,
-    rch: Option<Box<BinaryTrie>>
+    rch: Option<Box<BinaryTrie>>,
 }
 
 impl BinaryTrie {
@@ -11,21 +12,27 @@ impl BinaryTrie {
         Self {
             cnt: 0,
             lch: None,
-            rch: None
+            rch: None,
         }
     }
 
-    pub fn size(&self) -> usize { self.cnt }
+    pub fn size(&self) -> usize {
+        self.cnt
+    }
 
     pub fn contains(&mut self, mut val: u32) -> bool {
         let mut node = self;
         val = val.reverse_bits();
         for _ in 0..32 {
             node = if val & 1 == 0 {
-                if node.lch.is_none() { return false; }
+                if node.lch.is_none() {
+                    return false;
+                }
                 node.lch.as_deref_mut().unwrap()
             } else {
-                if node.rch.is_none() { return false; }
+                if node.rch.is_none() {
+                    return false;
+                }
                 node.rch.as_deref_mut().unwrap()
             };
             val >>= 1;
@@ -34,7 +41,9 @@ impl BinaryTrie {
     }
 
     pub fn insert(&mut self, mut val: u32) {
-        if self.contains(val) { return; }
+        if self.contains(val) {
+            return;
+        }
         self.cnt += 1;
         let mut node = self;
         val = val.reverse_bits();
@@ -56,7 +65,9 @@ impl BinaryTrie {
     }
 
     pub fn erase(&mut self, mut val: u32) {
-        if !self.contains(val) { return; }
+        if !self.contains(val) {
+            return;
+        }
         self.cnt -= 1;
         let mut node = self;
         val = val.reverse_bits();
@@ -98,9 +109,13 @@ impl BinaryTrie {
         res
     }
 
-    pub fn max(&mut self) -> u32 { self.xor_min(!0) }
+    pub fn max(&mut self) -> u32 {
+        self.xor_min(!0)
+    }
 
-    pub fn min(&mut self) -> u32 { self.xor_min(0) }
+    pub fn min(&mut self) -> u32 {
+        self.xor_min(0)
+    }
 
     pub fn count_lower_than(&mut self, mut val: u32) -> usize {
         let mut node = self;
@@ -111,20 +126,45 @@ impl BinaryTrie {
                 res += node.lch.as_deref().unwrap().cnt;
             }
             node = if val & 1 == 0 {
-                if node.lch.is_none() { return res; }
+                if node.lch.is_none() {
+                    return res;
+                }
                 node.lch.as_deref_mut().unwrap()
             } else {
-                if node.rch.is_none() { return res; }
+                if node.rch.is_none() {
+                    return res;
+                }
                 node.rch.as_deref_mut().unwrap()
             };
             val >>= 1;
         }
         res
     }
+
+    pub fn kth(&mut self, mut k: usize) -> u32 {
+        k += 1;
+        let mut node = self;
+        let mut val = 0;
+        for _ in 0..32 {
+            val <<= 1;
+            node = if let Some(lch) = node.lch.as_deref_mut() {
+                if k > lch.cnt {
+                    k -= lch.cnt;
+                    val |= 1;
+                    node.rch.as_deref_mut().unwrap()
+                } else {
+                    lch
+                }
+            } else {
+                val |= 1;
+                node.rch.as_deref_mut().unwrap()
+            };
+        }
+        val
+    }
 }
 
 // ------------ Binary Trie end ------------
-
 
 #[cfg(test)]
 mod tests {
@@ -137,9 +177,12 @@ mod tests {
         trie.insert(100);
         assert_eq!(trie.size(), 3);
         assert!(trie.contains(10));
+        assert_eq!(trie.kth(0), 1);
+        assert_eq!(trie.kth(2), 100);
         trie.insert(1000);
         trie.insert(10000);
         trie.erase(10);
+        assert_eq!(trie.kth(2), 1000);
         assert_eq!(trie.min(), 1);
         assert_eq!(trie.max(), 10000);
         assert_eq!(trie.xor_min(96), 100);
@@ -148,6 +191,8 @@ mod tests {
         trie.insert(1000000);
         trie.insert(10000000);
         trie.erase(1);
+        assert_eq!(trie.kth(2), 10000);
+        assert_eq!(trie.kth(4), 1000000);
         assert!(trie.contains(100000));
         assert!(!trie.contains(10));
         assert_eq!(trie.count_lower_than(5000), 2);

@@ -1,6 +1,6 @@
 use crate::utils::{
-    graph::{ Graph, DirectedGraph },
-    algebraic_traits::{ Element, Group },
+    algebraic_traits::{Element, Group},
+    graph::{DirectedGraph, Graph},
 };
 
 pub fn solve_lsi<C: Element, E: Group>(g: &DirectedGraph<C>, c: &[E]) -> Option<Vec<E>> {
@@ -10,23 +10,35 @@ pub fn solve_lsi<C: Element, E: Group>(g: &DirectedGraph<C>, c: &[E]) -> Option<
     for u in 0..n {
         if !seen[u] {
             let y = lsi_dfs(u, g, &mut seen, &mut res, c);
-            if !y.is_zero() { return None; }
+            if !y.is_zero() {
+                return None;
+            }
         }
     }
     Some(res)
 }
 
-fn lsi_dfs<C: Element, E: Group>(u: usize, g: &DirectedGraph<C>, seen: &mut [bool], res: &mut [E], c: &[E]) -> E {
+fn lsi_dfs<C: Element, E: Group>(
+    u: usize,
+    g: &DirectedGraph<C>,
+    seen: &mut [bool],
+    res: &mut [E],
+    c: &[E],
+) -> E {
     seen[u] = true;
     let mut r = c[u].clone();
     for e in g.edges_from(u) {
-        if seen[e.to] { continue; }
+        if seen[e.to] {
+            continue;
+        }
         let y = lsi_dfs(e.to, g, seen, res, c);
         res[e.id] = res[e.id].clone() + y.clone();
         r = r + y;
     }
     for e in g.edges_to(u) {
-        if seen[e.to] { continue; }
+        if seen[e.to] {
+            continue;
+        }
         let y = -lsi_dfs(e.to, g, seen, res, c);
         res[e.id] = res[e.id].clone() + y.clone();
         r = r + y;
@@ -37,18 +49,22 @@ fn lsi_dfs<C: Element, E: Group>(u: usize, g: &DirectedGraph<C>, seen: &mut [boo
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::ops::{ Add, Neg };
     use crate::utils::{
-        algebraic_traits::{ Associative, Zero },
-        graph::{ Graph, DirectedGraph, Void },
+        algebraic_traits::{Associative, Zero},
+        graph::{DirectedGraph, Graph, Void},
     };
+    use std::ops::{Add, Neg};
 
     #[derive(Clone, Copy, PartialEq, Debug)]
     struct Xor(bool);
 
     impl Zero for Xor {
-        fn zero() -> Self { Xor(false) }
-        fn is_zero(&self) -> bool { !self.0 }
+        fn zero() -> Self {
+            Xor(false)
+        }
+        fn is_zero(&self) -> bool {
+            !self.0
+        }
     }
 
     impl Add for Xor {
@@ -60,7 +76,9 @@ mod tests {
 
     impl Neg for Xor {
         type Output = Self;
-        fn neg(self) -> Self { self }
+        fn neg(self) -> Self {
+            self
+        }
     }
 
     impl Associative for Xor {}
@@ -69,7 +87,7 @@ mod tests {
         let mut c = vec![Xor(false); n];
         let mut g = DirectedGraph::new(n);
         for &(u, v) in &edges {
-            g.add_edge(u, v, Void());
+            g.add_edge(u, v, Void);
             c[u] = c[u] + Xor(true);
         }
         let res = solve_lsi(&g, &c).unwrap();
@@ -102,7 +120,9 @@ mod tests {
         const EDGES: usize = 4000;
         let mut rng = rand::thread_rng();
         for _ in 0..REPEAT {
-            let edges = (0..EDGES).map(|_| (rng.gen_range(0..SIZE), rng.gen_range(0..SIZE))).collect::<Vec<_>>();
+            let edges = (0..EDGES)
+                .map(|_| (rng.gen_range(0..SIZE), rng.gen_range(0..SIZE)))
+                .collect::<Vec<_>>();
             execute_even_degrees(SIZE, edges);
         }
     }

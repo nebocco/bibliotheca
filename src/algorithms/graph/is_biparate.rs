@@ -1,11 +1,13 @@
-use crate::utils::graph::{ Cost, Graph };
+use crate::utils::graph::{Cost, Graph};
 
 pub fn is_biparate<C: Cost, G: Graph<C>>(graph: &G) -> Option<Vec<usize>> {
     let n = graph.size();
     let mut color = vec![2 * n; n];
     let mut c = 0;
     for i in 0..n {
-        if color[i] < 2 * n { continue; }
+        if color[i] < 2 * n {
+            continue;
+        }
         color[i] = c;
         let mut st = Vec::new();
         st.push(i);

@@ -1,7 +1,18 @@
 use crate::utils::algebraic_traits::Zero;
-use std::ops::{Add, Sub, Mul, Div};
+use std::ops::{Add, Div, Mul, Sub};
 
 // ------------ geometry start ------------
+
+
+pub fn argument_sort(a: &mut [(i32, i32)]) {
+    a.sort_by(|&(x1, y1), &(x2, y2)| {
+        (y1 >= 0)
+            .cmp(&(y2 >= 0))
+            .then_with(|| (x2 as i64 * y1 as i64 - x1 as i64 * y2 as i64).cmp(&0))
+            .then_with(|| y1.cmp(&y2)) // (0, 0)
+            .then_with(|| x2.cmp(&x1)) // (x1, 0), (x2, 0)
+    });
+}
 
 #[derive(Clone, Copy)]
 pub struct Point(f64, f64);
@@ -14,10 +25,14 @@ impl Point {
     }
 
     #[inline]
-    pub fn x(&self) -> f64 { self.0 }
+    pub fn x(&self) -> f64 {
+        self.0
+    }
 
     #[inline]
-    pub fn y(&self) -> f64 { self.1 }
+    pub fn y(&self) -> f64 {
+        self.1
+    }
 
     #[inline]
     pub fn arg(&self) -> f64 {
@@ -63,7 +78,7 @@ impl Point {
 
     #[inline]
     pub fn rotate(&self, theta: f64) -> Self {
-        Self (
+        Self(
             self.0 * theta.cos() - self.1 * theta.sin(),
             self.0 * theta.sin() + self.1 * theta.cos(),
         )
@@ -79,7 +94,10 @@ impl Line {
 
     /// a * x + b * y = c
     pub fn from_equation(a: f64, b: f64, c: f64) -> Self {
-        assert!(a.abs() < Point::EPS || a.abs() < Point::EPS, "不当な式ではありませんか？");
+        assert!(
+            a.abs() < Point::EPS || a.abs() < Point::EPS,
+            "不当な式ではありませんか？"
+        );
         if a.abs() < Point::EPS {
             Self(Point::new(0., c / b), Point::new(1., c / b))
         } else if b.abs() < Point::EPS {
@@ -91,10 +109,12 @@ impl Line {
 
     #[inline]
     pub fn projection(&self, p: &Point) -> Point {
-        self.0 + (self.0 - self.1) * Point::new(
-            (p - self.0).dot(&(self.0 - self.1)) / (self.0 - self.1).norm(),
-            0.
-        )
+        self.0
+            + (self.0 - self.1)
+                * Point::new(
+                    (p - self.0).dot(&(self.0 - self.1)) / (self.0 - self.1).norm(),
+                    0.,
+                )
     }
 
     #[inline]
@@ -124,7 +144,6 @@ impl Line {
         } else {
             Some(rhs.0 + (rhs.1 - rhs.0) * Point::new(d2 / d1, 0.))
         }
-
     }
 }
 
@@ -137,7 +156,7 @@ impl Circle {
     pub fn new<T: Into<f64>>(x: T, y: T, r: T) -> Self {
         Self {
             center: Point::new(x, y),
-            radius: r.into()
+            radius: r.into(),
         }
     }
     #[allow(unused_variables)]
@@ -164,8 +183,7 @@ impl fmt::Display for Point {
 
 impl PartialEq for Point {
     fn eq(&self, rhs: &Self) -> bool {
-        (self.0 - rhs.0).abs() < Self::EPS &&
-        (self.1 - rhs.1).abs() < Self::EPS
+        (self.0 - rhs.0).abs() < Self::EPS && (self.1 - rhs.1).abs() < Self::EPS
     }
 }
 
@@ -206,7 +224,7 @@ impl Mul for Point {
     fn mul(self, rhs: Self) -> Self {
         Self(
             self.0 * rhs.0 - self.1 * rhs.1,
-            self.0 * rhs.1 + self.1 * rhs.0
+            self.0 * rhs.1 + self.1 * rhs.0,
         )
     }
 }
@@ -215,11 +233,11 @@ impl Mul for Point {
 impl Div for Point {
     type Output = Point;
     fn div(self, rhs: Self) -> Self {
-		assert!(!rhs.is_zero(), "ゼロベクトルで割ろうとしていませんか？");
-		let d = rhs.0.powi(2) + rhs.1.powi(2);
+        assert!(!rhs.is_zero(), "ゼロベクトルで割ろうとしていませんか？");
+        let d = rhs.0.powi(2) + rhs.1.powi(2);
         Self(
             (self.0 * rhs.0 - self.1 * -rhs.1) / d,
-            (self.0 * -rhs.1 + self.1 * rhs.0) / d
+            (self.0 * -rhs.1 + self.1 * rhs.0) / d,
         )
     }
 }
@@ -264,10 +282,10 @@ macro_rules! binop_ref {
 }
 
 binop_ref! {
-	impl Add, add
-	impl Sub, sub
-	impl Mul, mul
-	impl Div, div
+    impl Add, add
+    impl Sub, sub
+    impl Mul, mul
+    impl Div, div
 }
 
 // ------------ impl arith end ------------

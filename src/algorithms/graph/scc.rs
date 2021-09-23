@@ -1,5 +1,5 @@
-use crate::utils::graph::*;
 use crate::algorithms::traversal::*;
+use crate::utils::graph::*;
 
 // * verified: https://judge.yosupo.jp/submission/26465
 // ------------ 2-SAT start ------------
@@ -11,7 +11,6 @@ use crate::algorithms::traversal::*;
 pub trait SCC {
     fn strongly_connected(&self) -> (usize, Vec<usize>);
     fn groups(&self) -> Vec<Vec<usize>>;
-
 }
 
 impl<C: Cost> SCC for DirectedGraph<C> {
@@ -35,10 +34,7 @@ impl<C: Cost> SCC for DirectedGraph<C> {
                 cnt += 1;
             }
         }
-        (
-            cnt,
-            res.iter().map(|x| cnt - 1 - x.unwrap()).collect(),
-        )
+        (cnt, res.iter().map(|x| cnt - 1 - x.unwrap()).collect())
     }
 
     fn groups(&self) -> Vec<Vec<usize>> {
@@ -61,13 +57,16 @@ impl TwoSat {
     }
 
     pub fn add_clause(&mut self, i: usize, f: bool, j: usize, g: bool) {
-        self.0.add_edge(2 * i + !f as usize, 2 * j + g as usize, Void());
-        self.0.add_edge(2 * j + !g as usize, 2 * i + f as usize, Void());
+        self.0
+            .add_edge(2 * i + !f as usize, 2 * j + g as usize, Void);
+        self.0
+            .add_edge(2 * j + !g as usize, 2 * i + f as usize, Void);
     }
 
     pub fn solve(&self) -> Option<Vec<bool>> {
         self.0
-            .strongly_connected().1
+            .strongly_connected()
+            .1
             .chunks_exact(2)
             .map(|v| {
                 use std::cmp::Ordering::*;
@@ -82,7 +81,6 @@ impl TwoSat {
 }
 
 // ------------ 2-SAT end ------------
-
 
 #[cfg(test)]
 mod tests {

@@ -1,19 +1,19 @@
-use std::ops::{Shl, Shr, BitAnd, BitOr, BitXor, Not};
+use std::ops::{BitAnd, BitOr, BitXor, Not, Shl, Shr};
 
 #[derive(Clone)]
 pub struct BitSet {
     data: Vec<u32>,
-    size: usize
+    size: usize,
 }
 
 impl BitSet {
     pub fn new(size: usize) -> Self {
         let data = vec![0; (size >> 5) + 1];
-        BitSet{ data, size }
+        BitSet { data, size }
     }
 
     pub fn fill(&mut self) {
-        self.data.iter_mut().for_each(|x| *x = 0xffffffff );
+        self.data.iter_mut().for_each(|x| *x = 0xffff_ffff);
     }
 
     pub fn access(&self, pos: usize) -> bool {
@@ -34,13 +34,15 @@ impl BitSet {
 
     pub fn collect(&self) -> Vec<u64> {
         (0..self.size)
-        .filter(|&i| self.access(i))
-        .map(|x| x as u64)
-        .collect::<Vec<u64>>()
+            .filter(|&i| self.access(i))
+            .map(|x| x as u64)
+            .collect::<Vec<u64>>()
     }
 
     fn resize(&mut self, l: usize) {
-        if self.size > l { return; }
+        if self.size > l {
+            return;
+        }
         self.data.resize((l >> 5) + 1, 0);
         self.size = l;
     }
@@ -100,7 +102,7 @@ impl Shr<usize> for BitSet {
         let mask = (1 << sml) - 1;
         for i in 0..self.data.len() {
             self.data[i] = if i + big < self.data.len() {
-                self.data[i+big]
+                self.data[i + big]
             } else {
                 0
             };
@@ -123,11 +125,7 @@ impl Shl<usize> for BitSet {
         let sml = (rhs & 31) as u32;
         let mask = (1 << sml) - 1;
         for i in (0..n).rev() {
-            self.data[i] = if i >= big {
-                self.data[i-big]
-            } else {
-                0
-            };
+            self.data[i] = if i >= big { self.data[i - big] } else { 0 };
         }
         let mut r = 0;
         for i in 0..n {
@@ -135,7 +133,7 @@ impl Shl<usize> for BitSet {
             self.data[i] = u & !mask | r;
             r = u & mask;
         }
-        self.data[n-1] &= (1 << (self.size & 31)) - 1;
+        self.data[n - 1] &= (1 << (self.size & 31)) - 1;
         self
     }
 }
@@ -150,7 +148,7 @@ mod tests {
         a.set(40, true);
         a.set(80, true);
         b.fill();
-        let c  = a & b;
+        let c = a & b;
         assert_eq!(c.collect(), vec![40, 80]);
     }
 
@@ -162,7 +160,7 @@ mod tests {
         a.set(80, true);
         b.set(30, true);
         b.set(170, true);
-        let c  = a | b;
+        let c = a | b;
         assert_eq!(c.collect(), vec![30, 40, 80, 170]);
     }
 

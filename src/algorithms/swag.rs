@@ -64,7 +64,6 @@ impl<T: SemiGroup> SwagQueue<T> {
 }
 // ------------ Swag Queue end ------------
 
-
 // ------------ Swag Deque start ------------
 #[derive(Default)]
 pub struct SwagDeque<T: SemiGroup> {
@@ -89,8 +88,8 @@ impl<T: SemiGroup> SwagDeque<T> {
     }
 
     fn _push<F>(stack: &mut Vec<(T, T)>, v: T, func: F)
-        where
-            F: FnOnce(T, T) -> T
+    where
+        F: FnOnce(T, T) -> T,
     {
         let s = if let Some((_, x)) = stack.last() {
             func(x.clone(), v.clone())
@@ -101,12 +100,12 @@ impl<T: SemiGroup> SwagDeque<T> {
     }
 
     fn _pop<F>(stack: &mut Vec<(T, T)>, other: &mut Vec<(T, T)>, func: F) -> Option<T>
-        where
-            F: Fn(T, T) -> T
+    where
+        F: Fn(T, T) -> T,
     {
         if stack.is_empty() {
             let n = other.len();
-            let temp = other.split_off((n+1)/2);
+            let temp = other.split_off((n + 1) / 2);
             for (v, _) in other.drain(..).rev() {
                 let s = if let Some((_, x)) = stack.last() {
                     func(x.clone(), v.clone())
@@ -161,9 +160,9 @@ impl<T: SemiGroup> SwagDeque<T> {
 
 #[cfg(test)]
 mod tests {
-    use std::ops::Add;
-    use crate::utils::algebraic_traits::*;
     use super::*;
+    use crate::utils::algebraic_traits::*;
+    use std::ops::Add;
 
     #[derive(Debug, Clone, PartialEq)]
     struct Min(i32);
@@ -230,10 +229,7 @@ mod tests {
     impl Add for Affine {
         type Output = Self;
         fn add(self, rhs: Self) -> Self {
-            Self(
-                rhs.0 * self.0 % MOD,
-                (rhs.0 * self.1 + rhs.1) % MOD,
-            )
+            Self(rhs.0 * self.0 % MOD, (rhs.0 * self.1 + rhs.1) % MOD)
         }
     }
     impl Associative for Affine {}

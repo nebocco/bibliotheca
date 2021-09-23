@@ -1,27 +1,31 @@
 // ------------ BitVector start ------------
 
 pub struct BitVector {
-	length: usize,
-	cnum: usize,
-	bnum: usize,
-	bit: Vec<u8>,
-	chunk: Vec<u16>,
-	blocks: Vec<Vec<u8>>
+    length: usize,
+    cnum: usize,
+    bnum: usize,
+    bit: Vec<u8>,
+    chunk: Vec<u16>,
+    blocks: Vec<Vec<u8>>,
 }
 
 impl BitVector {
-	const CW: usize = 256;
-	const BW: usize = 8;
+    const CW: usize = 256;
+    const BW: usize = 8;
 
-	pub fn new(length: usize) -> Self {
-		let cnum = (length + Self::CW - 1) / Self::CW;
-		let bnum = Self::CW / Self::BW;
+    pub fn new(length: usize) -> Self {
+        let cnum = (length + Self::CW - 1) / Self::CW;
+        let bnum = Self::CW / Self::BW;
         let bit = vec![0; cnum * bnum];
         let chunk = vec![0; cnum + 1];
         let blocks = vec![vec![0; bnum]; cnum];
         BitVector {
-            length, cnum, bnum,
-            bit, chunk, blocks
+            length,
+            cnum,
+            bnum,
+            bit,
+            chunk,
+            blocks,
         }
     }
 
@@ -36,7 +40,7 @@ impl BitVector {
         println!("{} {} {}", bpos, offset, self.bit[bpos]);
     }
 
-    pub fn access(&self, pos:usize) -> u8 {
+    pub fn access(&self, pos: usize) -> u8 {
         let bpos = pos / Self::BW;
         let offset = pos % Self::BW;
         self.bit[bpos] >> offset & 1
@@ -49,14 +53,16 @@ impl BitVector {
     pub fn build(&mut self) {
         for i in 0..self.cnum {
             for j in 1..self.bnum {
-                self.blocks[i][j] = self.blocks[i][j-1] + Self::popcount(self.bit[i * self.bnum + j - 1]);
+                self.blocks[i][j] =
+                    self.blocks[i][j - 1] + Self::popcount(self.bit[i * self.bnum + j - 1]);
             }
-            self.chunk[i+1] = self.chunk[i] + self.blocks[i][self.bnum-1] as u16 +
-            Self::popcount(self.bit[(i + 1) * self.bnum - 1]) as u16;
+            self.chunk[i + 1] = self.chunk[i]
+                + self.blocks[i][self.bnum - 1] as u16
+                + Self::popcount(self.bit[(i + 1) * self.bnum - 1]) as u16;
         }
     }
 
-    pub fn rank(&self, pos:usize) -> u16 {
+    pub fn rank(&self, pos: usize) -> u16 {
         let cpos = pos / Self::CW;
         let bpos = pos % Self::CW / Self::BW;
         let offset = pos % Self::BW;
@@ -85,7 +91,6 @@ impl BitVector {
 }
 
 // ------------ BitVector end ------------
-
 
 #[cfg(test)]
 mod tests {
