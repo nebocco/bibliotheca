@@ -1,11 +1,12 @@
 use crate::utils::bounds::bounds_within;
-use std::ops::{Index, Range, RangeBounds};
 
-
+// verified:
+// point add range sum: https://judge.yosupo.jp/submission/61965
+// point set range composite: https://judge.yosupo.jp/submission/61968
 // ------------ Segment Tree start ------------
 pub trait Monoid {
-    type Val: Clone;
-    fn zero() -> Self::Val;
+    type Val: Clone + PartialEq;
+    const ZERO: Self::Val;
     fn op(left: &Self::Val, right: &Self::Val) -> Self::Val;
 }
 
@@ -18,7 +19,7 @@ pub struct SegmentTree<M: Monoid> {
 impl<M: Monoid> SegmentTree<M> {
     pub fn new(n: usize) -> Self {
         let size = n.next_power_of_two();
-        let node = vec![M::zero(); size * 2];
+        let node = vec![M::ZERO; size * 2];
         SegmentTree { n, size, node }
     }
 
@@ -35,12 +36,12 @@ impl<M: Monoid> SegmentTree<M> {
         }
     }
 
-    pub fn fold<R: RangeBounds<usize>>(&self, rng: R) -> M::Val {
-        let Range { start, end } = bounds_within(rng, self.size);
-        let mut vl = M::zero();
-        let mut vr = M::zero();
-        let mut l = start + self.size;
-        let mut r = end + self.size;
+    pub fn fold<R: std::ops::RangeBounds<usize>>(&self, rng: R) -> M::Val {
+        let rng = bounds_within(rng, self.size);
+        let mut vl = M::ZERO;
+        let mut vr = M::ZERO;
+        let mut l = rng.start + self.size;
+        let mut r = rng.end + self.size;
         while l < r {
             if l & 1 == 1 {
                 vl = M::op(&vl, &self.node[l]);
@@ -58,12 +59,12 @@ impl<M: Monoid> SegmentTree<M> {
 
     /// (j, Val) => pred(j-1) = true, pred(j) = false
     pub fn partition(&self, pred: impl Fn(usize, &M::Val) -> bool) -> (usize, M::Val) {
-        assert!(pred(0, &M::zero()), "need to be pred(0, Val::zero())");
+        assert!(pred(0, &M::ZERO), "need to be pred(0, Val::ZERO)");
         if pred(self.n - 1, &self.node[1]) {
             return (self.n - 1, self.node[1].clone());
         }
         let mut j = 1;
-        let mut current = M::zero();
+        let mut current = M::ZERO;
         let mut idx = 0;
         let mut f = self.size;
         while j < self.size {
@@ -84,7 +85,7 @@ impl<M: Monoid> From<&Vec<M::Val>> for SegmentTree<M> {
     fn from(vec: &Vec<M::Val>) -> Self {
         let n = vec.len();
         let size = n.next_power_of_two();
-        let mut node = vec![M::zero(); size << 1];
+        let mut node = vec![M::ZERO; size << 1];
         for (i, e) in vec.iter().cloned().enumerate() {
             node[i + size] = e;
         }
@@ -95,7 +96,7 @@ impl<M: Monoid> From<&Vec<M::Val>> for SegmentTree<M> {
     }
 }
 
-impl<M: Monoid> Index<usize> for SegmentTree<M> {
+impl<M: Monoid> std::ops::Index<usize> for SegmentTree<M> {
     type Output = M::Val;
     fn index(&self, i: usize) -> &Self::Output {
         assert!(
@@ -116,7 +117,7 @@ mod tests {
     struct Rmq;
     impl Monoid for Rmq {
         type Val = i64;
-        fn zero() -> Self::Val { std::i64::MAX }
+        const ZERO: Self::Val = std::i64::MAX;
         fn op(left: &Self::Val, right: &Self::Val) -> Self::Val {
             *left.min(right)
         }
@@ -139,7 +140,7 @@ mod tests {
     struct Raq;
     impl Monoid for Raq {
         type Val = i32;
-        fn zero() -> Self::Val { 0 }
+        const ZERO: Self::Val = 0;
         fn op(left: &Self::Val, right: &Self::Val) -> Self::Val {
             left + right
         }
