@@ -1,4 +1,7 @@
-use crate::utils::{algebraic_traits::Monoid, bounds::bounds_within};
+use crate::utils::{
+    algebraic_traits::{Monoid, Pow},
+    bounds::bounds_within
+};
 
 use std::ops::{Mul, RangeBounds};
 
@@ -7,18 +10,18 @@ use std::ops::{Mul, RangeBounds};
 // ------------ Lazy Segment Tree start ------------
 
 #[derive(Clone)]
-struct Node<T: Monoid + Mul<E, Output = T>, E: Monoid> {
+struct Node<T, E> {
     val: T,
     lazy: E,
 }
 
-pub struct LazySegmentTree<T: Monoid + Mul<E, Output = T>, E: Monoid> {
+pub struct LazySegmentTree<T: Monoid + Mul<E, Output = T>, E: Monoid + Pow> {
     node: Box<[Node<T, E>]>,
     size: usize,
     dep: usize,
 }
 
-impl<T: Monoid + Mul<E, Output = T>, E: Monoid> LazySegmentTree<T, E> {
+impl<T: Monoid + Mul<E, Output = T>, E: Monoid + Pow> LazySegmentTree<T, E> {
     pub fn new(n: usize) -> Self {
         let size = n.next_power_of_two();
         let dep = size.trailing_zeros() as usize + 1;
@@ -36,17 +39,24 @@ impl<T: Monoid + Mul<E, Output = T>, E: Monoid> LazySegmentTree<T, E> {
         }
     }
 
+    #[inline]
+    fn degree(&self, i: usize) -> u32 {
+        1 << i.leading_zeros() as usize - (64 - self.dep - 1)
+    }
+
     fn effect(&mut self, i: usize, e: &E) {
         if i < self.size << 1 {
-            self.node[i].val = self.node[i].val.clone() * e.clone();
+            self.node[i].val = self.node[i].val.clone() * e.pow(self.degree(i));
             self.node[i].lazy = self.node[i].lazy.clone() + e.clone();
         }
     }
 
     fn push(&mut self, i: usize) {
         let e = std::mem::replace(&mut self.node[i].lazy, E::zero());
-        self.effect(i << 1, &e);
-        self.effect((i << 1) + 1, &e);
+        if !e.is_zero() {
+            self.effect(i << 1, &e);
+            self.effect((i << 1) + 1, &e);
+        }
     }
 
     fn infuse(&mut self, mut i: usize) {
@@ -112,7 +122,7 @@ impl<T: Monoid + Mul<E, Output = T>, E: Monoid> LazySegmentTree<T, E> {
     }
 }
 
-impl<T: Monoid + Mul<E, Output = T>, E: Monoid> From<&Vec<T>> for LazySegmentTree<T, E> {
+impl<T: Monoid + Mul<E, Output = T>, E: Monoid + Pow> From<&Vec<T>> for LazySegmentTree<T, E> {
     fn from(arr: &Vec<T>) -> Self {
         let size = arr.len().next_power_of_two();
         let dep = size.trailing_zeros() as usize + 1;
@@ -188,6 +198,12 @@ mod rmq_ruq_test {
         }
         fn is_zero(&self) -> bool {
             self.0.is_none()
+        }
+    }
+
+    impl Pow for Uq {
+        fn pow(&self, _: u32) -> Self {
+            self.clone()
         }
     }
 
