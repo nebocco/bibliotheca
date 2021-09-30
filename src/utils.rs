@@ -8,4 +8,5 @@ pub mod math;
 pub mod neboccoio;
 pub mod polynomial;
 pub mod prime;
+pub mod random;
 pub mod transform;

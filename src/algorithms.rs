@@ -1,12 +1,14 @@
+pub mod assignment;
 pub mod baby_step_giant_step;
+pub mod cartesian_tree;
 pub mod compress;
 pub mod convex_hull;
 pub mod dp;
 pub mod flow;
 pub mod graph;
-pub mod hungarian;
 pub mod kitamasa;
 pub mod lsi;
+pub mod mos_algorithm;
 pub mod rerooting;
 pub mod rolling_hash;
 pub mod sa_is;
