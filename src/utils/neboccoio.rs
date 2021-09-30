@@ -186,9 +186,9 @@ impl<T: Print, U: Print, V: Print> Print for (T, U, V) {
     }
 }
 
-mod neboccoio_macro {
-    #[macro_export]
-    macro_rules! input {
+pub mod neboccoio_macro {
+	#[macro_export]
+	macro_rules! input {
 		(@start $io:tt @read @rest) => {};
 
 		(@start $io:tt @read @rest, $($rest: tt)*) => {
