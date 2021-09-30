@@ -2,6 +2,10 @@
 use std::marker::Sized;
 use std::ops::*;
 
+pub trait Pow {
+    fn pow(&self, p: u32) -> Self;
+}
+
 /// 元
 pub trait Element: Sized + Clone + PartialEq {}
 impl<T: Sized + Clone + PartialEq> Element for T {}
