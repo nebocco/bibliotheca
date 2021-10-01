@@ -2,9 +2,11 @@ use crate::utils::math::modpow;
 
 use std::collections::HashMap;
 
-// * verified: https://judge.yosupo.jp/submission/30687
-/// solve k s.t. x.pow(k) === y (mod M)
-pub fn baby_giant(x: i64, y: i64, modulo: i64) -> Option<i64> {
+/// * verified: https://judge.yosupo.jp/submission/30687
+/// calcuate discrete logarithm of y with x under mod modulo.
+/// using Baby-step Giant-step algorithm.
+/// x.pow(k) === y (mod M) <=> log_x(y) = k
+pub fn discrete_logarithm(x: i64, y: i64, modulo: i64) -> Option<i64> {
     if (y - 1) % modulo == 0 {
         return Some(0);
     }
@@ -56,7 +58,7 @@ mod tests {
         let x: i64 = 3;
         let y: i64 = 193;
         const MOD: i64 = 1_000_000_007;
-        let r = baby_giant(x, y, MOD).unwrap_or(0);
+        let r = discrete_logarithm(x, y, MOD).unwrap_or(0);
         assert_eq!(modpow(x, r, MOD), y);
     }
 
@@ -69,7 +71,7 @@ mod tests {
         for _ in 0..20 {
             let x = rng.gen::<i64>() % MOD;
             let y = rng.gen::<i64>() % MOD;
-            let r = baby_giant(x, y, MOD);
+            let r = discrete_logarithm(x, y, MOD);
             if r.is_some() {
                 f.push(r.unwrap());
                 assert_eq!(modpow(x, r.unwrap(), MOD), y);

@@ -1,8 +1,8 @@
 pub mod assignment;
-pub mod baby_step_giant_step;
 pub mod cartesian_tree;
 pub mod compress;
 pub mod convex_hull;
+pub mod discrete_logarithm;
 pub mod dp;
 pub mod flow;
 pub mod graph;
