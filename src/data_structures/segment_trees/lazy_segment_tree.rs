@@ -12,7 +12,9 @@ pub trait Ring {
     fn op_val(left: &Self::Val, right: &Self::Val) -> Self::Val;
     fn op_eff(left: &Self::Eff, right: &Self::Eff) -> Self::Eff;
     fn effect(val: &Self::Val, eff: &Self::Eff) -> Self::Val;
-    fn multiply(eff: &Self::Eff, _times: u32) -> Self::Eff { eff.clone() }
+    fn multiply(eff: &Self::Eff, _times: u32) -> Self::Eff {
+        eff.clone()
+    }
 }
 
 #[derive(Clone)]
@@ -37,8 +39,7 @@ impl<R: Ring> LazySegmentTree<R> {
     pub fn new(n: usize) -> Self {
         let size = n.next_power_of_two();
         let dep = size.trailing_zeros() + 1;
-        let node = vec![Node::new(R::ZERO_VAL, R::ZERO_EFF); size << 1]
-            .into_boxed_slice();
+        let node = vec![Node::new(R::ZERO_VAL, R::ZERO_EFF); size << 1].into_boxed_slice();
         Self { node, size, dep }
     }
 
@@ -136,7 +137,11 @@ impl<R: Ring> From<&Vec<R::Val>> for LazySegmentTree<R> {
         for i in (1..size).rev() {
             node[i].val = R::op_val(&node[i << 1].val, &node[(i << 1) + 1].val);
         }
-        Self { node: node.into_boxed_slice(), size, dep }
+        Self {
+            node: node.into_boxed_slice(),
+            size,
+            dep,
+        }
     }
 }
 
@@ -157,10 +162,18 @@ mod rmq_ruq_test {
             *left.min(right)
         }
         fn op_eff(left: &Self::Eff, right: &Self::Eff) -> Self::Eff {
-            if right.is_none() { *left } else { *right }
+            if right.is_none() {
+                *left
+            } else {
+                *right
+            }
         }
         fn effect(val: &Self::Val, eff: &Self::Eff) -> Self::Val {
-            if let Some(v) = eff { *v } else { *val }
+            if let Some(v) = eff {
+                *v
+            } else {
+                *val
+            }
         }
     }
 
