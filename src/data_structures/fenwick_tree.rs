@@ -1,41 +1,46 @@
-use crate::utils::{
-    algebraic_traits::{Group, Monoid},
-    bounds::bounds_within,
-};
-use std::ops::{Range, RangeBounds};
+use crate::utils::bounds::bounds_within;
 
 // * verified: https://judge.yosupo.jp/submission/28326, https://judge.yosupo.jp/submission/29570
-// ------------ FenwickTree with generics start ------------
+// ------------ FenwickTree start ------------
+pub trait Monoid {
+    type Val: Clone + PartialEq;
+    const ZERO: Self::Val;
+    fn op(left: &Self::Val, right: &Self::Val) -> Self::Val;
+}
+
+pub trait Group: Monoid {
+    fn inv(val: &Self::Val) -> Self::Val;
+}
 
 #[derive(Clone, Debug)]
-pub struct FenwickTree<T>(Vec<T>);
+pub struct FenwickTree<M: Monoid>(Vec<M::Val>);
 
-impl<T: Monoid> FenwickTree<T> {
+impl<M: Monoid> FenwickTree<M> {
     #[inline]
     fn lsb(x: usize) -> usize {
         x & x.wrapping_neg()
     }
 
     pub fn new(n: usize) -> Self {
-        Self(vec![T::zero(); n + 1])
+        Self(vec![M::ZERO; n + 1])
     }
 
-    pub fn prefix_sum(&self, i: usize) -> T {
+    pub fn prefix_sum(&self, i: usize) -> M::Val {
         std::iter::successors(Some(i), |&i| Some(i - Self::lsb(i)))
             .take_while(|&i| i != 0)
             .map(|i| self.0[i].clone())
-            .fold(T::zero(), |sum, x| sum + x)
+            .fold(M::ZERO, |sum, x| M::op(&sum, &x))
     }
 
-    pub fn add(&mut self, i: usize, x: T) {
+    pub fn add(&mut self, i: usize, x: M::Val) {
         let n = self.0.len();
         std::iter::successors(Some(i + 1), |&i| Some(i + Self::lsb(i)))
             .take_while(|&i| i < n)
-            .for_each(|i| self.0[i] = self.0[i].clone() + x.clone());
+            .for_each(|i| self.0[i] = M::op(&self.0[i], &x));
     }
 
     /// pred(j, sum(..j)) && !pred(j+1, sum(..j+1))
-    pub fn partition(&self, pred: impl Fn(usize, &T) -> bool) -> (usize, T) {
+    pub fn partition(&self, pred: impl Fn(usize, &M::Val) -> bool) -> (usize, M::Val) {
         assert!(pred(0, &self.0[0]), "need to be pred(0, 0)");
         let mut j = 0;
         let mut current = self.0[0].clone();
@@ -44,7 +49,7 @@ impl<T: Monoid> FenwickTree<T> {
             .take_while(|&d| d != 0)
         {
             if j + d < n {
-                let next = current.clone() + self.0[j + d].clone();
+                let next = M::op(&current, &self.0[j + d]);
                 if pred(j + d, &next) {
                     current = next;
                     j += d;
@@ -55,151 +60,59 @@ impl<T: Monoid> FenwickTree<T> {
     }
 }
 
-impl<T: Monoid> From<Vec<T>> for FenwickTree<T> {
-    fn from(src: Vec<T>) -> Self {
-        let mut table = std::iter::once(T::zero())
-            .chain(src.into_iter())
-            .collect::<Vec<T>>();
+impl<M: Monoid> From<&Vec<M::Val>> for FenwickTree<M> {
+    fn from(src: &Vec<M::Val>) -> Self {
+        let mut table = std::iter::once(M::ZERO)
+            .chain(src.iter().cloned())
+            .collect::<Vec<M::Val>>();
         let n = table.len();
         (1..n)
             .map(|i| (i, i + Self::lsb(i)))
             .filter(|&(_, j)| j < n)
             .for_each(|(i, j)| {
-                table[j] = table[j].clone() + table[i].clone();
+                table[j] = M::op(&table[j], &table[i]);
             });
         Self(table)
     }
 }
 
-impl<T: Group> FenwickTree<T> {
-    pub fn sum<R: RangeBounds<usize>>(&self, rng: R) -> T {
-        let Range { start, end } = bounds_within(rng, self.0.len() - 1);
-        self.prefix_sum(end) + -self.prefix_sum(start)
+impl<G: Group> FenwickTree<G> {
+    pub fn sum<R>(&self, rng: R) -> G::Val
+    where
+        R: std::ops::RangeBounds<usize>,
+    {
+        let rng = bounds_within(rng, self.0.len() - 1);
+        G::op(
+            &self.prefix_sum(rng.end),
+            &G::inv(&self.prefix_sum(rng.start)),
+        )
     }
 }
 
 // ------------ FenwickTree with generics end ------------
 
-// * verified: https://judge.yosupo.jp/submission/28227
-pub struct Fenwick(Vec<i64>);
-
-impl Fenwick {
-    #[inline]
-    fn lsb(x: usize) -> usize {
-        x & x.wrapping_neg()
-    }
-
-    pub fn new(len: usize) -> Self {
-        Fenwick(vec![0; len + 1])
-    }
-
-    pub fn build_from_slice(src: &[i64]) -> Self {
-        let mut table = std::iter::once(0)
-            .chain(src.iter().cloned())
-            .collect::<Vec<i64>>();
-        let n = table.len();
-        (1..n)
-            .map(|i| (i, i + Self::lsb(i)))
-            .filter(|&(_, j)| j < n)
-            .for_each(|(i, j)| {
-                table[j] += table[i];
-            });
-        Self(table)
-    }
-
-    pub fn prefix_sum(&self, i: usize) -> i64 {
-        std::iter::successors(Some(i), |&i| Some(i - Self::lsb(i)))
-            .take_while(|&i| i != 0)
-            .map(|i| self.0[i])
-            .sum::<i64>()
-    }
-
-    pub fn sum<R: RangeBounds<usize>>(&self, rng: R) -> i64 {
-        let Range { start, end } = bounds_within(rng, self.0.len() - 1);
-        self.prefix_sum(end) + -self.prefix_sum(start)
-    }
-
-    pub fn add(&mut self, i: usize, x: i64) {
-        let n = self.0.len();
-        std::iter::successors(Some(i + 1), |&i| Some(i + Self::lsb(i)))
-            .take_while(|&i| i < n)
-            .for_each(|i| self.0[i] += x);
-    }
-
-    fn partition(&self, pred: impl Fn(usize, i64) -> bool) -> (usize, i64) {
-        assert!(pred(0, self.0[0]), "need to be pred(0, 0)");
-        let mut j = 0;
-        let mut current = self.0[0];
-        let n = self.0.len();
-        for d in std::iter::successors(Some(n.next_power_of_two() >> 1), |&d| Some(d >> 1))
-            .take_while(|&d| d != 0)
-        {
-            if j + d < n {
-                let next = current + self.0[j + d];
-                if pred(j + d, next) {
-                    current = next;
-                    j += d;
-                }
-            }
-        }
-        (j, current)
-    }
-
-    pub fn lower_bound(&self, x: i64) -> usize {
-        self.partition(|_, y| y < x).0
-    }
-
-    pub fn upper_bound(&self, x: i64) -> usize {
-        self.partition(|_, y| y <= x).0
-    }
-
-    pub fn access(&self, i: usize) -> i64 {
-        assert!(
-            i < self.0.len() - 1,
-            "index out of range: vector length is {}, but got index {}",
-            self.0.len() - 1,
-            i
-        );
-        self.prefix_sum(i + 1) - self.prefix_sum(i)
-    }
-
-    pub fn set(&mut self, i: usize, x: i64) {
-        self.add(i, x - self.access(i));
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_0() {
-        let mut bit = Fenwick::new(5);
-        bit.add(0, 1);
-        bit.add(1, 2);
-        assert_eq!(bit.prefix_sum(1), 1);
-        assert_eq!(bit.prefix_sum(2), 3);
-        assert_eq!(bit.prefix_sum(3), 3);
-        bit.add(2, 4);
-        bit.add(3, 8);
-        bit.add(4, 16);
-        assert_eq!(bit.prefix_sum(5), 31);
-        assert_eq!(bit.sum(1..3), 6);
-        assert_eq!(bit.sum(..=3), 15);
-        assert_eq!(bit.sum(..), 31);
+    struct Inner;
+    impl Monoid for Inner {
+        type Val = i32;
+        const ZERO: Self::Val = 0;
+        fn op(l: &Self::Val, r: &Self::Val) -> Self::Val {
+            l + r
+        }
+    }
 
-        bit.set(0, 5);
-        assert_eq!(bit.prefix_sum(3), 11);
-        assert_eq!(bit.access(0), 5);
-        assert_eq!(bit.access(1), 2);
-        assert_eq!(bit.access(2), 4);
-        assert_eq!(bit.access(3), 8);
-        assert_eq!(bit.access(4), 16);
+    impl Group for Inner {
+        fn inv(val: &Self::Val) -> Self::Val {
+            -val
+        }
     }
 
     #[test]
-    fn test_abst() {
-        let mut bit = FenwickTree::<i32>::new(5);
+    fn test_fenwick_tree() {
+        let mut bit = FenwickTree::<Inner>::new(5);
         bit.add(0, 0);
         bit.add(1, 1);
         bit.add(2, 10);
@@ -218,18 +131,16 @@ mod tests {
     }
 
     #[test]
-    fn test_1() {
+    fn test_fenwick_tree_partition() {
         let a = vec![3, 1, 4, 1, 5, 9, 2, 6, 5];
-        let bit = Fenwick::build_from_slice(&a);
+        let bit = FenwickTree::<Inner>::from(&a);
         for i in 0..9 {
-            assert_eq!(bit.prefix_sum(i), a[..i].iter().sum::<i64>())
+            assert_eq!(bit.prefix_sum(i), a[..i].iter().sum::<i32>())
         }
-
-        assert_eq!(bit.lower_bound(7), 2);
-        assert_eq!(bit.lower_bound(10), 4);
-        assert_eq!(bit.lower_bound(14), 4);
-        assert_eq!(bit.upper_bound(14), 5);
-        assert_eq!(bit.lower_bound(15), 5);
-        assert_eq!(bit.lower_bound(200000), 9);
+        assert_eq!(bit.partition(|_, sum| *sum < 7), (2, 4));
+        assert_eq!(bit.partition(|_, sum| *sum < 10), (4, 9));
+        assert_eq!(bit.partition(|_, sum| *sum < 13), (4, 9));
+        assert_eq!(bit.partition(|_, sum| *sum < 16), (5, 14));
+        assert_eq!(bit.partition(|_, sum| *sum < 2), (0, 0));
     }
 }
