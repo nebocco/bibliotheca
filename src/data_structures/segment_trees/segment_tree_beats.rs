@@ -2,9 +2,7 @@ use crate::utils::bounds::bounds_within;
 
 // verified:
 // Range update/chGCD Range max/sum: https://yukicoder.me/submissions/703569
-
-// FAILED:
-// Range chmin/chmax/add Range sum: https://judge.yosupo.jp/submission/61988
+// Range chmin/chmax/add Range sum: https://judge.yosupo.jp/submission/62051
 // ------------ Segment Tree Beats start ------------
 
 pub trait Operation {
@@ -56,7 +54,7 @@ impl<O: Operation> SegmentTreeBeats<O> {
 
     fn effect(&mut self, i: usize, e: &O::Eff) {
         self.node[i].val = O::effect(&self.node[i].val, &O::multiply(e, self.degree(i)));
-        if i <= self.size {
+        if i < self.size {
             self.node[i].lazy = O::op_eff(&self.node[i].lazy, e);
             if self.node[i].val.is_failed() {
                 self.push(i);
@@ -67,7 +65,7 @@ impl<O: Operation> SegmentTreeBeats<O> {
 
     fn push(&mut self, i: usize) {
         let e = std::mem::replace(&mut self.node[i].lazy, O::ZERO_EFF);
-        if e != O::ZERO_EFF && i <= self.size {
+        if e != O::ZERO_EFF && i < self.size {
             self.effect(i << 1, &e);
             self.effect((i << 1) + 1, &e);
         }
@@ -153,8 +151,10 @@ impl<O: Operation> From<&Vec<O::Val>> for SegmentTreeBeats<O> {
 
 // ------------ Segment Tree Beats end ------------
 
-mod chmin_chmax {
+pub mod chmin_chmax {
     use super::*;
+
+    const INF: i64 = std::i64::MAX >> 2;
 
     fn second_lowest(l1: i64, l2: i64, r1: i64, r2: i64) -> i64 {
         if l1 == r1 {
@@ -181,16 +181,16 @@ mod chmin_chmax {
     }
 
     #[derive(Clone, PartialEq)]
-    struct Data {
+    pub struct Data {
         lo: i64, hi: i64, lo2: i64, hi2: i64,
-        sum: i64, size: i64, nlo: i64, nhi: i64,
+        pub sum: i64, size: i64, nlo: i64, nhi: i64,
         fail: bool
     }
 
     impl Data {
-        fn sized(val: i64, size: i64) -> Self {
+        pub fn sized(val: i64, size: i64) -> Self {
             Self {
-                lo: val, lo2: std::i64::MAX, hi: val, hi2: std::i64::MIN,
+                lo: val, lo2: INF, hi: val, hi2: -INF,
                 sum: val * size, size, nlo: size, nhi: size, fail: false
             }
         }
@@ -201,21 +201,35 @@ mod chmin_chmax {
     }
 
     #[derive(Clone, PartialEq)]
-    struct Op {
+    pub struct Op {
         lb: i64, ub: i64, bias: i64
     }
 
-    struct ChminChmaxAddSum;
+    impl Op {
+        pub fn min(val: i64) -> Self{
+            Op { lb: -INF, ub: val, bias: 0 }
+        }
+
+        pub fn max(val: i64) -> Self{
+            Op { lb: val, ub: INF, bias: 0 }
+        }
+
+        pub fn add(val: i64) -> Self{
+            Op { lb: -INF, ub: INF, bias: val }
+        }
+    }
+
+    pub struct ChminChmaxAddSum;
 
     impl Operation for ChminChmaxAddSum {
         type Val = Data;
         type Eff = Op;
         const ZERO_VAL: Self::Val = Data{
-            lo: std::i64::MAX, lo2: std::i64::MAX, hi: std::i64::MIN, hi2: std::i64::MIN,
+            lo: INF, lo2: INF, hi: -INF, hi2: -INF,
             sum: 0, size: 0, nlo: 0, nhi: 0, fail: false
         };
         const ZERO_EFF: Self::Eff = Op {
-            lb: std::i64::MIN, ub: std::i64::MAX, bias: 0
+            lb: -INF, ub: INF, bias: 0
         };
         fn op_val(left: &Self::Val, right: &Self::Val) -> Self::Val {
             Data {
@@ -255,18 +269,20 @@ mod chmin_chmax {
             if val.size == 0 {
                 return Self::ZERO_VAL
             } else if val.lo == val.hi || eff.lb == eff.ub || eff.lb >= val.hi || eff.ub <= val.lo {
-                return Data::sized(val.lo.max(eff.lb).min(eff.ub), val.size);
+                return Data::sized(val.lo.max(eff.lb).min(eff.ub) + eff.bias, val.size);
             } else if val.lo2 == val.hi {
-                res.lo = res.lo.max(eff.lb) + eff.bias;
-                res.hi2 = res.lo.max(eff.lb) + eff.bias;
-                res.hi = res.hi.min(eff.ub) + eff.bias;
-                res.lo2 = res.hi.min(eff.ub) + eff.bias;
-                res.sum = res.nlo * res.lo + res.nhi * val.hi;
+                res.lo = val.lo.max(eff.lb) + eff.bias;
+                res.hi2 = val.lo.max(eff.lb) + eff.bias;
+                res.hi = val.hi.min(eff.ub) + eff.bias;
+                res.lo2 = val.hi.min(eff.ub) + eff.bias;
+                res.sum = res.nlo * res.lo + res.nhi * res.hi;
                 return res;
             } else if eff.lb < val.lo2 && eff.ub > val.hi2 {
                 let next_lo = val.lo.max(eff.lb);
                 let next_hi = val.hi.min(eff.ub);
                 res.sum += (next_lo - val.lo) * val.nlo - (val.hi - next_hi) * val.nhi + eff.bias * val.size;
+                res.lo = next_lo + eff.bias; res.hi = next_hi + eff.bias;
+                res.lo2 += eff.bias; res.hi2 += eff.bias;
                 return res;
             }
             res.fail = true;
