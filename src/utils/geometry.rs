@@ -3,7 +3,6 @@ use std::ops::{Add, Div, Mul, Sub};
 
 // ------------ geometry start ------------
 
-
 pub fn argument_sort(a: &mut [(i32, i32)]) {
     a.sort_by(|&(x1, y1), &(x2, y2)| {
         (y1 >= 0)

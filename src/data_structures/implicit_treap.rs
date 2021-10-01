@@ -1,12 +1,12 @@
-// verified: 
+// verified:
 // point add range sum: https://judge.yosupo.jp/submission/61855
 // point set range composite: https://judge.yosupo.jp/submission/61856
 // range affine range sum: https://judge.yosupo.jp/submission/61858
 // dynamic sequence range affine range sum: https://judge.yosupo.jp/submission/61859
 
-use std::ops::{Mul, Range};
 use crate::utils::algebraic_traits::{Monoid, Pow};
 use crate::utils::random::XorShift;
+use std::ops::{Mul, Range};
 
 struct Node<T, E> {
     value: T,
@@ -19,7 +19,7 @@ struct Node<T, E> {
     right: Option<Box<Node<T, E>>>,
 }
 
-impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Node<T, E> {
+impl<T: Monoid + Mul<E, Output = T>, E: Monoid + Pow> Node<T, E> {
     fn new(value: T, priority: usize) -> Self {
         Self {
             value,
@@ -33,9 +33,13 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Node<T, E> {
         }
     }
 
-    fn count(&self) -> usize { self.cnt }
+    fn count(&self) -> usize {
+        self.cnt
+    }
 
-    fn accumulate(&self) -> T { self.acc.clone() }
+    fn accumulate(&self) -> T {
+        self.acc.clone()
+    }
 
     fn update_cnt(&mut self) {
         self.cnt = self.left.as_ref().map(|c| c.count()).unwrap_or(0)
@@ -44,9 +48,17 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Node<T, E> {
     }
 
     fn update_acc(&mut self) {
-        self.acc = self.left.as_ref().map(|c| c.accumulate()).unwrap_or_else(T::zero)
+        self.acc = self
+            .left
+            .as_ref()
+            .map(|c| c.accumulate())
+            .unwrap_or_else(T::zero)
             + self.value.clone()
-            + self.right.as_ref().map(|c| c.accumulate()).unwrap_or_else(T::zero);
+            + self
+                .right
+                .as_ref()
+                .map(|c| c.accumulate())
+                .unwrap_or_else(T::zero);
     }
 
     fn push_up(&mut self) {
@@ -83,7 +95,10 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Node<T, E> {
         self.push_up();
     }
 
-    fn split(mut self: Box<Node<T, E>>, key: usize) -> (Option<Box<Node<T, E>>>, Option<Box<Node<T, E>>>) {
+    fn split(
+        mut self: Box<Node<T, E>>,
+        key: usize,
+    ) -> (Option<Box<Node<T, E>>>, Option<Box<Node<T, E>>>) {
         self.push_down();
         let implicit_key = self.left.as_ref().map(|c| c.count()).unwrap_or(0) + 1;
         if key < implicit_key {
@@ -92,7 +107,7 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Node<T, E> {
             } else {
                 (None, None)
             };
-            
+
             // if let Some(ref mut node) = left {
             //     node.push_up();
             // }
@@ -132,15 +147,9 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Node<T, E> {
                     Some(right)
                 }
             }
-            (Some(left), None) => {
-                Some(left)
-            }
-            (None, Some(right)) => {
-                Some(right)
-            }
-            (None, None) => {
-                None
-            }
+            (Some(left), None) => Some(left),
+            (None, Some(right)) => Some(right),
+            (None, None) => None,
         }
     }
 
@@ -161,7 +170,7 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Node<T, E> {
 
     fn update(self: &mut Box<Node<T, E>>, rng: Range<usize>, eff: E) {
         let root = std::mem::replace(self, Box::new(Node::<T, E>::new(T::zero(), 0)));
-        
+
         let (rest, r) = root.split(rng.end);
         *self = if let Some(node) = rest {
             let (l, target) = node.split(rng.start);
@@ -174,7 +183,8 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Node<T, E> {
             }
         } else {
             r
-        }.unwrap();
+        }
+        .unwrap();
     }
 
     fn fold(self: &mut Box<Node<T, E>>, rng: Range<usize>) -> T {
@@ -191,13 +201,14 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Node<T, E> {
             }
         } else {
             r
-        }.unwrap();
+        }
+        .unwrap();
         ret
     }
 
     fn reverse(self: &mut Box<Node<T, E>>, rng: Range<usize>) {
         let root = std::mem::replace(self, Box::new(Node::<T, E>::new(T::zero(), 0)));
-        
+
         let (rest, r) = root.split(rng.end);
         *self = if let Some(node) = rest {
             let (l, target) = node.split(rng.start);
@@ -209,15 +220,16 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Node<T, E> {
             }
         } else {
             r
-        }.unwrap();
+        }
+        .unwrap();
     }
 
     fn rotate_left(self: &mut Box<Node<T, E>>, rng: Range<usize>, amount: usize) {
         assert!(amount < rng.len());
-        let Range{start, end} = rng;
+        let Range { start, end } = rng;
         self.reverse(start..end);
         self.reverse(start..end - amount);
-        self.reverse(end-amount..end);
+        self.reverse(end - amount..end);
     }
 
     fn bisect(self: &mut Box<Node<T, E>>, val: T, offset: usize) -> Option<usize> {
@@ -259,14 +271,14 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Node<T, E> {
 
 pub struct Treap<T, E> {
     rand: XorShift,
-    root: Option<Box<Node<T, E>>>
+    root: Option<Box<Node<T, E>>>,
 }
 
-impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Treap<T, E> {
+impl<T: Monoid + Mul<E, Output = T>, E: Monoid + Pow> Treap<T, E> {
     pub fn new() -> Self {
         Self {
             rand: XorShift::default(),
-            root: None
+            root: None,
         }
     }
 
@@ -281,7 +293,7 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Treap<T, E> {
     pub fn len(&self) -> usize {
         match self.root {
             Some(ref node) => node.count(),
-            None => 0
+            None => 0,
         }
     }
 
@@ -356,7 +368,7 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Treap<T, E> {
     }
 
     pub fn access(&mut self, pos: usize) -> T {
-        self.root.as_mut().unwrap().fold(pos..pos+1)
+        self.root.as_mut().unwrap().fold(pos..pos + 1)
     }
 }
 
@@ -364,9 +376,9 @@ impl<T: Monoid + Mul<E, Output=T>, E: Monoid + Pow> Treap<T, E> {
 
 #[cfg(test)]
 mod test {
-    use std::ops::*;
     use super::*;
     use crate::utils::algebraic_traits::*;
+    use std::ops::*;
 
     #[test]
     fn test_min_update() {
@@ -376,8 +388,12 @@ mod test {
         impl Associative for MinT {}
 
         impl Zero for MinT {
-            fn zero() -> Self { Self(std::i64::MAX) }
-            fn is_zero(&self) -> bool { self.0 == std::i64::MAX }
+            fn zero() -> Self {
+                Self(std::i64::MAX)
+            }
+            fn is_zero(&self) -> bool {
+                self.0 == std::i64::MAX
+            }
         }
 
         impl Add<Self> for MinT {
@@ -393,8 +409,12 @@ mod test {
         impl Associative for UpdE {}
 
         impl Zero for UpdE {
-            fn zero() -> Self { Self(None) }
-            fn is_zero(&self) -> bool { self.0.is_none() }
+            fn zero() -> Self {
+                Self(None)
+            }
+            fn is_zero(&self) -> bool {
+                self.0.is_none()
+            }
         }
 
         impl Add<Self> for UpdE {
@@ -427,7 +447,10 @@ mod test {
         }
 
         let n = 10;
-        let mut lis: Vec<MinT> = vec![3, 1, 4, 1, 5, 9, 2, 6, 5, 3].into_iter().map(|v| MinT(v)).collect();
+        let mut lis: Vec<MinT> = vec![3, 1, 4, 1, 5, 9, 2, 6, 5, 3]
+            .into_iter()
+            .map(|v| MinT(v))
+            .collect();
         let mut treap = Treap::<MinT, UpdE>::from(lis.clone());
         assert_eq!(treap.dump(), lis);
         for j in 0..n {
@@ -435,8 +458,12 @@ mod test {
             for i in 0..j {
                 assert_eq!(
                     treap.fold(i..j),
-                    (i..j).map(|i| lis[i].clone()).fold(MinT::zero(), |s, x| s + x),
-                    "{}..{}", i, j
+                    (i..j)
+                        .map(|i| lis[i].clone())
+                        .fold(MinT::zero(), |s, x| s + x),
+                    "{}..{}",
+                    i,
+                    j
                 );
             }
         }
@@ -458,8 +485,12 @@ mod test {
             for i in 0..j {
                 assert_eq!(
                     treap.fold(i..j),
-                    (i..j).map(|i| lis[i].clone()).fold(MinT::zero(), |s, x| s + x),
-                    "{}..{}", i, j
+                    (i..j)
+                        .map(|i| lis[i].clone())
+                        .fold(MinT::zero(), |s, x| s + x),
+                    "{}..{}",
+                    i,
+                    j
                 );
             }
         }
@@ -473,8 +504,12 @@ mod test {
             for i in 0..j {
                 assert_eq!(
                     treap.fold(i..j),
-                    (i..j).map(|i| lis[i].clone()).fold(MinT::zero(), |s, x| s + x),
-                    "{}..{}", i, j
+                    (i..j)
+                        .map(|i| lis[i].clone())
+                        .fold(MinT::zero(), |s, x| s + x),
+                    "{}..{}",
+                    i,
+                    j
                 );
             }
         }
@@ -486,8 +521,12 @@ mod test {
             for i in 0..j {
                 assert_eq!(
                     treap.fold(i..j),
-                    (i..j).map(|i| lis[i].clone()).fold(MinT::zero(), |s, x| s + x),
-                    "{}..{}", i, j
+                    (i..j)
+                        .map(|i| lis[i].clone())
+                        .fold(MinT::zero(), |s, x| s + x),
+                    "{}..{}",
+                    i,
+                    j
                 );
             }
         }

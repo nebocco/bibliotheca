@@ -13,7 +13,9 @@ pub trait Operation {
     fn op_val(left: &Self::Val, right: &Self::Val) -> Self::Val;
     fn op_eff(left: &Self::Eff, right: &Self::Eff) -> Self::Eff;
     fn effect(val: &Self::Val, eff: &Self::Eff) -> Self::Val;
-    fn multiply(eff: &Self::Eff, _times: u32) -> Self::Eff { eff.clone() }
+    fn multiply(eff: &Self::Eff, _times: u32) -> Self::Eff {
+        eff.clone()
+    }
 }
 
 pub trait Beats {
@@ -42,8 +44,7 @@ impl<O: Operation> SegmentTreeBeats<O> {
     pub fn new(n: usize) -> Self {
         let size = n.next_power_of_two();
         let dep = size.trailing_zeros() + 1;
-        let node = vec![Node::new(O::ZERO_VAL, O::ZERO_EFF); size << 1]
-            .into_boxed_slice();
+        let node = vec![Node::new(O::ZERO_VAL, O::ZERO_EFF); size << 1].into_boxed_slice();
         Self { node, size, dep }
     }
 
@@ -145,7 +146,11 @@ impl<O: Operation> From<&Vec<O::Val>> for SegmentTreeBeats<O> {
         for i in (1..size).rev() {
             node[i].val = O::op_val(&node[i << 1].val, &node[(i << 1) + 1].val);
         }
-        Self { node: node.into_boxed_slice(), size, dep }
+        Self {
+            node: node.into_boxed_slice(),
+            size,
+            dep,
+        }
     }
 }
 
@@ -182,40 +187,69 @@ pub mod chmin_chmax {
 
     #[derive(Clone, PartialEq)]
     pub struct Data {
-        lo: i64, hi: i64, lo2: i64, hi2: i64,
-        pub sum: i64, size: i64, nlo: i64, nhi: i64,
-        fail: bool
+        lo: i64,
+        hi: i64,
+        lo2: i64,
+        hi2: i64,
+        pub sum: i64,
+        size: i64,
+        nlo: i64,
+        nhi: i64,
+        fail: bool,
     }
 
     impl Data {
         pub fn sized(val: i64, size: i64) -> Self {
             Self {
-                lo: val, lo2: INF, hi: val, hi2: -INF,
-                sum: val * size, size, nlo: size, nhi: size, fail: false
+                lo: val,
+                lo2: INF,
+                hi: val,
+                hi2: -INF,
+                sum: val * size,
+                size,
+                nlo: size,
+                nhi: size,
+                fail: false,
             }
         }
     }
 
     impl Beats for Data {
-        fn is_failed(&self) -> bool { self.fail } 
+        fn is_failed(&self) -> bool {
+            self.fail
+        }
     }
 
     #[derive(Clone, PartialEq)]
     pub struct Op {
-        lb: i64, ub: i64, bias: i64
+        lb: i64,
+        ub: i64,
+        bias: i64,
     }
 
     impl Op {
-        pub fn min(val: i64) -> Self{
-            Op { lb: -INF, ub: val, bias: 0 }
+        pub fn min(val: i64) -> Self {
+            Op {
+                lb: -INF,
+                ub: val,
+                bias: 0,
+            }
         }
 
-        pub fn max(val: i64) -> Self{
-            Op { lb: val, ub: INF, bias: 0 }
+        pub fn max(val: i64) -> Self {
+            Op {
+                lb: val,
+                ub: INF,
+                bias: 0,
+            }
         }
 
-        pub fn add(val: i64) -> Self{
-            Op { lb: -INF, ub: INF, bias: val }
+        pub fn add(val: i64) -> Self {
+            Op {
+                lb: -INF,
+                ub: INF,
+                bias: val,
+            }
         }
     }
 
@@ -224,12 +258,21 @@ pub mod chmin_chmax {
     impl Operation for ChminChmaxAddSum {
         type Val = Data;
         type Eff = Op;
-        const ZERO_VAL: Self::Val = Data{
-            lo: INF, lo2: INF, hi: -INF, hi2: -INF,
-            sum: 0, size: 0, nlo: 0, nhi: 0, fail: false
+        const ZERO_VAL: Self::Val = Data {
+            lo: INF,
+            lo2: INF,
+            hi: -INF,
+            hi2: -INF,
+            sum: 0,
+            size: 0,
+            nlo: 0,
+            nhi: 0,
+            fail: false,
         };
         const ZERO_EFF: Self::Eff = Op {
-            lb: -INF, ub: INF, bias: 0
+            lb: -INF,
+            ub: INF,
+            bias: 0,
         };
         fn op_val(left: &Self::Val, right: &Self::Val) -> Self::Val {
             Data {
@@ -253,21 +296,21 @@ pub mod chmin_chmax {
                 } else {
                     left.nhi + right.nhi
                 },
-                fail: left.fail | right.fail
+                fail: left.fail | right.fail,
             }
         }
         fn op_eff(left: &Self::Eff, right: &Self::Eff) -> Self::Eff {
             Op {
                 lb: (left.lb + left.bias).min(right.ub).max(right.lb) - left.bias,
                 ub: (left.ub + left.bias).max(right.lb).min(right.ub) - left.bias,
-                bias: left.bias + right.bias
+                bias: left.bias + right.bias,
             }
         }
         fn effect(val: &Self::Val, eff: &Self::Eff) -> Self::Val {
             let mut res = val.clone();
-            
+
             if val.size == 0 {
-                return Self::ZERO_VAL
+                return Self::ZERO_VAL;
             } else if val.lo == val.hi || eff.lb == eff.ub || eff.lb >= val.hi || eff.ub <= val.lo {
                 return Data::sized(val.lo.max(eff.lb).min(eff.ub) + eff.bias, val.size);
             } else if val.lo2 == val.hi {
@@ -280,14 +323,16 @@ pub mod chmin_chmax {
             } else if eff.lb < val.lo2 && eff.ub > val.hi2 {
                 let next_lo = val.lo.max(eff.lb);
                 let next_hi = val.hi.min(eff.ub);
-                res.sum += (next_lo - val.lo) * val.nlo - (val.hi - next_hi) * val.nhi + eff.bias * val.size;
-                res.lo = next_lo + eff.bias; res.hi = next_hi + eff.bias;
-                res.lo2 += eff.bias; res.hi2 += eff.bias;
+                res.sum += (next_lo - val.lo) * val.nlo - (val.hi - next_hi) * val.nhi
+                    + eff.bias * val.size;
+                res.lo = next_lo + eff.bias;
+                res.hi = next_hi + eff.bias;
+                res.lo2 += eff.bias;
+                res.hi2 += eff.bias;
                 return res;
             }
             res.fail = true;
             res
-
         }
     }
 }
@@ -303,7 +348,7 @@ mod tests {
         }
         a
     }
-    
+
     pub fn lcm(a: i64, b: i64) -> i64 {
         if a == 0 && b == 0 {
             0
@@ -311,16 +356,16 @@ mod tests {
             (a / gcd(a, b)).saturating_mul(b)
         }
     }
-    
+
     #[derive(Clone, PartialEq)]
     struct Rucms {
         max: i64,
         lcm: i64,
         sum: i64,
         size: i64,
-        fail: bool
+        fail: bool,
     }
-    
+
     impl Rucms {
         fn new(val: i64) -> Self {
             Self {
@@ -328,28 +373,34 @@ mod tests {
                 lcm: val,
                 sum: val,
                 size: 1,
-                fail: false
+                fail: false,
             }
         }
     }
-    
+
     impl Beats for Rucms {
-        fn is_failed(&self) -> bool { self.fail }
+        fn is_failed(&self) -> bool {
+            self.fail
+        }
     }
-    
+
     #[derive(Clone, PartialEq)]
     enum Op {
         Gcd(i64),
         Update(i64),
-        None
+        None,
     }
-    
+
     struct RangeUpdateChgcdMaxSum;
     impl Operation for RangeUpdateChgcdMaxSum {
         type Val = Rucms;
         type Eff = Op;
-        const ZERO_VAL: Self::Val = Rucms{
-            max: 0, lcm: 1, sum: 0, size: 0, fail: false
+        const ZERO_VAL: Self::Val = Rucms {
+            max: 0,
+            lcm: 1,
+            sum: 0,
+            size: 0,
+            fail: false,
         };
         const ZERO_EFF: Self::Eff = Op::None;
         fn op_val(left: &Self::Val, right: &Self::Val) -> Self::Val {
@@ -358,7 +409,7 @@ mod tests {
                 lcm: lcm(left.lcm, right.lcm),
                 sum: left.sum + right.sum,
                 size: left.size + right.size,
-                fail: left.fail | right.fail
+                fail: left.fail | right.fail,
             }
         }
         fn op_eff(left: &Self::Eff, right: &Self::Eff) -> Self::Eff {
@@ -367,7 +418,7 @@ mod tests {
                 (Op::None, right) => right.clone(),
                 (_, Op::Update(_)) => right.clone(),
                 (Op::Gcd(a), Op::Gcd(b)) => Op::Gcd(gcd(*a, *b)),
-                (Op::Update(a), Op::Gcd(b)) => Op::Update(gcd(*a, *b))
+                (Op::Update(a), Op::Gcd(b)) => Op::Update(gcd(*a, *b)),
             }
         }
         fn effect(val: &Self::Val, eff: &Self::Eff) -> Self::Val {
@@ -385,7 +436,7 @@ mod tests {
                     res.lcm = u;
                     res.sum = u * res.size;
                 }
-                Op::None => ()
+                Op::None => (),
             };
             res
         }
@@ -395,7 +446,7 @@ mod tests {
     fn segtree_beats_update_chgcd_max_sum() {
         let lis = vec![1, 6, 8, 7, 3];
         let mut seg = SegmentTreeBeats::<RangeUpdateChgcdMaxSum>::from(
-            &lis.into_iter().map(Rucms::new).collect()
+            &lis.into_iter().map(Rucms::new).collect(),
         );
         assert_eq!(seg.fold(0..5).max, 8);
         assert_eq!(seg.fold(0..5).sum, 25);

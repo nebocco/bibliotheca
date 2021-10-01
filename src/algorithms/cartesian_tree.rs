@@ -6,7 +6,7 @@ pub fn cartesian_tree<T: Ord>(lis: &[T]) -> Vec<Option<usize>> {
     let n = lis.len();
     let mut parent = vec![None; n];
     for i in 1..n {
-        let mut p = Some(i-1); // parent
+        let mut p = Some(i - 1); // parent
         let mut l = None; // left child
         while let Some(v) = p {
             if lis[i] > lis[v] {
@@ -14,7 +14,7 @@ pub fn cartesian_tree<T: Ord>(lis: &[T]) -> Vec<Option<usize>> {
             }
             let pp = parent[v];
             if let Some(u) = l {
-                parent[u] = p; 
+                parent[u] = p;
             }
             parent[v] = Some(i);
             l = p;

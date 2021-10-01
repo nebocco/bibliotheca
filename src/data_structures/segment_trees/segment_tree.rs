@@ -122,7 +122,7 @@ mod tests {
             *left.min(right)
         }
     }
-    
+
     #[test]
     fn segment_tree_rmq() {
         let vec = vec![1, 2, 3];

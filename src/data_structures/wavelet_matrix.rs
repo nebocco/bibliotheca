@@ -12,7 +12,8 @@ impl SuccinctIndexableDictionary {
     pub fn new(length: usize) -> Self {
         let blocks = (length + 31) >> 5;
         Self {
-            length, blocks,
+            length,
+            blocks,
             bit: vec![0; blocks],
             sum: vec![0; blocks],
         }
@@ -24,7 +25,7 @@ impl SuccinctIndexableDictionary {
 
     pub fn build(&mut self) {
         for i in 1..self.blocks {
-            self.sum[i] = self.sum[i-1] + self.bit[i-1].count_ones();
+            self.sum[i] = self.sum[i - 1] + self.bit[i - 1].count_ones();
         }
     }
 
@@ -33,7 +34,11 @@ impl SuccinctIndexableDictionary {
     }
 
     pub fn rank(&self, f: bool, k: usize) -> usize {
-        if f { self._rank(k) } else { k - self._rank(k) }
+        if f {
+            self._rank(k)
+        } else {
+            k - self._rank(k)
+        }
     }
 }
 
@@ -48,18 +53,15 @@ impl std::ops::Index<usize> for SuccinctIndexableDictionary {
     }
 }
 
-
 use std::ops::Range;
 
-#[derive(Clone, Debug)]
 pub struct WaveletMatrix {
-    length: usize,
+    _length: usize,
     matrix: Vec<SuccinctIndexableDictionary>,
-    mid: Vec<usize>
+    mid: Vec<usize>,
 }
 
 impl WaveletMatrix {
-
     const MAXLOG: usize = 32;
 
     pub fn new(mut vec: Vec<u32>) -> Self {
@@ -84,9 +86,9 @@ impl WaveletMatrix {
             vec.append(&mut r);
         }
         Self {
-            length,
+            _length: length,
             matrix,
-            mid
+            mid,
         }
     }
 
@@ -104,7 +106,9 @@ impl WaveletMatrix {
         let mut ret = 0;
         for level in (0..Self::MAXLOG).rev() {
             let f = self.matrix[level][k];
-            if f { ret |= 1 << level; }
+            if f {
+                ret |= 1 << level;
+            }
             k = self._succ(f, k, level);
         }
         ret
@@ -115,12 +119,13 @@ impl WaveletMatrix {
         let mut l = 0;
         for level in (0..Self::MAXLOG).rev() {
             let (ll, rr) = self.succ(val >> level & 1 == 1, l, r, level);
-            l = ll; r = rr;
+            l = ll;
+            r = rr;
         }
         r - l
     }
 
-    /// k-th(0-indexed) smallest element in vec[rng] 
+    /// k-th(0-indexed) smallest element in vec[rng]
     pub fn kth_smallest(&self, rng: Range<usize>, mut k: usize) -> u32 {
         assert!(k < rng.len());
         let mut l = rng.start;
@@ -134,7 +139,8 @@ impl WaveletMatrix {
                 k -= cnt;
             }
             let (ll, rr) = self.succ(f, l, r, level);
-            l = ll; r = rr;
+            l = ll;
+            r = rr;
         }
         ret
     }
@@ -156,7 +162,8 @@ impl WaveletMatrix {
                 ret += self.matrix[level].rank(false, r) - self.matrix[level].rank(false, l);
             }
             let (ll, rr) = self.succ(f, l, r, level);
-            l = ll; r = rr;
+            l = ll;
+            r = rr;
         }
         ret
     }
@@ -173,7 +180,7 @@ impl WaveletMatrix {
             None
         } else {
             Some(self.kth_smallest(rng, cnt - 1))
-        } 
+        }
     }
 
     /// vec[rng].iter().filter(|&x| x >= lower).min()
@@ -183,10 +190,9 @@ impl WaveletMatrix {
             None
         } else {
             Some(self.kth_smallest(rng, cnt))
-        } 
+        }
     }
 }
-
 
 pub struct CompressedWaveletMatrix<T: Clone + Ord> {
     matrix: WaveletMatrix,
@@ -198,9 +204,12 @@ impl<T: Clone + Ord> CompressedWaveletMatrix<T> {
         let mut ys = vec.clone();
         ys.sort();
         ys.dedup();
-        let vec: Vec<u32> = vec.iter().map(|x| ys.binary_search(x).unwrap() as u32).collect();
+        let vec: Vec<u32> = vec
+            .iter()
+            .map(|x| ys.binary_search(x).unwrap() as u32)
+            .collect();
         let matrix = WaveletMatrix::new(vec.clone());
-        Self{ matrix, vec: ys }
+        Self { matrix, vec: ys }
     }
 
     pub fn access(&self, k: usize) -> &T {
@@ -226,7 +235,7 @@ impl<T: Clone + Ord> CompressedWaveletMatrix<T> {
     fn _range_freq(&self, rng: Range<usize>, upper: &T) -> usize {
         let upper = match self.vec.binary_search(upper) {
             Ok(x) => x,
-            Err(x) => x
+            Err(x) => x,
         } as u32;
         self.matrix._range_freq(rng, upper)
     }
@@ -236,11 +245,11 @@ impl<T: Clone + Ord> CompressedWaveletMatrix<T> {
         let lower = &target.end;
         let upper = match self.vec.binary_search(upper) {
             Ok(x) => x,
-            Err(x) => x
+            Err(x) => x,
         } as u32;
         let lower = match self.vec.binary_search(lower) {
             Ok(x) => x,
-            Err(x) => x
+            Err(x) => x,
         } as u32;
         self.matrix.range_freq(rng, lower..upper)
     }
@@ -248,17 +257,21 @@ impl<T: Clone + Ord> CompressedWaveletMatrix<T> {
     pub fn prev_value(&self, rng: Range<usize>, upper: &T) -> Option<&T> {
         let upper = match self.vec.binary_search(upper) {
             Ok(x) => x,
-            Err(x) => x
+            Err(x) => x,
         } as u32;
-        self.matrix.prev_value(rng, upper).map(|x| &self.vec[x as usize])
+        self.matrix
+            .prev_value(rng, upper)
+            .map(|x| &self.vec[x as usize])
     }
 
     pub fn next_value(&self, rng: Range<usize>, lower: &T) -> Option<&T> {
         let lower = match self.vec.binary_search(lower) {
             Ok(x) => x,
-            Err(x) => x
+            Err(x) => x,
         } as u32;
-        self.matrix.next_value(rng, lower).map(|x| &self.vec[x as usize])
+        self.matrix
+            .next_value(rng, lower)
+            .map(|x| &self.vec[x as usize])
     }
 }
 

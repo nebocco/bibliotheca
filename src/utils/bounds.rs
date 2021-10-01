@@ -10,7 +10,8 @@
 /// assert_eq!(bounds_within(..=4, 7), 0..5);
 /// ```
 pub fn bounds_within<R>(r: R, len: usize) -> std::ops::Range<usize>
-    where R: std::ops::RangeBounds<usize>
+where
+    R: std::ops::RangeBounds<usize>,
 {
     use std::ops::Bound;
     let end = match r.end_bound() {

@@ -7,7 +7,7 @@ use crate::data_structures::union_find::UnionFind;
 pub struct DecrimentalPredecessor {
     n: usize,
     small: Vec<usize>,
-    large: UnionFind
+    large: UnionFind,
 }
 
 impl DecrimentalPredecessor {
@@ -20,9 +20,7 @@ impl DecrimentalPredecessor {
         if t == 0 {
             large.unite(b, b + 1).ok();
         }
-        Self {
-            n, small, large
-        }
+        Self { n, small, large }
     }
 
     pub fn predecessor(&self, x: usize) -> Option<usize> {
@@ -34,5 +32,4 @@ impl DecrimentalPredecessor {
         }
         None
     }
-
 }

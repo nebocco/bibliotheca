@@ -1,7 +1,7 @@
 pub struct Mo {
     data: (),
     queries: Vec<(usize, usize)>,
-    range: std::ops::Range<usize>
+    range: std::ops::Range<usize>,
 }
 
 impl Mo {
@@ -9,7 +9,7 @@ impl Mo {
         Self {
             data: (),
             queries: Vec::new(),
-            range: 0..0
+            range: 0..0,
         }
     }
 
@@ -23,19 +23,23 @@ impl Mo {
     }
 
     pub fn push_left(&mut self, idx: usize) {
-        &self.data; &idx;
+        &self.data;
+        &idx;
     }
 
     pub fn push_right(&mut self, idx: usize) {
-        &self.data; &idx;
+        &self.data;
+        &idx;
     }
 
     pub fn pop_left(&mut self, idx: usize) {
-        &self.data; &idx;
+        &self.data;
+        &idx;
     }
 
     pub fn pop_right(&mut self, idx: usize) {
-        &self.data; &idx;
+        &self.data;
+        &idx;
     }
 
     pub fn solve(&mut self) -> Vec<()> {
@@ -47,12 +51,11 @@ impl Mo {
         indice.sort_by(|&i, &j| {
             let bi = self.queries[i].0 / bs;
             let bj = self.queries[j].0 / bs;
-            bi.cmp(&bj)
-                .then(if bi & 1 == 0 {
-                    self.queries[i].1.cmp(&self.queries[j].1)
-                } else {
-                    self.queries[j].1.cmp(&self.queries[i].1)    
-                })
+            bi.cmp(&bj).then(if bi & 1 == 0 {
+                self.queries[i].1.cmp(&self.queries[j].1)
+            } else {
+                self.queries[j].1.cmp(&self.queries[i].1)
+            })
         });
         let mut l = 0;
         let mut r = 0;

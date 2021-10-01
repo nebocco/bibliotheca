@@ -2,7 +2,9 @@
 pub struct XorShift(u64);
 
 impl XorShift {
-    pub fn new(seed: u64) -> Self { Self(seed) }
+    pub fn new(seed: u64) -> Self {
+        Self(seed)
+    }
     pub fn gen(&mut self) -> u64 {
         let x = self.0;
         let x = (x << 13) ^ x;
@@ -26,7 +28,7 @@ mod tests {
     #[test]
     fn test_xor_shift() {
         let mut rand = XorShift::default();
-        let m = 100000; 
+        let m = 100000;
         let mut result: Vec<u64> = (0..m).map(|_| rand.gen()).collect();
         result.sort();
         result.dedup();
