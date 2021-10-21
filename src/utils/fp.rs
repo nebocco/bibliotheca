@@ -238,7 +238,7 @@ forward_ref_binop! {
 #[cfg(test)]
 mod tests {
     use super::{Fp, Mod};
-    
+
     #[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
     struct Mod1009;
     type F1009 = Fp<Mod1009>;

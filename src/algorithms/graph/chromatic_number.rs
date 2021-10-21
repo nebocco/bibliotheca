@@ -49,15 +49,7 @@ mod tests {
     #[test]
     fn test_chromatic_number() {
         let n = 5;
-        let edges = vec![
-            (0, 1),
-            (0, 2),
-            (0, 4),
-            (1, 3),
-            (2, 3),
-            (2, 4),
-            (3, 4),
-        ];
+        let edges = vec![(0, 1), (0, 2), (0, 4), (1, 3), (2, 3), (2, 4), (3, 4)];
         let mut g = vec![0; n];
         for (u, v) in edges {
             g[u] |= 1 << v;
