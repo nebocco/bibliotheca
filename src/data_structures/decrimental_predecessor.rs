@@ -5,7 +5,7 @@
 #[derive(Clone, Debug)]
 pub struct PositionalUnionFind {
     par: Vec<isize>,
-    lr: Vec<(usize, usize)>
+    lr: Vec<(usize, usize)>,
 }
 
 impl PositionalUnionFind {
@@ -13,7 +13,7 @@ impl PositionalUnionFind {
         let lr = (0..len).map(|x| (x, x)).collect();
         Self {
             par: vec![-1; len],
-            lr
+            lr,
         }
     }
 
@@ -56,7 +56,6 @@ impl PositionalUnionFind {
     }
 }
 // ------------ UnionFind end ------------
-
 
 pub struct DecrimentalPredecessor {
     n: usize,
@@ -103,7 +102,7 @@ impl DecrimentalPredecessor {
         if m != 0 {
             return Some((b << 6) + m.trailing_zeros() as usize);
         }
-        let b = self.large.right(b+1);
+        let b = self.large.right(b + 1);
         if b == self.small.len() {
             None
         } else {
@@ -120,7 +119,7 @@ impl DecrimentalPredecessor {
         }
         self.small[b] ^= 1 << t;
         if self.small[b] == 0 {
-            self.large.unite(b, b+1);
+            self.large.unite(b, b + 1);
         }
         true
     }
@@ -142,7 +141,7 @@ mod tests {
             indice.swap(i, j);
         }
         while let Some(v) = indice.pop() {
-            assert_eq!(dec.predecessor(v+1), Some(v));
+            assert_eq!(dec.predecessor(v + 1), Some(v));
             assert_eq!(dec.successor(v), Some(v));
             assert_eq!(dec.erase(v), true);
             let p = indice.iter().filter(|&&x| x < v).max().cloned();
