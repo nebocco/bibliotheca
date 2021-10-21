@@ -1,4 +1,6 @@
-// verified: https://judge.yosupo.jp/submission/61203
+// verified:
+// range k-th smallest: https://judge.yosupo.jp/submission/61203
+// range freq: https://judge.yosupo.jp/submission/64230
 
 #[derive(Clone, Debug)]
 pub struct SuccinctIndexableDictionary {
