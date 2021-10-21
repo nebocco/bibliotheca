@@ -1,3 +1,4 @@
+pub mod chromatic_number;
 pub mod cycle;
 pub mod dijkstra;
 pub mod is_biparate;
