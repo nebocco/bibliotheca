@@ -7,6 +7,8 @@ pub mod implicit_treap;
 pub mod interval_heap;
 pub mod li_chao_tree;
 pub mod monotone_cht;
+pub mod persistent_list;
+pub mod persistent_queue;
 pub mod segment_trees;
 pub mod sparse_table;
 pub mod square_skip_list;
