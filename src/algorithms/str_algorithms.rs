@@ -105,9 +105,32 @@ where
 }
 // ------------ run length end ------------
 
+// verified: https://judge.yosupo.jp/submission/64234
+/// calculates radius of the longest palindrome for every letter centered
+pub fn manacher_algorithm<T: PartialEq>(s: &[T]) -> Vec<usize> {
+    let n = s.len();
+    let mut res = vec![0; n];
+    let mut i = 0;
+    let mut j = 0;
+    while i < n {
+        while i >= j && i + j < n && s[i - j] == s[i + j] {
+            j += 1;
+        }
+        res[i] = j;
+        let mut k = 1;
+        while i >= k && k + res[i - k] < j {
+            res[i + k] = res[i - k];
+            k += 1;
+        }
+        i += k;
+        j -= k;
+    }
+    res
+}
+
 #[cfg(test)]
 mod tests {
-    use super::z_algorithm;
+    use super::*;
     use rand::prelude::*;
 
     fn z_brute<T: Ord>(s: &[T]) -> Vec<usize> {
@@ -142,5 +165,24 @@ mod tests {
                 .collect::<String>();
             assert_eq!(z_brute(s.as_bytes()), z_algorithm(s.as_bytes()));
         }
+    }
+
+    #[test]
+    fn manacher_hand() {
+        let s: Vec<char> = "abcbcba".chars().collect();
+        let res = manacher_algorithm(&s);
+        assert_eq!(res, vec![1, 1, 2, 4, 2, 1, 1]);
+
+        let s: Vec<char> = "mississippi".chars().collect();
+        let res = manacher_algorithm(&s);
+        assert_eq!(res, vec![1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1]);
+
+        let s: Vec<char> = "ababacaca".chars().collect();
+        let res = manacher_algorithm(&s);
+        assert_eq!(res, vec![1, 2, 3, 2, 1, 2, 3, 2, 1]);
+
+        let s: Vec<char> = "aaaaa".chars().collect();
+        let res = manacher_algorithm(&s);
+        assert_eq!(res, vec![1, 2, 3, 2, 1]);
     }
 }
