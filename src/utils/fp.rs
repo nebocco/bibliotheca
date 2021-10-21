@@ -1,18 +1,25 @@
-use crate::utils::algebraic_traits::{Associative, One, Zero};
-use std::ops::*;
-
 // ------------ fp start ------------
-
 use std::{
     fmt::{Debug, Display},
     hash::Hash,
     iter,
     marker::PhantomData,
+    ops::*,
 };
 
-// NOTE: `crate::` がないとうまく展開できません。
-crate::define_fp!(pub F998244353, Mod998244353, 998_244_353);
-crate::define_fp!(pub F1000000007, Mod1000000007, 1_000_000_007);
+#[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
+pub struct Mod998244353;
+pub type Fp998244353 = Fp<Mod998244353>;
+impl Mod for Mod998244353 {
+    const MOD: i64 = 998244353;
+}
+
+#[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
+pub struct Mod1000000007;
+pub type Fp1000000007 = Fp<Mod1000000007>;
+impl Mod for Mod1000000007 {
+    const MOD: i64 = 1000000007;
+}
 
 #[derive(Clone, PartialEq, Copy, Eq, Hash)]
 pub struct Fp<T>(i64, PhantomData<T>);
@@ -31,7 +38,7 @@ impl<T: Mod> Fp<T> {
         T::MOD
     }
     pub fn inv(self) -> Self {
-        assert_ne!(self.0, 0, "Zero division");
+        assert_ne!(self.0, 0, "Zero division error");
         let (sign, x) = if self.0 * 2 < T::MOD {
             (1, self.0)
         } else {
@@ -68,7 +75,6 @@ impl<T: Mod> iter::Sum<Fp<T>> for Fp<T> {
         iter.fold(Fp::new(0), Add::add)
     }
 }
-
 impl<'a, T: 'a + Mod> iter::Sum<&'a Fp<T>> for Fp<T> {
     fn sum<I>(iter: I) -> Self
     where
@@ -77,7 +83,6 @@ impl<'a, T: 'a + Mod> iter::Sum<&'a Fp<T>> for Fp<T> {
         iter.fold(Fp::new(0), Add::add)
     }
 }
-
 impl<T: Mod> iter::Product<Fp<T>> for Fp<T> {
     fn product<I>(iter: I) -> Self
     where
@@ -86,7 +91,6 @@ impl<T: Mod> iter::Product<Fp<T>> for Fp<T> {
         iter.fold(Self::new(1), Mul::mul)
     }
 }
-
 impl<'a, T: 'a + Mod> iter::Product<&'a Fp<T>> for Fp<T> {
     fn product<I>(iter: I) -> Self
     where
@@ -106,10 +110,6 @@ impl<T: Mod> Display for Fp<T> {
     }
 }
 
-// ax + by = gcd(x, y) なる、互いに素な (a, b) を一組探して、(g, a, b) を返します。
-//
-// | 0  -x |   | y  -x | | x  0 |
-// | 1   b | = | a   b | | y  1 |
 fn ext_gcd(x: i64, y: i64) -> (i64, i64, i64) {
     let (b, g) = {
         let mut x = x;
@@ -130,43 +130,7 @@ fn ext_gcd(x: i64, y: i64) -> (i64, i64, i64) {
     (g, a, b)
 }
 
-#[macro_export]
-macro_rules! define_fp {
-    ($vis:vis $fp:ident, $t:ident, $mod:expr) => {
-        #[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
-        $vis struct $t;
-        // NOTE: `$crate::` があるとうまく展開できません。
-        impl Mod for $t {
-            const MOD: i64 = $mod;
-        }
-        // NOTE: `$crate::` があるとうまく展開できません。
-        $vis type $fp = Fp<$t>;
-    }
-}
-
 // ------------ impl arith start ------------
-
-impl<T: Mod> Associative for Fp<T> {}
-
-impl<T: Mod> Zero for Fp<T> {
-    fn zero() -> Self {
-        Self::unchecked(0)
-    }
-    fn is_zero(&self) -> bool {
-        self.0 == 0
-    }
-}
-
-impl<T: Mod> One for Fp<T> {
-    fn one() -> Self {
-        Self::unchecked(1)
-    }
-    fn is_one(&self) -> bool {
-        self.0 == 1
-    }
-}
-
-#[allow(clippy::suspicious_arithmetic_impl)]
 impl<T: Mod> Add for Fp<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
@@ -174,8 +138,6 @@ impl<T: Mod> Add for Fp<T> {
         Self::unchecked(if T::MOD <= res { res - T::MOD } else { res })
     }
 }
-
-#[allow(clippy::suspicious_arithmetic_impl)]
 impl<T: Mod> Sub for Fp<T> {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
@@ -183,22 +145,18 @@ impl<T: Mod> Sub for Fp<T> {
         Self::unchecked(if res < 0 { res + T::MOD } else { res })
     }
 }
-
 impl<T: Mod> Mul for Fp<T> {
     type Output = Self;
     fn mul(self, rhs: Self) -> Self {
         Self::new(self.0 * rhs.0)
     }
 }
-
-#[allow(clippy::suspicious_arithmetic_impl)]
 impl<T: Mod> Div for Fp<T> {
     type Output = Self;
     fn div(self, rhs: Self) -> Self {
         self * rhs.inv()
     }
 }
-
 impl<M: Mod> Neg for Fp<M> {
     type Output = Self;
     fn neg(self) -> Self {
@@ -209,7 +167,6 @@ impl<M: Mod> Neg for Fp<M> {
         }
     }
 }
-
 impl<M: Mod> Neg for &Fp<M> {
     type Output = Fp<M>;
     fn neg(self) -> Self::Output {
@@ -281,15 +238,19 @@ forward_ref_binop! {
 #[cfg(test)]
 mod tests {
     use super::{Fp, Mod};
-    define_fp!(F1009, Mod1009, 1009);
+    
+    #[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
+    struct Mod1009;
+    type F1009 = Fp<Mod1009>;
+    impl Mod for Mod1009 {
+        const MOD: i64 = 1009;
+    }
 
     #[test]
     fn test_inv() {
         type Fp = F1009;
         (1..Fp::r#mod()).for_each(|i| {
-            // involutive
             assert_eq!(Fp::new(i), Fp::new(i).inv().inv());
-            // inverse of multiplication
             assert_eq!(Fp::new(1), Fp::new(i).inv() * Fp::new(i));
         });
     }

@@ -1,36 +1,15 @@
 use super::Polynomial;
 use crate::utils::{
-    algebraic_traits::{Associative, One, Zero},
     fp::{Fp, Mod},
     transform::*,
 };
 use std::ops::*;
 
-impl<T: Mod> Associative for Polynomial<T> {}
-
-impl<T: Mod> Zero for Polynomial<T> {
-    fn zero() -> Self {
-        Self::new(Vec::new())
-    }
-    fn is_zero(&self) -> bool {
-        self.0.is_empty()
-    }
-}
-
-impl<T: Mod> One for Polynomial<T> {
-    fn one() -> Self {
-        Self::new(vec![Fp::one()])
-    }
-    fn is_one(&self) -> bool {
-        *self == Self::one()
-    }
-}
-
 impl<T: Mod> Add<Polynomial<T>> for Polynomial<T> {
     type Output = Polynomial<T>;
     fn add(self, rhs: Polynomial<T>) -> Self::Output {
         let mut res = self.0.clone();
-        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::zero());
+        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::new(0));
         for (ans, a) in res.iter_mut().zip(rhs.0.iter()) {
             *ans += *a;
         }
@@ -42,7 +21,7 @@ impl<'a, T: Mod> Add<Polynomial<T>> for &'a Polynomial<T> {
     type Output = Polynomial<T>;
     fn add(self, rhs: Polynomial<T>) -> Self::Output {
         let mut res = self.0.clone();
-        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::zero());
+        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::new(0));
         for (ans, a) in res.iter_mut().zip(rhs.0.iter()) {
             *ans += *a;
         }
@@ -54,7 +33,7 @@ impl<'a, T: Mod> Add<&'a Polynomial<T>> for Polynomial<T> {
     type Output = Polynomial<T>;
     fn add(self, rhs: &Polynomial<T>) -> Self::Output {
         let mut res = self.0.clone();
-        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::zero());
+        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::new(0));
         for (ans, a) in res.iter_mut().zip(rhs.0.iter()) {
             *ans += *a;
         }
@@ -66,7 +45,7 @@ impl<'a, T: Mod> Add<&'a Polynomial<T>> for &'a Polynomial<T> {
     type Output = Polynomial<T>;
     fn add(self, rhs: &Polynomial<T>) -> Self::Output {
         let mut res = self.0.clone();
-        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::zero());
+        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::new(0));
         for (ans, a) in res.iter_mut().zip(rhs.0.iter()) {
             *ans += *a;
         }
@@ -78,7 +57,7 @@ impl<T: Mod> Sub<Polynomial<T>> for Polynomial<T> {
     type Output = Polynomial<T>;
     fn sub(self, rhs: Polynomial<T>) -> Self::Output {
         let mut res = self.0.clone();
-        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::zero());
+        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::new(0));
         for (ans, a) in res.iter_mut().zip(rhs.0.iter()) {
             *ans -= *a;
         }
@@ -90,7 +69,7 @@ impl<'a, T: Mod> Sub<Polynomial<T>> for &'a Polynomial<T> {
     type Output = Polynomial<T>;
     fn sub(self, rhs: Polynomial<T>) -> Self::Output {
         let mut res = self.0.clone();
-        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::zero());
+        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::new(0));
         for (ans, a) in res.iter_mut().zip(rhs.0.iter()) {
             *ans -= *a;
         }
@@ -102,7 +81,7 @@ impl<'a, T: Mod> Sub<&'a Polynomial<T>> for Polynomial<T> {
     type Output = Polynomial<T>;
     fn sub(self, rhs: &Polynomial<T>) -> Self::Output {
         let mut res = self.0.clone();
-        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::zero());
+        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::new(0));
         for (ans, a) in res.iter_mut().zip(rhs.0.iter()) {
             *ans -= *a;
         }
@@ -114,7 +93,7 @@ impl<'a, T: Mod> Sub<&'a Polynomial<T>> for &'a Polynomial<T> {
     type Output = Polynomial<T>;
     fn sub(self, rhs: &Polynomial<T>) -> Self::Output {
         let mut res = self.0.clone();
-        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::zero());
+        res.resize(std::cmp::max(self.len(), rhs.len()), Fp::new(0));
         for (ans, a) in res.iter_mut().zip(rhs.0.iter()) {
             *ans -= *a;
         }

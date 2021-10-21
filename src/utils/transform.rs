@@ -1,10 +1,6 @@
-use crate::utils::{
-    algebraic_traits::{One, Zero},
-    fp::{Fp, Mod},
-};
+use crate::utils::fp::{Fp, Mod};
 
 // ---------- begin NTT ----------
-
 pub trait NTTFriendly: Mod {
     fn order() -> usize;
     fn zeta() -> i64;
@@ -24,7 +20,7 @@ pub fn ntt<T: NTTFriendly>(f: &mut [Fp<T>]) {
     for (k, &z) in zeta.iter().rev().enumerate().rev() {
         let m = 1 << k;
         for f in f.chunks_exact_mut(2 * m) {
-            let mut q = Fp::one();
+            let mut q = Fp::new(1);
             let (x, y) = f.split_at_mut(m);
             for (x, y) in x.iter_mut().zip(y.iter_mut()) {
                 let a = *x;
@@ -51,7 +47,7 @@ pub fn intt<T: NTTFriendly>(f: &mut [Fp<T>]) {
     for (k, &z) in zeta.iter().rev().enumerate() {
         let m = 1 << k;
         for f in f.chunks_exact_mut(2 * m) {
-            let mut q = Fp::one();
+            let mut q = Fp::new(1);
             let (x, y) = f.split_at_mut(m);
             for (x, y) in x.iter_mut().zip(y.iter_mut()) {
                 let a = *x;
@@ -77,10 +73,10 @@ pub fn multiply<T: NTTFriendly>(a: &[Fp<T>], b: &[Fp<T>]) -> Vec<Fp<T>> {
     let mut f = Vec::with_capacity(k);
     let mut g = Vec::with_capacity(k);
     f.extend_from_slice(a);
-    f.resize(k, Fp::zero());
+    f.resize(k, Fp::new(0));
     ntt(&mut f);
     g.extend_from_slice(b);
-    g.resize(k, Fp::zero());
+    g.resize(k, Fp::new(0));
     ntt(&mut g);
     for (f, g) in f.iter_mut().zip(g.iter()) {
         *f *= *g;
