@@ -60,16 +60,16 @@ pub trait Scan {
 }
 
 macro_rules! impl_scan {
-	($($t:tt),*) => {
-		$(
-			impl Scan for $t {
-				type Output = Self;
-				fn scan(s: &mut IO) -> Self::Output {
-					s.scan_str().parse().unwrap()
-				}
-			}
-		)*
-	};
+    ($($t:tt),*) => {
+        $(
+            impl Scan for $t {
+                type Output = Self;
+                fn scan(s: &mut IO) -> Self::Output {
+                    s.scan_str().parse().unwrap()
+                }
+            }
+        )*
+    };
 }
 
 impl_scan!(i16, i32, i64, isize, u16, u32, u64, usize, String, f32, f64);
@@ -131,15 +131,15 @@ pub trait Print {
 }
 
 macro_rules! impl_print_int {
-	($($t:ty),*) => {
-		$(
-			impl Print for $t {
-				fn print(w: &mut IO, x: Self) {
-					w.buf.write_all(x.to_string().as_bytes()).unwrap();
-				}
-			}
-		)*
-	};
+    ($($t:ty),*) => {
+        $(
+            impl Print for $t {
+                fn print(w: &mut IO, x: Self) {
+                    w.buf.write_all(x.to_string().as_bytes()).unwrap();
+                }
+            }
+        )*
+    };
 }
 
 impl_print_int!(i16, i32, i64, isize, u16, u32, u64, usize, f32, f64);
@@ -189,39 +189,39 @@ impl<T: Print, U: Print, V: Print> Print for (T, U, V) {
 pub mod neboccoio_macro {
     #[macro_export]
     macro_rules! input {
-		(@start $io:tt @read @rest) => {};
+        (@start $io:tt @read @rest) => {};
 
-		(@start $io:tt @read @rest, $($rest: tt)*) => {
-			input!(@start $io @read @rest $($rest)*)
-		};
+        (@start $io:tt @read @rest, $($rest: tt)*) => {
+            input!(@start $io @read @rest $($rest)*)
+        };
 
-		(@start $io:tt @read @rest mut $($rest:tt)*) => {
-			input!(@start $io @read @mut [mut] @rest $($rest)*)
-		};
+        (@start $io:tt @read @rest mut $($rest:tt)*) => {
+            input!(@start $io @read @mut [mut] @rest $($rest)*)
+        };
 
-		(@start $io:tt @read @rest $($rest:tt)*) => {
-			input!(@start $io @read @mut [] @rest $($rest)*)
-		};
+        (@start $io:tt @read @rest $($rest:tt)*) => {
+            input!(@start $io @read @mut [] @rest $($rest)*)
+        };
 
-		(@start $io:tt @read @mut [$($mut:tt)?] @rest $var:tt: [[$kind:tt; $len2: expr]; $len1:expr] $($rest:tt)*) => {
-			let $($mut)* $var = (0..$len1).map(|_| $io.scan_vec::<$kind>($len2)).collect::<<$kind as Scan>::Output>();
-			input!(@start $io @read @rest $($rest)*)
-		};
+        (@start $io:tt @read @mut [$($mut:tt)?] @rest $var:tt: [[$kind:tt; $len2: expr]; $len1:expr] $($rest:tt)*) => {
+            let $($mut)* $var = (0..$len1).map(|_| $io.scan_vec::<$kind>($len2)).collect::<<$kind as Scan>::Output>();
+            input!(@start $io @read @rest $($rest)*)
+        };
 
-		(@start $io:tt @read @mut [$($mut:tt)?] @rest $var:tt: [$kind:tt; $len:expr] $($rest:tt)*) => {
-			let $($mut)* $var = $io.scan_vec::<$kind>($len);
-			input!(@start $io @read @rest $($rest)*)
-		};
+        (@start $io:tt @read @mut [$($mut:tt)?] @rest $var:tt: [$kind:tt; $len:expr] $($rest:tt)*) => {
+            let $($mut)* $var = $io.scan_vec::<$kind>($len);
+            input!(@start $io @read @rest $($rest)*)
+        };
 
-		(@start $io:tt @read @mut [$($mut:tt)?] @rest $var:tt: $kind:tt $($rest:tt)*) => {
-			let $($mut)* $var = $io.scan::<$kind>();
-			input!(@start $io @read @rest $($rest)*)
-		};
+        (@start $io:tt @read @mut [$($mut:tt)?] @rest $var:tt: $kind:tt $($rest:tt)*) => {
+            let $($mut)* $var = $io.scan::<$kind>();
+            input!(@start $io @read @rest $($rest)*)
+        };
 
-		(from $io:tt $($rest:tt)*) => {
-			input!(@start $io @read @rest $($rest)*)
-		};
-	}
+        (from $io:tt $($rest:tt)*) => {
+            input!(@start $io @read @rest $($rest)*)
+        };
+    }
 }
 
 // ------------ io module end ------------
@@ -234,13 +234,13 @@ mod tests {
     #[test]
     fn test_input_ignore() {
         let s = "5 5
-		1 2 3 4 5
-		0 0
-		1 8 7
-		0 4
-		0 2
-		1 90 178189289
-		"
+        1 2 3 4 5
+        0 0
+        1 8 7
+        0 4
+        0 2
+        1 90 178189289
+        "
         .to_string();
         let mut io = IO {
             iter: Box::leak(s.into_boxed_str()).split_ascii_whitespace(),
@@ -269,13 +269,13 @@ mod tests {
     #[test]
     fn test_input_macro_ignore() {
         let s = "5 5
-		1 2 3 4 5
-		5 apple
-		6 banana
-		9 chocolate
-		8 doughnut
-		3 egg
-		"
+        1 2 3 4 5
+        5 apple
+        6 banana
+        9 chocolate
+        8 doughnut
+        3 egg
+        "
         .to_string();
         let mut io = IO {
             iter: Box::leak(s.into_boxed_str()).split_ascii_whitespace(),
