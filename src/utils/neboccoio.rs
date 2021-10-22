@@ -33,7 +33,8 @@ impl IO {
         self.print(x);
         self.print("\n");
     }
-    pub fn iterln<T: Print, I: Iterator<Item = T>>(&mut self, mut iter: I, delim: &str) {
+    pub fn iterln<T: Print, I: IntoIterator<Item = T>>(&mut self, iter: I, delim: &str) {
+        let mut iter = iter.into_iter();
         if let Some(v) = iter.next() {
             self.print(v);
             for v in iter {
@@ -165,6 +166,12 @@ impl Print for &str {
 impl Print for String {
     fn print(w: &mut IO, x: Self) {
         w.print(x.as_bytes());
+    }
+}
+
+impl<T: Print + Copy> Print for &T {
+    fn print(w: &mut IO, x: Self) {
+        w.print(*x);
     }
 }
 
