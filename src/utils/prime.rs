@@ -199,6 +199,57 @@ pub fn mod_sqrt(mut a: i64, p: i64) -> Option<i64> {
     Some(r)
 }
 
+/// count the number of primes <= n.
+/// O(n^(3/4) / log(n)) time, O(n^(1/2)) space.
+/// TODO: implement O(n^(2/3) / log(n)) time algorithm
+/// ```
+/// S(v, p) := (2..=v)
+///     .filter(|&i|
+///         (2..=p).all(|&j| i % j != 0)
+///     )
+///     .count();
+///
+/// S(v, p) = S(v, p-1) - (S(v/p, p-1) - Pi(p-1));
+/// smalls[i] := S(i, p);
+/// larges[i] := S(n/i, p);
+/// ```
+pub fn count_primes(n: usize) -> usize {
+    let n_sqrt = sqrt_floor(n as i64) as usize;
+    let mut larges = vec![0; n_sqrt + 1];
+    for i in 1..=n_sqrt {
+        larges[i] = n / i - 1;
+    }
+    let mut smalls: Vec<_> = (0..n / n_sqrt).map(|x| x.saturating_sub(1)).collect();
+
+    for p in 2..=n_sqrt {
+        if p < smalls.len() {
+            if smalls[p] <= smalls[p - 1] {
+                continue;
+            }
+        } else {
+            if larges[n / p] <= smalls[p - 1] {
+                continue;
+            }
+        }
+        let pc = smalls[p - 1];
+        let q = p * p;
+        for i in (1..=n_sqrt).take_while(|&i| n / i >= q) {
+            // vi = n / i
+            // dp[n / i] -= dp[n / i / p] - pc;
+            let ip = i * p;
+            let cur = *larges.get(ip).unwrap_or_else(|| &smalls[n / ip]) - pc;
+            larges[i] -= cur;
+        }
+        for i in (1..smalls.len()).rev().take_while(|&i| i >= q) {
+            // vi = i
+            // dp[i] -= dp[i / p] - pc;
+            let cur = smalls[i / p] - pc;
+            smalls[i] -= cur;
+        }
+    }
+    larges[1]
+}
+
 // TODO: Lehmer's algorithm
 
 ///エラトステネスの篩
