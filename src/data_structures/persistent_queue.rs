@@ -1,6 +1,5 @@
 // verification failed at half_rot_killer: https://judge.yosupo.jp/submission/64242
 
-
 use std::clone::Clone;
 use std::rc::Rc;
 
@@ -24,7 +23,9 @@ impl<T: Clone> PersistentStack<T> {
     }
 
     pub fn pop(&self) -> Option<(T, Self)> {
-        self.0.as_ref().map(|node| (node.value.clone(), node.next.clone()))
+        self.0
+            .as_ref()
+            .map(|node| (node.value.clone(), node.next.clone()))
     }
 
     pub fn top(&self) -> Option<&T> {
@@ -62,16 +63,16 @@ impl<T> Clone for PersistentStack<T> {
 /// Persistent queue implemented by Banker's Queue
 /// push, pop: amortized O(1)
 #[derive(Clone)]
-pub struct PersistentQueue<T>{
+pub struct PersistentQueue<T> {
     front_size: usize,
     rear_size: usize,
     front: PersistentStack<T>,
-    rear: PersistentStack<T>
+    rear: PersistentStack<T>,
 }
 
 impl<T: Clone> PersistentQueue<T> {
     pub fn new() -> Self {
-        Self{
+        Self {
             front_size: 0,
             rear_size: 0,
             front: PersistentStack::new(),
