@@ -9,6 +9,7 @@ pub mod graph;
 pub mod kitamasa;
 pub mod lsi;
 pub mod mos_algorithm;
+pub mod recurrence;
 pub mod rerooting;
 pub mod rolling_hash;
 pub mod sa_is;
