@@ -63,10 +63,18 @@ pub fn atkin_sieve(n: usize) -> Vec<i64> {
 }
 
 pub fn factorize(x: i64) -> Vec<(i64, usize)> {
-    let mut y = x;
     let mut res = Vec::new();
-    for i in 2..x + 1 {
-        if i * i > x {
+    if x < 2 {
+        return res;
+    }
+    let mut y = x;
+    if y & 1 == 0 {
+        let t = y.trailing_zeros() as usize;
+        res.push((2, t));
+        y >>= t;
+    }
+    for i in (3..=y).step_by(2) {
+        if i * i > y {
             break;
         }
         if y % i == 0 {
@@ -103,7 +111,7 @@ pub fn divisor(x: i64) -> Vec<i64> {
 pub fn totient(x: i64) -> i64 {
     let mut res = x;
     for &(i, _) in factorize(x).iter() {
-        res = res * (i - 1) / i;
+        res = res / i * (i - 1);
     }
     res
 }

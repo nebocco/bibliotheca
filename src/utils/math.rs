@@ -354,6 +354,53 @@ pub fn montmort_numbers(n: usize, modulo: i64) -> Vec<i64> {
     res
 }
 
+/// compute a ↑↑ b (mod modulo)
+/// O(sqrt(modulo))
+/// verified: https://judge.yosupo.jp/submission/64873
+/// explanation: https://kopricky.github.io/code/Computation_Advanced/tetration_memo.html
+pub fn tetration(a: i64, b: i64, modulo: i64) -> i64 {
+    fn modpow(mut x: i64, mut y: i64, modulo: i64, mut flag: bool) -> i64 {
+        let mut ret = 1;
+        while y > 0 {
+            if y & 1 == 1 {
+                ret *= x;
+                if ret >= modulo {
+                    ret %= modulo;
+                    flag = true;
+                }
+            }
+            x *= x;
+            if x >= modulo {
+                x = x % modulo + modulo;
+            }
+            y >>= 1;
+        }
+        ret + if flag { modulo } else { 0 }
+    }
+
+    fn rec(a: i64, b: i64, modulo: i64) -> i64 {
+        if b == 2 {
+            modpow(a, a, modulo, false)
+        } else {
+            let phi = super::prime::totient(modulo);
+            let res = if phi == 1 { 1 } else { rec(a, b - 1, phi) };
+            modpow(a, res, modulo, res >= phi)
+        }
+    }
+
+    if modulo == 1 {
+        0
+    } else if a == 1 || b == 0 {
+        1
+    } else if a == 0 {
+        b & 1 ^ 1
+    } else if b == 1 {
+        a % modulo
+    } else {
+        rec(a, b, modulo) % modulo
+    }
+}
+
 #[cfg(test)]
 mod tests {
     // TODO: make tests

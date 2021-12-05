@@ -14,4 +14,5 @@ pub mod segment_trees;
 pub mod sparse_table;
 pub mod square_skip_list;
 pub mod union_find;
+pub mod van_emde_boas_tree;
 pub mod wavelet_matrix;

@@ -1,6 +1,5 @@
-// TODO: verify
+// verified(TLE): https://judge.yosupo.jp/submission/64878
 // ------------ Kitamasa's algorithm start ------------
-
 /// d_i = d[i] (0 <= i < k),
 /// a_k = c_0 * a_0 + c_1 * a_1 + ... + c_{k-1} * a_{k-1}
 /// calculate a_n

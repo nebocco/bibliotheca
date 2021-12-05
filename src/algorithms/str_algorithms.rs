@@ -82,14 +82,12 @@ where
     T: PartialEq + Copy,
 {
     let mut res = Vec::new();
-    let mut s = l.iter();
-    let cur = s.next();
-    if cur.is_none() {
+    if l.len() == 0 {
         return res;
     }
-    let mut cur = *cur.unwrap();
-    let mut cnt = 1;
-    for &x in s {
+    let mut cur = l[0];
+    let mut cnt = 0;
+    for &x in l {
         if x != cur {
             res.push((cur, cnt));
             cur = x;
@@ -98,9 +96,7 @@ where
             cnt += 1;
         }
     }
-    if cnt > 0 {
-        res.push((cur, cnt));
-    }
+    res.push((cur, cnt));
     res
 }
 // ------------ run length end ------------
