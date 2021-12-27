@@ -1,15 +1,15 @@
-use crate::utils::graph::{Cost, Graph, UndirectedGraph};
+use crate::utils::graph::{Graph, UndirectedGraph};
 
 // ERROR: BROKEN
 
 /// decomposes vertices into two-edge connected components
 /// and enumerates bridges using LowLink.
-pub fn two_edge_connected_components<C: Cost>(g: &UndirectedGraph<C>) -> BridgeHelper {
+pub fn two_edge_connected_components<C: Clone>(g: &UndirectedGraph<C>) -> BridgeHelper {
     let n = g.size();
     let mut ord = vec![std::usize::MAX; n];
     let mut low = vec![0; n];
 
-    fn dfs<C: Cost>(
+    fn dfs<C: Clone>(
         g: &UndirectedGraph<C>,
         v: usize,
         mut k: usize,

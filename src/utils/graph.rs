@@ -1,22 +1,19 @@
-use crate::utils::algebraic_traits::{Element, One, Zero};
 use std::ops::{Add, AddAssign, Neg, Sub};
 
 // ------------ Graph impl start ------------
 
 pub trait Cost:
-    Element
-    + Clone
+    Clone
     + Copy
     + std::fmt::Display
     + Eq
     + Ord
-    + Zero
-    + One
     + Add<Output = Self>
     + AddAssign
     + Sub<Output = Self>
     + Neg<Output = Self>
 {
+    const ZERO: Self;
     const MAX: Self;
 }
 
@@ -35,14 +32,14 @@ pub struct DirectedGraph<C> {
     pub count: usize,
 }
 
-pub trait Graph<C: Element> {
+pub trait Graph<C> {
     fn new(size: usize) -> Self;
     fn size(&self) -> usize;
     fn add_edge(&mut self, u: usize, v: usize, cost: C);
     fn edges_from(&self, v: usize) -> std::slice::Iter<Edge<C>>;
 }
 
-impl<C: Element> Graph<C> for UndirectedGraph<C> {
+impl<C: Clone> Graph<C> for UndirectedGraph<C> {
     fn new(size: usize) -> Self {
         Self(vec![Vec::<Edge<C>>::new(); size], 0)
     }
@@ -70,7 +67,7 @@ impl<C: Element> Graph<C> for UndirectedGraph<C> {
     }
 }
 
-impl<C: Element> Graph<C> for DirectedGraph<C> {
+impl<C: Clone> Graph<C> for DirectedGraph<C> {
     fn new(size: usize) -> Self {
         Self {
             forward: vec![Vec::<Edge<C>>::new(); size],
@@ -102,7 +99,7 @@ impl<C: Element> Graph<C> for DirectedGraph<C> {
     }
 }
 
-impl<C: Element> DirectedGraph<C> {
+impl<C: Clone> DirectedGraph<C> {
     pub fn edges_to(&self, u: usize) -> std::slice::Iter<Edge<C>> {
         self.backward[u].iter()
     }
@@ -119,7 +116,10 @@ impl<C: Element> DirectedGraph<C> {
 macro_rules! impl_cost {
     ($($T:ident,)*) => {
         $(
-            impl Cost for $T { const MAX: Self = std::$T::MAX; }
+            impl Cost for $T {
+                const ZERO: Self = 0;
+                const MAX: Self = std::$T::MAX;
+            }
         )*
     };
 }
@@ -134,24 +134,6 @@ pub struct Void;
 impl std::fmt::Display for Void {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "Void")
-    }
-}
-
-impl Zero for Void {
-    fn zero() -> Self {
-        Self
-    }
-    fn is_zero(&self) -> bool {
-        true
-    }
-}
-
-impl One for Void {
-    fn one() -> Self {
-        Self
-    }
-    fn is_one(&self) -> bool {
-        true
     }
 }
 
@@ -181,6 +163,7 @@ impl Neg for Void {
 }
 
 impl Cost for Void {
+    const ZERO: Self = Void;
     const MAX: Self = Void;
 }
 

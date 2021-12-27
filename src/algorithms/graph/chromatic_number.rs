@@ -2,7 +2,7 @@
 
 /// compute chromatic number of a general undirected graph
 /// O(n*2^n)
-/// g := (u, v) in E iff g[u] & 1 << v
+/// g := (u, v) in E iff g[u] >> v & 1 == 1
 pub fn chromatic_number(g: &[usize]) -> usize {
     let n = g.len();
     if n < 2 {

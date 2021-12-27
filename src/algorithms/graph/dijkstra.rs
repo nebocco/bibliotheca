@@ -7,7 +7,7 @@ pub fn dijkstra_01<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Vec<C> {
     let mut depth = vec![std::usize::MAX; n];
     let mut parent = vec![std::usize::MAX; n];
     let mut que = std::collections::VecDeque::new();
-    dist[s] = C::zero();
+    dist[s] = C::ZERO;
     depth[s] = 0;
     que.push_front(s);
     while let Some(u) = que.pop_front() {
@@ -17,7 +17,7 @@ pub fn dijkstra_01<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Vec<C> {
                 dist[v] = dist[u] + e.cost;
                 depth[v] = depth[u] + 1;
                 parent[v] = u;
-                if e.cost == C::zero() {
+                if e.cost == C::ZERO {
                     que.push_front(v);
                 } else {
                     que.push_back(v);
@@ -37,9 +37,9 @@ pub fn dijkstra_heap<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Vec<C> {
     let mut depth = vec![std::usize::MAX; n];
     let mut parent = vec![std::usize::MAX; n];
     let mut que = std::collections::BinaryHeap::new();
-    dist[s] = C::zero();
+    dist[s] = C::ZERO;
     depth[s] = 0;
-    que.push((C::zero(), s));
+    que.push((C::ZERO, s));
     while let Some((d, u)) = que.pop() {
         let d = -d;
         if dist[u] < d {
@@ -69,7 +69,7 @@ pub fn dijkstra_loop<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Vec<C> {
     let mut depth = vec![std::usize::MAX; n];
     let mut parent = vec![std::usize::MAX; n];
     let mut done = vec![false; n];
-    dist[s] = C::zero();
+    dist[s] = C::ZERO;
     depth[s] = 0;
     for _ in 0..n - 1 {
         let u = (0..n)
@@ -93,7 +93,7 @@ pub fn dijkstra_loop<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Vec<C> {
 pub fn bellman_ford<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Result<Vec<C>, &str> {
     let n = g.size();
     let mut dist = vec![C::MAX; n];
-    dist[s] = C::zero();
+    dist[s] = C::ZERO;
     let mut depth = vec![std::usize::MAX; n];
     depth[s] = 0;
     let mut parent = vec![std::usize::MAX; n];

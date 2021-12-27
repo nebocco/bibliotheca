@@ -1,6 +1,6 @@
-use crate::utils::{algebraic_traits::Element, graph::Graph};
+use crate::utils::graph::{Edge, Graph};
 
-pub fn detect_cycle<C: Element, G: Graph<C>>(graph: &G) -> Option<Vec<usize>> {
+pub fn detect_cycle<C, G: Graph<C>>(graph: &G) -> Option<Vec<usize>> {
     let n = graph.size();
     let mut seen = vec![0; n];
     let mut from = vec![n; n];
@@ -14,23 +14,23 @@ pub fn detect_cycle<C: Element, G: Graph<C>>(graph: &G) -> Option<Vec<usize>> {
         seen[i] = c;
         st.push(i);
         while let Some(v0) = st.pop() {
-            for u in graph.edges_from(v0) {
-                if seen[u.to] == c {
+            for &Edge{ to: u, .. } in graph.edges_from(v0) {
+                if seen[u] == c {
                     let mut res = Vec::new();
                     let mut v = v0;
                     res.push(v);
-                    while v != u.to {
+                    while v != u {
                         v = from[v];
                         res.push(v);
                     }
                     res.reverse();
                     return Some(res);
-                } else if seen[u.to] > 0 {
+                } else if seen[u] > 0 {
                     continue;
                 }
-                seen[u.to] = c;
-                from[u.to] = v0;
-                st.push(u.to);
+                seen[u] = c;
+                from[u] = v0;
+                st.push(u);
             }
         }
     }

@@ -7,7 +7,7 @@ pub fn tree_dfs<C: Cost, G: Graph<C>>(
     let n = g.size();
     let mut euler = Vec::with_capacity(n);
     let mut dist = vec![C::MAX; n];
-    dist[root] = C::zero();
+    dist[root] = C::ZERO;
     let mut par = vec![None; n];
     let mut size = vec![1; n];
     let mut q = vec![root];
