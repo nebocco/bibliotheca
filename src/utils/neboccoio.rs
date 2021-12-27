@@ -211,7 +211,7 @@ pub mod neboccoio_macro {
         };
 
         (@start $io:tt @read @mut [$($mut:tt)?] @rest $var:tt: [[$kind:tt; $len2: expr]; $len1:expr] $($rest:tt)*) => {
-            let $($mut)* $var = (0..$len1).map(|_| $io.scan_vec::<$kind>($len2)).collect::<<$kind as Scan>::Output>();
+            let $($mut)* $var: Vec<Vec<_>> = (0..$len1).map(|_| $io.scan_vec::<$kind>($len2)).collect();
             input!(@start $io @read @rest $($rest)*)
         };
 
