@@ -17,12 +17,16 @@ pub mod independent_ntt {
         assert!(n.is_power_of_two());
         assert!(n <= N::ORDER as usize);
         let len = n.trailing_zeros() as usize;
-        let mut zeta = Vec::with_capacity(len);
-        let mut r = modpow(N::ZETA, N::MOD >> len, N::MOD);
-        for _ in 0..len {
-            zeta.push(r);
-            r = r * r % N::MOD;
-        }
+        // let mut zeta = Vec::with_capacity(len);
+        // let mut r = modpow(N::ZETA, N::MOD >> len, N::MOD);
+        // for _ in 0..len {
+        //     zeta.push(r);
+        //     r = r * r % N::MOD;
+        // }
+        let zeta: Vec<i64> = (0..len).scan(
+            modpow(N::ZETA, N::MOD >> len, N::MOD), 
+            |&mut r, _| Some(r * r % N::MOD)
+        ).collect();
         for (k, &z) in zeta.iter().rev().enumerate().rev() {
             let m = 1 << k;
             for f in f.chunks_exact_mut(2 * m) {
