@@ -4,17 +4,17 @@
 
 #[derive(Clone, Debug)]
 pub struct SuccinctIndexableDictionary {
-    length: usize,
+    _length: usize,
     blocks: usize,
     bit: Vec<u32>,
     sum: Vec<u32>,
 }
 
 impl SuccinctIndexableDictionary {
-    pub fn new(length: usize) -> Self {
-        let blocks = (length + 31) >> 5;
+    pub fn new(_length: usize) -> Self {
+        let blocks = (_length + 31) >> 5;
         Self {
-            length,
+            _length,
             blocks,
             bit: vec![0; blocks],
             sum: vec![0; blocks],
