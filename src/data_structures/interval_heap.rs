@@ -1,11 +1,9 @@
-use crate::utils::algebraic_traits::Element;
-
 // ------------ DoublePriorityHeap start ------------
 
 #[derive(Default)]
-pub struct DoublePriorityHeap<T: Element + Ord>(Vec<T>);
+pub struct DoublePriorityHeap<T: Clone + Ord>(Vec<T>);
 
-impl<T: Element + Ord> DoublePriorityHeap<T> {
+impl<T: Clone + Ord> DoublePriorityHeap<T> {
     pub fn new() -> Self {
         Self(Vec::new())
     }

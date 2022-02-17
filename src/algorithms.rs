@@ -13,6 +13,7 @@ pub mod recurrence;
 pub mod rerooting;
 pub mod rolling_hash;
 pub mod sa_is;
+pub mod slope_trick;
 pub mod str_algorithms;
 pub mod swag;
 pub mod traversal;
