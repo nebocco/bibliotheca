@@ -14,7 +14,7 @@ pub fn detect_cycle<C, G: Graph<C>>(graph: &G) -> Option<Vec<usize>> {
         seen[i] = c;
         st.push(i);
         while let Some(v0) = st.pop() {
-            for &Edge{ to: u, .. } in graph.edges_from(v0) {
+            for &Edge { to: u, .. } in graph.edges_from(v0) {
                 if seen[u] == c {
                     let mut res = Vec::new();
                     let mut v = v0;

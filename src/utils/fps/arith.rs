@@ -152,8 +152,8 @@ where
 #[cfg(test)]
 mod tests {
     use {
-        crate::utils::fp,
         super::{super::Convolution, fps_exp, fps_inverse, fps_log, fps_sqrt},
+        crate::utils::fp,
         rand::{prelude::StdRng, Rng, SeedableRng},
         std::iter::{once, repeat, repeat_with},
     };

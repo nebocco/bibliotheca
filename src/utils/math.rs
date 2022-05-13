@@ -342,14 +342,14 @@ pub fn lagrange_interpolation(xl: &[i64], yl: &[i64], modulo: i64) -> Vec<i64> {
 }
 
 /// return the numbers of derangements
-/// res[i] = the number of derangements of an i-element set 
+/// res[i] = the number of derangements of an i-element set
 pub fn montmort_numbers(n: usize, modulo: i64) -> Vec<i64> {
     let mut res = vec![0; n];
     if n > 2 {
         res[2] = 1;
     }
     for i in 3..n {
-        res[i] = (i as i64 - 1) * (res[i] + res[i-1]) % modulo;
+        res[i] = (i as i64 - 1) * (res[i] + res[i - 1]) % modulo;
     }
     res
 }
