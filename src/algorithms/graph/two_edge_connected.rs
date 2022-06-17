@@ -1,124 +1,189 @@
-use crate::utils::graph::{Graph, UndirectedGraph};
+use crate::utils::graph::{Edge, Graph, UndirectedGraph};
+use std::marker::PhantomData;
 
-// ERROR: BROKEN
+// 2-edge-connected: 
+// Bi-connected: https://judge.yosupo.jp/submission/92453
+// FIXME: stack overflow
 
-/// decomposes vertices into two-edge connected components
-/// and enumerates bridges using LowLink.
-pub fn two_edge_connected_components<C: Clone>(g: &UndirectedGraph<C>) -> BridgeHelper {
-    let n = g.size();
-    let mut ord = vec![std::usize::MAX; n];
-    let mut low = vec![0; n];
-
-    fn dfs<C: Clone>(
-        g: &UndirectedGraph<C>,
-        v: usize,
-        mut k: usize,
-        ord: &mut [usize],
-        low: &mut [usize],
-    ) -> usize {
-        ord[v] = k;
-        k += 1;
-        low[v] = ord[v];
-        for e in g.edges_from(v) {
-            let u = e.to;
-            if ord[u] == std::usize::MAX {
-                k = dfs(g, u, k, ord, low);
-                low[v] = low[v].min(low[u]);
-            }
-            low[v] = low[v].min(ord[u]);
-        }
-        k
-    }
-
-    dfs(g, 0, 0, &mut ord, &mut low);
-    let mut bh = BridgeHelper::new(ord, low);
-    for v in 0..n {
-        for e in g.edges_from(v) {
-            let u = e.to;
-            if u < v && !bh.is_bridge((u, v)) {
-                bh.unite(u, v).ok();
-            }
-        }
-    }
-    bh
-}
-
-pub struct BridgeHelper {
+pub struct LowLink<'a, C, G> {
+    graph: &'a G,
+    used: Vec<bool>,
     ord: Vec<usize>,
     low: Vec<usize>,
-    uf: Vec<isize>,
-    group: Vec<usize>,
+    articulation: Vec<usize>,
+    bridge: Vec<(usize, Edge<C>)>,
+    _phantom_data: PhantomData<C>
 }
 
-impl BridgeHelper {
-    pub fn new(ord: Vec<usize>, low: Vec<usize>) -> Self {
-        let n = ord.len();
-        Self {
-            ord,
-            low,
-            uf: vec![-1; n],
-            group: (0..n).collect(),
-        }
-    }
-
-    pub fn find(&mut self, i: usize) -> usize {
-        self._climb(i).0
-    }
-
-    pub fn size(&mut self, i: usize) -> usize {
-        self._climb(i).1
-    }
-
-    fn unite(&mut self, u: usize, v: usize) -> Result<(), ()> {
-        let (mut u, su) = self._climb(u);
-        let (mut v, sv) = self._climb(v);
-        if u == v {
-            return Err(());
-        }
-        if su < sv {
-            std::mem::swap(&mut u, &mut v);
-        }
-        self.uf[u] += self.uf[v];
-        self.uf[v] = u as isize;
-        self.group.swap(u, v);
-        Ok(())
-    }
-
-    pub fn is_same(&mut self, u: usize, v: usize) -> bool {
-        self.find(u) == self.find(v)
-    }
-
-    fn _climb(&mut self, i: usize) -> (usize, usize) {
-        assert!(i < self.uf.len());
-        let mut v = i;
-        while self.uf[v] >= 0 {
-            let p = self.uf[v] as usize;
-            if self.uf[p] >= 0 {
-                self.uf[v] = self.uf[p];
-                v = self.uf[p] as usize;
-            } else {
-                v = p;
+impl<'a, C: Clone, G: 'a + Graph<C>> LowLink<'a, C, G> {
+    fn dfs(&mut self, idx: usize, k: &mut usize, par_edge: Option<&Edge<C>>) {
+        self.used[idx] = true;
+        self.ord[idx] = *k;
+        *k += 1;
+        self.low[idx] = self.ord[idx];
+        let mut is_articulation = false;
+        let mut cnt = 0;
+        for e in self.graph.edges_from(idx) {
+            if !self.used[e.to] {
+                cnt += 1;
+                self.dfs(e.to, k, Some(e));
+                self.low[idx] = self.low[idx].min(self.low[e.to]);
+                is_articulation |= par_edge.is_some() && self.low[e.to] >= self.ord[idx];
+                if self.ord[idx] < self.low[e.to] {
+                    self.bridge.push((idx, e.clone()));
+                }
+            } else if e.id != par_edge.map(|e| e.id).unwrap_or(std::usize::MAX) {
+                self.low[idx] = self.low[idx].min(self.ord[e.to]);
             }
         }
-        (v, -self.uf[v] as usize)
-    }
-
-    pub fn is_bridge(&self, (mut u, mut v): (usize, usize)) -> bool {
-        if self.ord[u] > self.ord[v] {
-            std::mem::swap(&mut u, &mut v);
+        is_articulation |= par_edge.is_none() && cnt > 1;
+        if is_articulation {
+            self.articulation.push(idx);
         }
-        self.ord[u] < self.low[v]
     }
 
-    pub fn group(&self, u: usize) -> Vec<usize> {
-        let mut v = self.group[u];
-        let mut res = Vec::new();
-        res.push(u);
-        while v != u {
-            res.push(v);
-            v = self.group[v]
+    pub fn new(graph: &'a G) -> Self {
+        let n = graph.size();
+        let mut low_link = Self {
+            graph,
+            used: vec![false; n],
+            ord: vec![0; n],
+            low: vec![0; n],
+            articulation: Vec::new(),
+            bridge: Vec::new(),
+            _phantom_data: PhantomData
+        };
+        let mut k = 0;
+        for i in 0..n {
+            if !low_link.used[i] {
+                low_link.dfs(i, &mut k, None);
+            }
+        }
+        low_link
+    }
+}
+
+pub struct TwoEdgeConnectedComponents<'a, C, G> {
+    low_link: LowLink<'a, C, G>,
+    comp: Vec<usize>,
+}
+
+impl<'a, C: Clone, G: 'a + Graph<C>> TwoEdgeConnectedComponents<'a, C, G>  {
+    pub fn new(graph: &'a G) -> Self {
+        let n = graph.size();
+        let mut tecc = Self {
+            low_link: LowLink::new(graph),
+            comp: vec![std::usize::MAX; n],
+        };
+        tecc.build();
+        tecc
+    }
+
+    fn dfs(&mut self, idx: usize, k: &mut usize, par: usize) {
+        if !par > 0 && self.low_link.ord[par] >= self.low_link.low[idx] {
+            self.comp[idx] = self.comp[par];
+        } else {
+            self.comp[idx] = *k;
+            *k += 1; 
+        }
+        for e in self.low_link.graph.edges_from(idx) {
+            if self.comp[e.to] == std::usize::MAX {
+                self.dfs(e.to, k, idx);
+            }
+        }
+    }
+
+    fn build(&mut self) {
+        let n = self.low_link.graph.size();
+        let mut k = 0;
+        for i in 0..n {
+            if self.comp[i] == std::usize::MAX {
+                self.dfs(i, &mut k, std::usize::MAX);
+            }
+        }
+    }
+
+    pub fn create_graph(&self) -> UndirectedGraph<C> {
+        let k = *self.comp.iter().max().unwrap() + 1;
+        let mut res = UndirectedGraph::new(k);
+        for (u, e) in self.low_link.bridge.iter() {
+            let u = self.comp[*u];
+            let v = self.comp[e.to];
+            res.add_edge(u, v, e.cost.clone());
         }
         res
+    }
+
+    pub fn get_group_id(&self, i: usize) -> usize {
+        self.comp[i]
+    }
+
+    pub fn get_groups(&self) -> Vec<Vec<usize>> {
+        let k = *self.comp.iter().max().unwrap();
+        let mut res = vec![Vec::new(); k + 1];
+        for (i, &k) in self.comp.iter().enumerate() {
+            res[k].push(i);
+        }
+        res
+    }
+}
+
+pub struct BiConnectedComponents<'a, C, G> {
+    low_link: LowLink<'a, C, G>,
+    used: Vec<bool>,
+    bc: Vec<Vec<usize>>,
+    tmp: Vec<&'a Edge<C>>
+}
+
+impl<'a, C: Clone, G: 'a + Graph<C>> BiConnectedComponents<'a, C, G>  {
+    pub fn new(graph: &'a G) -> Self {
+        let n = graph.size();
+        let mut bicc = Self {
+            low_link: LowLink::new(graph),
+            used: vec![false; n],
+            bc: Vec::new(),
+            tmp: Vec::new()
+        };
+        bicc.build();
+        bicc
+    }
+
+    fn dfs(&mut self, idx: usize, par_edge: Option<&Edge<C>>) {
+        self.used[idx] = true;
+        for e in self.low_link.graph.edges_from(idx) {
+            if e.id == par_edge.map(|e| e.id).unwrap_or(std::usize::MAX) {
+                continue;
+            }
+            if !self.used[e.to] || self.low_link.ord[e.to] < self.low_link.ord[idx] {
+                self.tmp.push(e);
+            }
+            if !self.used[e.to] {
+                self.dfs(e.to, Some(e));
+                if self.low_link.low[e.to] >= self.low_link.ord[idx] {
+                    let mut b = Vec::new();
+                    while let Some(val) = self.tmp.pop() {
+                        b.push(val.id);
+                        if e.id == val.id {
+                            break;
+                        }
+                    }
+                    self.bc.push(b);
+                }
+            }
+        }
+    }
+
+    fn build(&mut self) {
+        let n = self.low_link.graph.size();
+        for i in 0..n {
+            if !self.used[i] {
+                self.dfs(i, None);
+            }
+        }
+    }
+
+    pub fn get_groups(&self) -> &Vec<Vec<usize>> {
+        &self.bc
     }
 }
 
@@ -158,15 +223,10 @@ mod tests {
             g.add_edge(u, v, Void);
         }
 
-        let bh = two_edge_connected_components(&g);
-        let mut gr = bh.group(0);
-        gr.sort();
-        assert_eq!(gr, vec![0, 1, 4, 5, 9, 11]);
-        let mut gr = bh.group(2);
-        gr.sort();
-        assert_eq!(gr, vec![2, 3, 10, 12]);
-        let mut gr = bh.group(6);
-        gr.sort();
-        assert_eq!(gr, vec![6, 7, 8]);
+        let bh = TwoEdgeConnectedComponents::new(&g);
+        let gr = bh.get_groups();
+        assert!(gr.contains(&vec![0, 1, 4, 5, 9, 11]));
+        assert!(gr.contains(&vec![2, 3, 10, 12]));
+        assert!(gr.contains(&vec![6, 7, 8]));
     }
 }
