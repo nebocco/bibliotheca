@@ -1,7 +1,7 @@
-use crate::utils::graph::{Edge, Graph, UndirectedGraph};
+use super::{Edge, Graph, UndirectedGraph};
 use std::marker::PhantomData;
 
-// 2-edge-connected: 
+// 2-edge-connected: https://judge.yosupo.jp/submission/92458
 // Bi-connected: https://judge.yosupo.jp/submission/92453
 // FIXME: stack overflow
 
@@ -190,7 +190,6 @@ impl<'a, C: Clone, G: 'a + Graph<C>> BiConnectedComponents<'a, C, G>  {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::graph::*;
 
     #[test]
     fn test_two_edge_connected_components() {
@@ -220,7 +219,7 @@ mod tests {
         ];
         let mut g = UndirectedGraph::new(n);
         for &(u, v) in &edges {
-            g.add_edge(u, v, Void);
+            g.add_edge(u, v, ());
         }
 
         let bh = TwoEdgeConnectedComponents::new(&g);

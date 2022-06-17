@@ -1,4 +1,4 @@
-use crate::utils::graph::{Edge, Graph};
+use super::{Edge, Graph};
 
 pub fn is_biparate<C, G: Graph<C>>(graph: &G) -> Option<Vec<usize>> {
     let n = graph.size();

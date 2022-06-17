@@ -1,4 +1,4 @@
-use crate::utils::graph::{Edge, Graph};
+use super::{Edge, Graph};
 
 pub fn detect_cycle<C, G: Graph<C>>(graph: &G) -> Option<Vec<usize>> {
     let n = graph.size();

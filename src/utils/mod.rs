@@ -4,7 +4,6 @@ pub mod bounds;
 pub mod fp;
 pub mod fps;
 pub mod geometry;
-pub mod graph;
 pub mod math;
 pub mod neboccoio;
 pub mod ntt;
