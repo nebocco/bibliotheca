@@ -12,7 +12,7 @@ pub struct LowLink<'a, C, G> {
     low: Vec<usize>,
     articulation: Vec<usize>,
     bridge: Vec<(usize, Edge<C>)>,
-    _phantom_data: PhantomData<C>
+    _phantom_data: PhantomData<C>,
 }
 
 impl<'a, C: Clone, G: 'a + Graph<C>> LowLink<'a, C, G> {
@@ -51,7 +51,7 @@ impl<'a, C: Clone, G: 'a + Graph<C>> LowLink<'a, C, G> {
             low: vec![0; n],
             articulation: Vec::new(),
             bridge: Vec::new(),
-            _phantom_data: PhantomData
+            _phantom_data: PhantomData,
         };
         let mut k = 0;
         for i in 0..n {
@@ -68,7 +68,7 @@ pub struct TwoEdgeConnectedComponents<'a, C, G> {
     comp: Vec<usize>,
 }
 
-impl<'a, C: Clone, G: 'a + Graph<C>> TwoEdgeConnectedComponents<'a, C, G>  {
+impl<'a, C: Clone, G: 'a + Graph<C>> TwoEdgeConnectedComponents<'a, C, G> {
     pub fn new(graph: &'a G) -> Self {
         let n = graph.size();
         let mut tecc = Self {
@@ -84,7 +84,7 @@ impl<'a, C: Clone, G: 'a + Graph<C>> TwoEdgeConnectedComponents<'a, C, G>  {
             self.comp[idx] = self.comp[par];
         } else {
             self.comp[idx] = *k;
-            *k += 1; 
+            *k += 1;
         }
         for e in self.low_link.graph.edges_from(idx) {
             if self.comp[e.to] == std::usize::MAX {
@@ -132,17 +132,17 @@ pub struct BiConnectedComponents<'a, C, G> {
     low_link: LowLink<'a, C, G>,
     used: Vec<bool>,
     bc: Vec<Vec<usize>>,
-    tmp: Vec<&'a Edge<C>>
+    tmp: Vec<&'a Edge<C>>,
 }
 
-impl<'a, C: Clone, G: 'a + Graph<C>> BiConnectedComponents<'a, C, G>  {
+impl<'a, C: Clone, G: 'a + Graph<C>> BiConnectedComponents<'a, C, G> {
     pub fn new(graph: &'a G) -> Self {
         let n = graph.size();
         let mut bicc = Self {
             low_link: LowLink::new(graph),
             used: vec![false; n],
             bc: Vec::new(),
-            tmp: Vec::new()
+            tmp: Vec::new(),
         };
         bicc.build();
         bicc

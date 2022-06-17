@@ -1,5 +1,5 @@
-use crate::data_structures::union_find::UnionFind;
 use super::{Cost, Graph, UndirectedGraph};
+use crate::data_structures::union_find::UnionFind;
 
 // ------------ Kruskal's algorithm start ------------
 
