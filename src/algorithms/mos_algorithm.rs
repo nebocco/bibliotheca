@@ -1,9 +1,9 @@
 use std::ops::Range;
 pub trait MoState {
-    type A;
-    type Q;
+    type Answer;
+    type Query;
 
-    fn query(&self, q: &Self::Q) -> Self::A;
+    fn query(&self, q: &Self::Query) -> Self::Answer;
 
     fn push_left(&mut self, idx: usize);
 
@@ -17,27 +17,25 @@ pub trait MoState {
         self.pop_left(idx);
     }
 
-    fn solve(&mut self, queries: &[(Range<usize>, Self::Q)]) -> Vec<Self::A> {
+    fn sort_queries(queries: &[(Range<usize>, Self::Query)]) -> Vec<usize> {
         let q = queries.len();
-        let mut q_positions: Vec<usize> = (0..q).collect();
-        if let Some(max_r) = queries.iter().map(|(rng, _)| rng.end).max() {
-            let q_adjusted = q as f64;
-            let bucket_width = 1 + max_r / q_adjusted.sqrt() as usize;
-            q_positions.sort_unstable_by_key(|&i| {
-                let rng = &queries[i].0;
-                let bucket = rng.start / bucket_width;
-                let r = if bucket & 1 == 0 {
-                    rng.end
-                } else {
-                    max_r - rng.end
-                };
-                (bucket, r)
-            });
-        }
+        let mut q_indices: Vec<usize> = (0..q).collect();
+        let n = queries.iter().map(|(rng, _)| rng.end).max().unwrap_or(0);
+        let width = n / (q as f32 + 1.0).sqrt() as usize + 1;
+        q_indices.sort_by_key(|&i| {
+            let rng = &queries[i].0;
+            let bucket = rng.start / width;
+            (bucket, if bucket & 1 == 0 { rng.end } else { !rng.end })
+        });
+        q_indices
+    }
+
+    fn solve(&mut self, queries: &[(Range<usize>, Self::Query)]) -> Vec<Self::Answer> {
+        let query_order = Self::sort_queries(queries);
 
         let (mut cur_l, mut cur_r) = (0, 0);
         let mut answers = Vec::with_capacity(queries.len());
-        for i in q_positions {
+        for i in query_order {
             let (rng, q) = &queries[i];
             let (l, r) = (rng.start, rng.end);
             while cur_l > l {
@@ -58,7 +56,7 @@ pub trait MoState {
             }
             answers.push((i, self.query(q)));
         }
-        answers.sort_unstable_by_key(|&(i, _)| i);
+        answers.sort_by_key(|&(i, _)| i);
         answers.into_iter().map(|(_, ans)| ans).collect()
     }
 }
@@ -73,7 +71,7 @@ mod test {
         btree: BTreeMap<usize, usize>,
         modality: usize,
     }
-    
+
     impl ValueModality {
         pub fn new(values: Vec<usize>) -> Self {
             Self {
@@ -83,15 +81,15 @@ mod test {
             }
         }
     }
-    
+
     impl MoState for ValueModality {
-        type Q = ();
-        type A = usize;
-    
-        fn query(&self, _: &Self::Q) -> Self::A {
+        type Query = ();
+        type Answer = usize;
+
+        fn query(&self, _: &Self::Query) -> Self::Answer {
             self.modality
         }
-    
+
         fn push_left(&mut self, idx: usize) {
             let v = self.values[idx];
             let e = self.btree.entry(v).or_insert(0);
@@ -100,7 +98,7 @@ mod test {
             }
             *e += 1;
         }
-    
+
         fn pop_left(&mut self, idx: usize) {
             let v = self.values[idx];
             let e = self.btree.entry(v).or_insert(0);
