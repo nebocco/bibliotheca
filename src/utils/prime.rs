@@ -168,7 +168,6 @@ pub fn pollard_rho(v: i64, seed: i64) -> i64 {
 
 // * verified: https://judge.yosupo.jp/submission/30338
 // Tonelli-Shanks algorithm
-
 #[allow(clippy::many_single_char_names)]
 pub fn mod_sqrt(mut a: i64, p: i64) -> Option<i64> {
     a %= p;
@@ -210,16 +209,14 @@ pub fn mod_sqrt(mut a: i64, p: i64) -> Option<i64> {
 /// count the number of primes <= n.
 /// O(n^(3/4) / log(n)) time, O(n^(1/2)) space.
 /// TODO: implement O(n^(2/3) / log(n)) time algorithm
-/// ```
-/// S(v, p) := (2..=v)
-///     .filter(|&i|
-///         (2..=p).all(|&j| i % j != 0)
-///     )
-///     .count();
+/// ```no_run
+/// // S(v, p) = S(v, p-1) - (S(v/p, p-1) - Pi(p-1))
+/// fn S(v: i64, p: i64) -> usize {
+///     (2..=v).filter(|i| (2..=p).all(|j| i % j != 0)).count()
+/// }
 ///
-/// S(v, p) = S(v, p-1) - (S(v/p, p-1) - Pi(p-1));
-/// smalls[i] := S(i, p);
-/// larges[i] := S(n/i, p);
+/// // smalls[i] = S(i, p);
+/// // larges[i] = S(n/i, p);
 /// ```
 pub fn count_primes(n: usize) -> usize {
     let n_sqrt = sqrt_floor(n as i64) as usize;

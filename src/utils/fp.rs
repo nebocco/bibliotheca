@@ -5,7 +5,7 @@
 //! # 使い方
 //!
 //! ```
-//! use fp::F998244353 as Fp;
+//! use bibliotheca::utils::fp::F998244353 as Fp;
 //!
 //! // 四則演算
 //! assert_eq!(Fp::new(6) + Fp::new(2), Fp::new(8));
@@ -58,7 +58,7 @@ fn reduce<M: Mod>(x: u64) -> u32 {
 /// # Examples
 ///
 /// ```
-/// use fp::{fact_iter, F998244353 as Fp};
+/// use bibliotheca::utils::fp::{fact_iter, F998244353 as Fp};
 ///
 /// let mut fact = fact_iter();
 /// assert_eq!(fact.next(), Some(Fp::new(1)));
@@ -78,7 +78,7 @@ pub fn fact_iter<M: Mod>() -> impl Iterator<Item = Fp<M>> {
 /// # Examples
 ///
 /// ```
-/// use fp::{fact_build, F998244353 as Fp};
+/// use bibliotheca::utils::fp::{fact_build, F998244353 as Fp};
 ///
 /// let [fact, fact_inv] = fact_build(3);
 /// assert_eq!(fact, vec![Fp::new(1), Fp::new(1), Fp::new(2)]);
@@ -102,7 +102,7 @@ pub fn fact_build<M: Mod>(n: usize) -> [Vec<Fp<M>>; 2] {
 /// # Examples
 ///
 /// ```
-/// use fp::{binom_iter, F998244353 as Fp};
+/// use bibliotheca::utils::fp::{binom_iter, F998244353 as Fp};
 ///
 /// let mut binom = binom_iter();
 /// assert_eq!(binom.next(), Some(vec![Fp::new(1)]));
@@ -123,7 +123,8 @@ pub fn binom_iter<M: Mod>() -> impl Iterator<Item = Vec<Fp<M>>> {
 /// # 例
 ///
 /// ```
-/// use fp::{Fp, Mod, define_mod}; // Fp を use する必要あり。(procon-bundler 都合で $crate:: できず）
+/// use bibliotheca::define_mod;
+/// use bibliotheca::utils::fp::{Fp, Mod}; // Fp を use する必要あり。(procon-bundler 都合で $crate:: できず）
 ///
 /// define_mod! {
 ///     (F998244353, Mod998244353, 998_244_353, 998_244_351),
@@ -146,6 +147,7 @@ macro_rules! define_mod {
         pub type $Fp = Fp<$Mod>;
     )*}
 }
+
 define_mod! {
     (F998244353, Mod998244353, 998_244_353, 998_244_351),
     (F1000000007, Mod1000000007, 1_000_000_007, 2_226_617_417),

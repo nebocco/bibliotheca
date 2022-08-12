@@ -5,9 +5,10 @@
 //! # 使い方
 //!
 //! ```
-//! use fp::F998244353 as Fp;
-//! use fps::Convolution; // 畳み込みはここにあります。
-//! use fps::fps_inverse;
+//! use bibliotheca::utils::{
+//!     fp::F998244353 as Fp,
+//!     fps::{fps_inverse, Convolution}, // 畳み込みはここにあります。
+//! };
 //!
 //! // 畳み込み（掛け算）
 //! let a = vec![Fp::new(1), Fp::new(2)];
@@ -39,8 +40,7 @@ pub trait Fourier: Sized {
     /// フーリ変換の結果が、成分が bit-reverse された状態で返ります。
     ///
     /// ```
-    /// use fp::F998244353 as Fp;
-    /// use fps::Fourier;
+    /// use bibliotheca::utils::{fp::F998244353 as Fp, fps::Fourier};
     ///
     /// // [0, 1, 0, 0]
     /// let mut a = [Fp::new(0), Fp::new(1), Fp::new(0), Fp::new(0)];
@@ -57,8 +57,7 @@ pub trait Fourier: Sized {
     /// フーリ変換の結果が、成分が bit-reverse された状態で返ります。
     ///
     /// ```
-    /// use fp::F998244353 as Fp;
-    /// use fps::Fourier;
+    /// use bibliotheca::utils::{fp::F998244353 as Fp, fps::Fourier};
     ///
     /// // 先ほどとちょうど逆の変換
     /// let mut a = [Fp::new(1), Fp::from(-1), Fp::new(86583718), Fp::from(-86583718)];
