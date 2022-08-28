@@ -1,13 +1,37 @@
-use super::Flow;
+use std::{
+    fmt::Debug,
+    iter::Sum,
+    ops::{Add, AddAssign, Sub, SubAssign},
+};
+
+pub trait Value:
+    Clone + Copy + Debug + Ord + Add<Output = Self> + AddAssign + Sub<Output = Self> + SubAssign + Sum
+{
+    const ZERO: Self;
+    const INT: Self;
+}
+
+macro_rules! impl_value {
+    ($($T:ident,)*) => {
+		$(
+			impl Value for $T {
+                const ZERO: Self = 0;
+                const INT: Self = std::$T::MAX;
+            }
+		)*
+    };
+}
+
+impl_value!(i8, i16, i32, i64, i128, isize,);
 
 // ------------ Dinic's algorithm start ------------
 use std::cmp::{max, min};
 
-struct Edge<F> {
+struct Edge<T> {
     dst: usize,
     rev: usize,
-    flow: F,
-    upper: F,
+    flow: T,
+    upper: T,
 }
 
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Debug, Hash)]
@@ -22,15 +46,15 @@ struct TemporaryData {
     buffer: Vec<usize>,
 }
 #[derive(Default)]
-pub struct Dinic<F: Flow> {
-    edges: Vec<Vec<Edge<F>>>,
+pub struct Dinic<T: Value> {
+    edges: Vec<Vec<Edge<T>>>,
 }
-impl<F: Flow> Dinic<F> {
+impl<T: Value> Dinic<T> {
     pub fn new() -> Self {
         Self { edges: Vec::new() }
     }
 
-    pub fn add_edge(&mut self, src: usize, dst: usize, capacity: F) -> EdgeId {
+    pub fn add_edge(&mut self, src: usize, dst: usize, capacity: T) -> EdgeId {
         let n = max(max(src, dst) + 1, self.edges.len());
         self.edges.resize_with(n, || Vec::with_capacity(4));
         let e = self.edges[src].len();
@@ -39,7 +63,7 @@ impl<F: Flow> Dinic<F> {
         self.edges[src].push(Edge {
             dst,
             rev: re,
-            flow: F::zero(),
+            flow: T::ZERO,
             upper: capacity,
         });
         self.edges[dst].push(Edge {
@@ -92,19 +116,19 @@ impl<F: Flow> Dinic<F> {
     }
 
     #[allow(clippy::many_single_char_names)]
-    fn primal_dfs(&mut self, u: usize, data: &mut TemporaryData, mut limit: F) -> F {
+    fn primal_dfs(&mut self, u: usize, data: &mut TemporaryData, mut limit: T) -> T {
         if u == data.s {
             return limit;
         }
-        let mut total = F::zero();
+        let mut total = T::ZERO;
         let mut i = data.current_edge[u];
         while i < self.edges[u].len() {
             let e = &self.edges[u][i];
-            if e.flow.is_positive() && data.label[e.dst] < data.label[u] {
+            if e.flow > T::ZERO && data.label[e.dst] < data.label[u] {
                 let new_limit = min(limit, e.flow);
                 let v = e.dst;
                 let f = self.primal_dfs(v, data, new_limit);
-                if !f.is_zero() {
+                if f != T::ZERO {
                     let e = &mut self.edges[u][i];
                     let v = e.dst;
                     let r = e.rev;
@@ -112,8 +136,8 @@ impl<F: Flow> Dinic<F> {
                     self.edges[v][r].flow += f;
                     total += f;
                     limit -= f;
-                    if limit.is_zero() {
-                        if self.edges[u][i].flow.is_zero() {
+                    if limit == T::ZERO {
+                        if self.edges[u][i].flow == T::ZERO {
                             i += 1;
                         }
                         data.current_edge[u] = i;
@@ -128,10 +152,10 @@ impl<F: Flow> Dinic<F> {
         total
     }
 
-    pub fn augment(&mut self, s: usize, t: usize, limit: F) -> F {
+    pub fn augment(&mut self, s: usize, t: usize, limit: T) -> T {
         assert_ne!(s, t, "Source and sink vertex should be different");
         let mut data = self.prepare_data(s, t);
-        let mut flow = F::zero();
+        let mut flow = T::ZERO;
         while self.dual(&mut data) {
             flow += self.primal_dfs(data.t, &mut data, limit - flow);
             if flow == limit {
@@ -141,14 +165,14 @@ impl<F: Flow> Dinic<F> {
         flow
     }
 
-    pub fn max_flow(&mut self, s: usize, t: usize) -> (F, Vec<usize>) {
+    pub fn max_flow(&mut self, s: usize, t: usize) -> (T, Vec<usize>) {
         assert_ne!(s, t, "Source and sink vertex should be different");
         let mut data = self.prepare_data(s, t);
         let inf = self.edges[s]
             .iter()
             .map(|e| e.upper - e.flow)
-            .fold(F::zero(), |a, b| a + b);
-        let mut flow = F::zero();
+            .fold(T::ZERO, |a, b| a + b);
+        let mut flow = T::ZERO;
         while self.dual(&mut data) {
             flow += self.primal_dfs(data.t, &mut data, inf);
         }
@@ -162,7 +186,7 @@ impl<F: Flow> Dinic<F> {
         (flow, cut)
     }
 
-    pub fn get_flow(&self, e: &EdgeId) -> F {
+    pub fn get_flow(&self, e: &EdgeId) -> T {
         self.edges[e.0][e.1].flow
     }
 }

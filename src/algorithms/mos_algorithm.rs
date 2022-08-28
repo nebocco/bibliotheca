@@ -1,3 +1,5 @@
+#![allow(dead_code, unused_variables)]
+
 pub struct Mo {
     data: (),
     queries: Vec<(usize, usize)>,
@@ -23,23 +25,19 @@ impl Mo {
     }
 
     pub fn push_left(&mut self, idx: usize) {
-        &self.data;
-        &idx;
+        unimplemented!();
     }
 
     pub fn push_right(&mut self, idx: usize) {
-        &self.data;
-        &idx;
+        unimplemented!();
     }
 
     pub fn pop_left(&mut self, idx: usize) {
-        &self.data;
-        &idx;
+        unimplemented!();
     }
 
     pub fn pop_right(&mut self, idx: usize) {
-        &self.data;
-        &idx;
+        unimplemented!();
     }
 
     pub fn solve(&mut self) -> Vec<()> {
