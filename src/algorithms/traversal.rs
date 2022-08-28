@@ -1,4 +1,4 @@
-use crate::utils::graph::*;
+use super::graph::*;
 
 #[derive(Debug, Clone)]
 pub struct Traversal {

@@ -1,4 +1,4 @@
-use crate::utils::graph::{Cost, Graph};
+use super::{Cost, Graph};
 
 #[allow(clippy::many_single_char_names)]
 pub fn dijkstra_01<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Vec<C> {
@@ -121,7 +121,7 @@ pub fn bellman_ford<C: Cost, G: Graph<C>>(g: &G, s: usize) -> Result<Vec<C>, &st
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::graph::UndirectedGraph;
+    use crate::algorithms::graph::UndirectedGraph;
 
     #[test]
     fn test_3_ways() {

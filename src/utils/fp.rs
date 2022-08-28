@@ -1,5 +1,5 @@
 //! https://github.com/ngtkana/ac-adapter-rs/blob/master/crates/fp/src/lib.rs
-//! 
+//!
 //! 有限体
 //!
 //! # 使い方

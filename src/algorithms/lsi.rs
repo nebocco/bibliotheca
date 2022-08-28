@@ -1,7 +1,5 @@
-use crate::utils::{
-    algebraic_traits::{Element, Group},
-    graph::{DirectedGraph, Graph},
-};
+use crate::algorithms::graph::{DirectedGraph, Graph};
+use crate::utils::algebraic_traits::{Element, Group};
 
 pub fn solve_lsi<C: Element, E: Group>(g: &DirectedGraph<C>, c: &[E]) -> Option<Vec<E>> {
     let n = g.forward.len();
@@ -49,10 +47,8 @@ fn lsi_dfs<C: Element, E: Group>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::{
-        algebraic_traits::{Associative, Zero},
-        graph::{DirectedGraph, Graph, Void},
-    };
+    use crate::algorithms::graph::{DirectedGraph, Graph, Void};
+    use crate::utils::algebraic_traits::{Associative, Zero};
     use std::ops::{Add, Neg};
 
     #[derive(Clone, Copy, PartialEq, Debug)]

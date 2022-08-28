@@ -1,4 +1,4 @@
-use crate::utils::graph::{Cost, Graph};
+use super::{Cost, Graph};
 
 pub fn tree_dfs<C: Cost, G: Graph<C>>(
     g: &G,
@@ -31,7 +31,7 @@ pub fn tree_dfs<C: Cost, G: Graph<C>>(
 #[cfg(test)]
 mod tests {
     use super::tree_dfs;
-    use crate::utils::graph::{Graph, UndirectedGraph};
+    use crate::algorithms::graph::{Graph, UndirectedGraph};
 
     #[test]
     fn test_tree_dfs() {

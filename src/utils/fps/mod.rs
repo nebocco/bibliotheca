@@ -1,7 +1,7 @@
-//! https://github.com/ngtkana/ac-adapter-rs/blob/master/crates/fps/src/lib.rs 
+//! https://github.com/ngtkana/ac-adapter-rs/blob/master/crates/fps/src/lib.rs
 //!
 //! 高速フーリエ変換を利用した、形式的べき級数の諸演算です。
-//! 
+//!
 //! # 使い方
 //!
 //! ```

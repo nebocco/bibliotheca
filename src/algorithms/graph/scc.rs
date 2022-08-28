@@ -1,5 +1,5 @@
+use super::*;
 use crate::algorithms::traversal::*;
-use crate::utils::graph::*;
 
 // * verified: https://judge.yosupo.jp/submission/26465
 // ------------ 2-SAT start ------------

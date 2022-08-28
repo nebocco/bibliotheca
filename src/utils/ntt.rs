@@ -1,4 +1,4 @@
-// verified: 
+// verified:
 // ntt-friendly mod: https://judge.yosupo.jp/submission/64359
 // arbitrary mod: https://judge.yosupo.jp/submission/64365
 // ------------ independent NTT start ------------
@@ -9,7 +9,7 @@ pub mod independent_ntt {
     pub trait NttConsts {
         const MOD: i64; // d * 2^m + 1
         const ORDER: i64; // 2^m
-        const ZETA: i64; // 原始根 
+        const ZETA: i64; // 原始根
     }
 
     pub fn ntt<N: NttConsts>(f: &mut [i64]) {
@@ -17,12 +17,13 @@ pub mod independent_ntt {
         assert!(n.is_power_of_two());
         assert!(n <= N::ORDER as usize);
         let len = n.trailing_zeros() as usize;
-        let mut zeta = Vec::with_capacity(len);
-        let mut r = modpow(N::ZETA, N::MOD >> len, N::MOD);
-        for _ in 0..len {
-            zeta.push(r);
-            r = r * r % N::MOD;
-        }
+        let zeta: Vec<i64> = (0..len)
+            .scan(modpow(N::ZETA, N::MOD >> len, N::MOD), |r, _| {
+                let s = *r;
+                *r = *r * *r % N::MOD;
+                Some(s)
+            })
+            .collect();
         for (k, &z) in zeta.iter().rev().enumerate().rev() {
             let m = 1 << k;
             for f in f.chunks_exact_mut(2 * m) {
@@ -63,9 +64,13 @@ pub mod independent_ntt {
                     let a = *x;
                     let b = *y * q % N::MOD;
                     *x = a + b;
-                    if *x >= N::MOD { *x -= N::MOD; }
+                    if *x >= N::MOD {
+                        *x -= N::MOD;
+                    }
                     *y = a - b;
-                    if *y < 0 { *y += N::MOD; }
+                    if *y < 0 {
+                        *y += N::MOD;
+                    }
                     q = q * z % N::MOD;
                 }
             }
@@ -126,7 +131,9 @@ pub mod independent_ntt {
         let f1 = multiply::<N1>(&a, &b);
         let f2 = multiply::<N2>(&a, &b);
         let f3 = multiply::<N3>(&a, &b);
-        let f: Vec<i64> = f1.into_iter().zip(std::iter::repeat(N1::MOD))
+        let f: Vec<i64> = f1
+            .into_iter()
+            .zip(std::iter::repeat(N1::MOD))
             .zip(f2.into_iter().zip(std::iter::repeat(N2::MOD)))
             .zip(f3.into_iter().zip(std::iter::repeat(N3::MOD)))
             .map(|((r1, r2), r3)| garner(&[r1, r2, r3], modulo))
@@ -138,7 +145,7 @@ pub mod independent_ntt {
 
 #[cfg(test)]
 mod tests {
-    use super::{*, independent_ntt::NttConsts};
+    use super::{independent_ntt::NttConsts, *};
 
     struct N;
     impl NttConsts for N {
@@ -151,7 +158,7 @@ mod tests {
         let mut ret = vec![0; a.len() + b.len() - 1];
         for i in 0..a.len() {
             for j in 0..b.len() {
-                ret[i+j] = (ret[i+j] + a[i] * b[j]) % modulo;
+                ret[i + j] = (ret[i + j] + a[i] * b[j]) % modulo;
             }
         }
         ret
@@ -161,7 +168,10 @@ mod tests {
     fn ntt_independent_hand() {
         let f = vec![1, 2, 3, 4];
         let g = vec![5, 6, 7, 8, 9];
-        assert_eq!(independent_ntt::multiply::<N>(&f, &g), vec![5, 16, 34, 60, 70, 70, 59, 36]);
+        assert_eq!(
+            independent_ntt::multiply::<N>(&f, &g),
+            vec![5, 16, 34, 60, 70, 70, 59, 36]
+        );
 
         let f = vec![10000000];
         let g = vec![10000000];
@@ -171,13 +181,19 @@ mod tests {
     use crate::utils::random::*;
     #[test]
     fn ntt_independent_random() {
-
         let mut rng = XorShift::default();
         let n = 1000;
         for _ in 0..10 {
-            let a: Vec<i64> = (0..n).map(|_| (rng.gen() as i64).rem_euclid(N::MOD)).collect();
-            let b: Vec<i64> = (0..n).map(|_| (rng.gen() as i64).rem_euclid(N::MOD)).collect();
-            assert_eq!(independent_ntt::multiply::<N>(&a, &b), convolute_brute(&a, &b, N::MOD))
+            let a: Vec<i64> = (0..n)
+                .map(|_| (rng.gen() as i64).rem_euclid(N::MOD))
+                .collect();
+            let b: Vec<i64> = (0..n)
+                .map(|_| (rng.gen() as i64).rem_euclid(N::MOD))
+                .collect();
+            assert_eq!(
+                independent_ntt::multiply::<N>(&a, &b),
+                convolute_brute(&a, &b, N::MOD)
+            )
         }
     }
 
@@ -215,7 +231,9 @@ mod tests {
             let f1 = independent_ntt::multiply::<N1>(&a, &b);
             let f2 = independent_ntt::multiply::<N2>(&a, &b);
             let f3 = independent_ntt::multiply::<N3>(&a, &b);
-            let f: Vec<i64> = f1.into_iter().zip(std::iter::repeat(N1::MOD))
+            let f: Vec<i64> = f1
+                .into_iter()
+                .zip(std::iter::repeat(N1::MOD))
                 .zip(f2.into_iter().zip(std::iter::repeat(N2::MOD)))
                 .zip(f3.into_iter().zip(std::iter::repeat(N3::MOD)))
                 .map(|((r1, r2), r3)| garner(&[r1, r2, r3], MOD))
@@ -257,7 +275,9 @@ mod tests {
         let f1 = independent_ntt::multiply::<N1>(&a, &b);
         let f2 = independent_ntt::multiply::<N2>(&a, &b);
         let f3 = independent_ntt::multiply::<N3>(&a, &b);
-        let _f: Vec<i64> = f1.into_iter().zip(std::iter::repeat(N1::MOD))
+        let _f: Vec<i64> = f1
+            .into_iter()
+            .zip(std::iter::repeat(N1::MOD))
             .zip(f2.into_iter().zip(std::iter::repeat(N2::MOD)))
             .zip(f3.into_iter().zip(std::iter::repeat(N3::MOD)))
             .map(|((r1, r2), r3)| garner(&[r1, r2, r3], MOD))
