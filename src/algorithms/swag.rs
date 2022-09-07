@@ -1,14 +1,17 @@
-use crate::utils::algebraic_traits::SemiGroup;
-
 // * verified: https://judge.yosupo.jp/submission/28460
 // ------------ Swag Queue start ------------
+
+pub trait SemiGroup {
+    type Val: Clone;
+    fn op(left: &Self::Val, right: &Self::Val) -> Self::Val;
+}
 #[derive(Default)]
-pub struct SwagQueue<T: SemiGroup> {
-    front: Vec<(T, T)>,
-    back: Vec<(T, T)>,
+pub struct SwagQueue<G: SemiGroup> {
+    front: Vec<(G::Val, G::Val)>,
+    back: Vec<(G::Val, G::Val)>,
 }
 
-impl<T: SemiGroup> SwagQueue<T> {
+impl<G: SemiGroup> SwagQueue<G> {
     pub fn new() -> Self {
         Self {
             front: Vec::new(),
@@ -24,21 +27,21 @@ impl<T: SemiGroup> SwagQueue<T> {
         self.front.is_empty() && self.back.is_empty()
     }
 
-    pub fn push(&mut self, v: T) {
+    pub fn push(&mut self, v: G::Val) {
         let s = if let Some((_, x)) = self.back.last() {
-            x.clone() + v.clone()
+            G::op(&x, &v)
         } else {
             v.clone()
         };
         self.back.push((v, s));
     }
 
-    pub fn pop(&mut self) -> Option<T> {
+    pub fn pop(&mut self) -> Option<G::Val> {
         if self.front.is_empty() {
             let back = std::mem::replace(&mut self.back, Vec::new());
             for (v, _) in back.into_iter().rev() {
                 let s = if let Some((_, x)) = self.front.last() {
-                    v.clone() + x.clone()
+                    G::op(&v, &x)
                 } else {
                     v.clone()
                 };
@@ -53,9 +56,9 @@ impl<T: SemiGroup> SwagQueue<T> {
         }
     }
 
-    pub fn fold_all(&self) -> Option<T> {
+    pub fn fold_all(&self) -> Option<G::Val> {
         match (self.front.last(), self.back.last()) {
-            (Some(u), Some(v)) => Some(u.1.clone() + v.1.clone()),
+            (Some(u), Some(v)) => Some(G::op(&u.1, &v.1)),
             (Some(u), None) => Some(u.1.clone()),
             (None, Some(v)) => Some(v.1.clone()),
             (None, None) => None,
@@ -66,12 +69,12 @@ impl<T: SemiGroup> SwagQueue<T> {
 
 // ------------ Swag Deque start ------------
 #[derive(Default)]
-pub struct SwagDeque<T: SemiGroup> {
-    front: Vec<(T, T)>,
-    back: Vec<(T, T)>,
+pub struct SwagDeque<G: SemiGroup> {
+    front: Vec<(G::Val, G::Val)>,
+    back: Vec<(G::Val, G::Val)>,
 }
 
-impl<T: SemiGroup> SwagDeque<T> {
+impl<G: SemiGroup> SwagDeque<G> {
     pub fn new() -> Self {
         Self {
             front: Vec::new(),
@@ -87,28 +90,32 @@ impl<T: SemiGroup> SwagDeque<T> {
         self.front.is_empty() && self.back.is_empty()
     }
 
-    fn _push<F>(stack: &mut Vec<(T, T)>, v: T, func: F)
+    fn _push<F>(stack: &mut Vec<(G::Val, G::Val)>, v: G::Val, op: F)
     where
-        F: FnOnce(T, T) -> T,
+        F: FnOnce(&G::Val, &G::Val) -> G::Val,
     {
         let s = if let Some((_, x)) = stack.last() {
-            func(x.clone(), v.clone())
+            op(x, &v)
         } else {
             v.clone()
         };
         stack.push((v, s));
     }
 
-    fn _pop<F>(stack: &mut Vec<(T, T)>, other: &mut Vec<(T, T)>, func: F) -> Option<T>
+    fn _pop<F>(
+        stack: &mut Vec<(G::Val, G::Val)>,
+        other: &mut Vec<(G::Val, G::Val)>,
+        op: F,
+    ) -> Option<G::Val>
     where
-        F: Fn(T, T) -> T,
+        F: Fn(&G::Val, &G::Val) -> G::Val,
     {
         if stack.is_empty() {
             let n = other.len();
             let temp = other.split_off((n + 1) / 2);
             for (v, _) in other.drain(..).rev() {
                 let s = if let Some((_, x)) = stack.last() {
-                    func(x.clone(), v.clone())
+                    op(x, &v)
                 } else {
                     v.clone()
                 };
@@ -116,7 +123,7 @@ impl<T: SemiGroup> SwagDeque<T> {
             }
             for (v, _) in temp {
                 let s = if let Some((_, x)) = other.last() {
-                    func(v.clone(), x.clone())
+                    op(&v, x)
                 } else {
                     v.clone()
                 };
@@ -131,25 +138,25 @@ impl<T: SemiGroup> SwagDeque<T> {
         }
     }
 
-    pub fn push_back(&mut self, v: T) {
-        Self::_push(&mut self.back, v, |x, v| x + v);
+    pub fn push_back(&mut self, v: G::Val) {
+        Self::_push(&mut self.back, v, |x, v| G::op(x, v));
     }
 
-    pub fn push_front(&mut self, v: T) {
-        Self::_push(&mut self.front, v, |x, v| v + x);
+    pub fn push_front(&mut self, v: G::Val) {
+        Self::_push(&mut self.front, v, |x, v| G::op(v, x));
     }
 
-    pub fn pop_back(&mut self) -> Option<T> {
-        Self::_pop(&mut self.back, &mut self.front, |x, v| x + v)
+    pub fn pop_back(&mut self) -> Option<G::Val> {
+        Self::_pop(&mut self.back, &mut self.front, |x, v| G::op(x, v))
     }
 
-    pub fn pop_front(&mut self) -> Option<T> {
-        Self::_pop(&mut self.front, &mut self.back, |x, v| v + x)
+    pub fn pop_front(&mut self) -> Option<G::Val> {
+        Self::_pop(&mut self.front, &mut self.back, |x, v| G::op(v, x))
     }
 
-    pub fn fold_all(&self) -> Option<T> {
+    pub fn fold_all(&self) -> Option<G::Val> {
         match (self.front.last(), self.back.last()) {
-            (Some(u), Some(v)) => Some(u.1.clone() + v.1.clone()),
+            (Some(u), Some(v)) => Some(G::op(&u.1, &v.1)),
             (Some(u), None) => Some(u.1.clone()),
             (None, Some(v)) => Some(v.1.clone()),
             (None, None) => None,
@@ -161,36 +168,32 @@ impl<T: SemiGroup> SwagDeque<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::algebraic_traits::*;
-    use std::ops::Add;
 
-    #[derive(Debug, Clone, PartialEq)]
-    struct Min(i32);
+    enum Min {}
 
-    impl Add for Min {
-        type Output = Self;
-        fn add(self, rhs: Self) -> Self {
-            Self(std::cmp::min(self.0, rhs.0))
+    impl SemiGroup for Min {
+        type Val = i32;
+        fn op(left: &Self::Val, right: &Self::Val) -> Self::Val {
+            *left.min(right)
         }
     }
-    impl Associative for Min {}
 
     #[test]
     fn test_swag_queue_min() {
         let mut que = SwagQueue::<Min>::new();
-        que.push(Min(2));
-        que.push(Min(3));
-        que.push(Min(5));
-        que.push(Min(7));
-        assert_eq!(que.fold_all(), Some(Min(2)));
-        assert_eq!(que.pop(), Some(Min(2)));
-        assert_eq!(que.pop(), Some(Min(3)));
-        assert_eq!(que.fold_all(), Some(Min(5)));
-        que.push(Min(-1));
-        assert_eq!(que.fold_all(), Some(Min(-1)));
-        assert_eq!(que.pop(), Some(Min(5)));
-        assert_eq!(que.pop(), Some(Min(7)));
-        assert_eq!(que.pop(), Some(Min(-1)));
+        que.push(2);
+        que.push(3);
+        que.push(5);
+        que.push(7);
+        assert_eq!(que.fold_all(), Some(2));
+        assert_eq!(que.pop(), Some(2));
+        assert_eq!(que.pop(), Some(3));
+        assert_eq!(que.fold_all(), Some(5));
+        que.push(-1);
+        assert_eq!(que.fold_all(), Some(-1));
+        assert_eq!(que.pop(), Some(5));
+        assert_eq!(que.pop(), Some(7));
+        assert_eq!(que.pop(), Some(-1));
         assert_eq!(que.fold_all(), None);
         assert_eq!(que.pop(), None);
     }
@@ -198,68 +201,66 @@ mod tests {
     #[test]
     fn test_swag_deque_min() {
         let mut que = SwagDeque::<Min>::new();
-        que.push_back(Min(2));
-        que.push_back(Min(3));
-        que.push_front(Min(5));
-        que.push_front(Min(7));
-        assert_eq!(que.fold_all(), Some(Min(2)));
-        assert_eq!(que.pop_back(), Some(Min(3)));
-        assert_eq!(que.pop_back(), Some(Min(2)));
-        assert_eq!(que.fold_all(), Some(Min(5)));
-        que.push_front(Min(-1));
-        assert_eq!(que.fold_all(), Some(Min(-1)));
-        assert_eq!(que.pop_back(), Some(Min(5)));
-        assert_eq!(que.pop_back(), Some(Min(7)));
-        assert_eq!(que.pop_back(), Some(Min(-1)));
+        que.push_back(2);
+        que.push_back(3);
+        que.push_front(5);
+        que.push_front(7);
+        assert_eq!(que.fold_all(), Some(2));
+        assert_eq!(que.pop_back(), Some(3));
+        assert_eq!(que.pop_back(), Some(2));
+        assert_eq!(que.fold_all(), Some(5));
+        que.push_front(-1);
+        assert_eq!(que.fold_all(), Some(-1));
+        assert_eq!(que.pop_back(), Some(5));
+        assert_eq!(que.pop_back(), Some(7));
+        assert_eq!(que.pop_back(), Some(-1));
         assert_eq!(que.fold_all(), None);
         assert_eq!(que.pop_front(), None);
     }
 
     const MOD: u64 = 998_244_353;
 
-    #[derive(Debug, Clone, PartialEq)]
-    struct Affine(u64, u64);
+    enum Affine {}
 
     impl Affine {
-        fn eval(&self, x: u64) -> u64 {
-            (self.0 * x + self.1) % MOD
+        fn eval(val: <Affine as SemiGroup>::Val, x: u64) -> u64 {
+            (val.0 * x + val.1) % MOD
         }
     }
 
-    impl Add for Affine {
-        type Output = Self;
-        fn add(self, rhs: Self) -> Self {
-            Self(rhs.0 * self.0 % MOD, (rhs.0 * self.1 + rhs.1) % MOD)
+    impl SemiGroup for Affine {
+        type Val = (u64, u64);
+        fn op(left: &Self::Val, right: &Self::Val) -> Self::Val {
+            (right.0 * left.0 % MOD, (right.0 * left.1 + right.1) % MOD)
         }
     }
-    impl Associative for Affine {}
 
     #[test]
     fn test_swag_queue_affine() {
         let mut que = SwagQueue::<Affine>::new();
-        que.push(Affine(4, 5));
-        assert_eq!(que.fold_all().unwrap().eval(3), 17);
-        que.push(Affine(2, 1));
-        assert_eq!(que.fold_all().unwrap().eval(2), 27);
-        assert_eq!(que.pop(), Some(Affine(4, 5)));
-        assert_eq!(que.fold_all().unwrap().eval(3), 7);
+        que.push((4, 5));
+        assert_eq!(Affine::eval(que.fold_all().unwrap(), 3), 17);
+        que.push((2, 1));
+        assert_eq!(Affine::eval(que.fold_all().unwrap(), 2), 27);
+        assert_eq!(que.pop(), Some((4, 5)));
+        assert_eq!(Affine::eval(que.fold_all().unwrap(), 3), 7);
     }
 
     #[test]
     fn test_swag_deque_affine() {
         let mut que = SwagDeque::<Affine>::new();
-        que.push_back(Affine(4, 5));
-        assert_eq!(que.fold_all().unwrap().eval(3), 17);
-        que.push_back(Affine(2, 1));
-        assert_eq!(que.fold_all().unwrap().eval(2), 27);
-        assert_eq!(que.pop_front(), Some(Affine(4, 5)));
-        assert_eq!(que.fold_all().unwrap().eval(3), 7);
+        que.push_back((4, 5));
+        assert_eq!(Affine::eval(que.fold_all().unwrap(), 3), 17);
+        que.push_back((2, 1));
+        assert_eq!(Affine::eval(que.fold_all().unwrap(), 2), 27);
+        assert_eq!(que.pop_front(), Some((4, 5)));
+        assert_eq!(Affine::eval(que.fold_all().unwrap(), 3), 7);
 
-        que.push_front(Affine(3, 2));
-        assert_eq!(que.fold_all().unwrap().eval(5), 35);
-        assert_eq!(que.pop_back(), Some(Affine(2, 1)));
-        assert_eq!(que.fold_all().unwrap().eval(6), 20);
-        assert_eq!(que.pop_back(), Some(Affine(3, 2)));
+        que.push_front((3, 2));
+        assert_eq!(Affine::eval(que.fold_all().unwrap(), 5), 35);
+        assert_eq!(que.pop_back(), Some((2, 1)));
+        assert_eq!(Affine::eval(que.fold_all().unwrap(), 6), 20);
+        assert_eq!(que.pop_back(), Some((3, 2)));
         assert_eq!(que.fold_all(), None);
         assert_eq!(que.pop_front(), None);
     }

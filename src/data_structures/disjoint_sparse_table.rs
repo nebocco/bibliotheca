@@ -1,14 +1,17 @@
-use crate::utils::algebraic_traits::SemiGroup;
-
 // * verified: https://judge.yosupo.jp/submission/28320
 // ------------ Disjoint SparseTable start ------------
 use std::iter::successors;
 use std::ops::Range;
 
-pub struct DisjointSparseTable<T: SemiGroup>(Vec<Vec<T>>);
+pub trait SemiGroup {
+    type Val: Clone;
+    fn op(left: &Self::Val, right: &Self::Val) -> Self::Val;
+}
 
-impl<T: SemiGroup> DisjointSparseTable<T> {
-    pub fn fold(&self, rng: Range<usize>) -> T {
+pub struct DisjointSparseTable<G: SemiGroup>(Vec<Vec<G::Val>>);
+
+impl<G: SemiGroup> DisjointSparseTable<G> {
+    pub fn fold(&self, rng: Range<usize>) -> G::Val {
         let l = rng.start;
         let r = rng.end - 1;
         assert!(
@@ -21,26 +24,26 @@ impl<T: SemiGroup> DisjointSparseTable<T> {
             self.0[0][l].clone()
         } else {
             let p = (std::usize::MAX.count_ones() - (l ^ r).leading_zeros() - 1) as usize;
-            self.0[p][l ^ ((1 << p) - 1)].clone() + self.0[p][r].clone()
+            G::op(&self.0[p][l ^ ((1 << p) - 1)], &self.0[p][r])
         }
     }
 }
 
-impl<T: SemiGroup> From<&Vec<T>> for DisjointSparseTable<T> {
-    fn from(vec: &Vec<T>) -> Self {
+impl<G: SemiGroup> From<&[G::Val]> for DisjointSparseTable<G> {
+    fn from(vec: &[G::Val]) -> Self {
         let size = vec.len();
         let mut table = Vec::with_capacity(31);
-        table.push(vec.clone());
+        table.push(vec.to_vec());
         for i in successors(Some(2), |&x| Some(x << 1)).take_while(|&x| x < size) {
             let mut l = Vec::with_capacity(size);
             for j in successors(Some(i), |&x| Some(x + (i << 1))).take_while(|&x| x < size) {
                 l.push(table[0][j - 1].clone());
                 for k in 2..=i {
-                    l.push(table[0][j - k].clone() + l.last().unwrap().clone());
+                    l.push(G::op(&table[0][j - k], &l.last().unwrap()));
                 }
                 l.push(table[0][j].clone());
                 for k in (1..i).take_while(|x| x + j < size) {
-                    l.push(l.last().unwrap().clone() + table[0][j + k].clone());
+                    l.push(G::op(&l.last().unwrap(), &table[0][j + k]));
                 }
             }
             table.push(l);
@@ -54,51 +57,45 @@ impl<T: SemiGroup> From<&Vec<T>> for DisjointSparseTable<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::algebraic_traits::*;
     use rand::prelude::*;
-    use std::cmp::min;
-    use std::ops::Add;
 
-    #[derive(Debug, Clone, PartialEq)]
-    struct Am(i32);
+    enum Am {}
 
-    impl Add for Am {
-        type Output = Self;
-        fn add(self, right: Self) -> Self {
-            Am(min(self.0, right.0))
+    impl SemiGroup for Am {
+        type Val = i32;
+        fn op(left: &Self::Val, right: &Self::Val) -> Self::Val {
+            *left.min(right)
         }
     }
 
-    impl Associative for Am {}
-
     #[test]
     fn rmq_test() {
-        let dsp = DisjointSparseTable::from(&vec![Am(4), Am(2), Am(3)]);
-        assert!(dsp.fold(0..1).0 == 4);
-        assert!(dsp.fold(0..2).0 == 2);
-        assert!(dsp.fold(0..3).0 == 2);
-        assert!(dsp.fold(1..2).0 == 2);
-        assert!(dsp.fold(1..3).0 == 2);
-        assert!(dsp.fold(2..3).0 == 3);
+        let dsp = DisjointSparseTable::<Am>::from([4, 2, 3].as_slice());
+        assert!(dsp.fold(0..1) == 4);
+        assert!(dsp.fold(0..2) == 2);
+        assert!(dsp.fold(0..3) == 2);
+        assert!(dsp.fold(1..2) == 2);
+        assert!(dsp.fold(1..3) == 2);
+        assert!(dsp.fold(2..3) == 3);
     }
 
     #[test]
     fn corner_test() {
-        let dsp = DisjointSparseTable::from(&vec![Am(1)]);
-        assert!(dsp.fold(0..1).0 == 1);
+        let dsp = DisjointSparseTable::<Am>::from([1].as_slice());
+        assert!(dsp.fold(0..1) == 1);
     }
 
     #[test]
     fn random_one() {
         let mut rng = rand::thread_rng();
-        let a = (0..10000).map(|_| Am(rng.gen())).collect::<Vec<Am>>();
-        let dsp = DisjointSparseTable::from(&a);
+        let a = (0..10000).map(|_| rng.gen()).collect::<Vec<i32>>();
+        let dsp = DisjointSparseTable::<Am>::from(a.as_slice());
         for _ in 0..10000 {
             let l = rng.gen_range(0..10000);
             let r = rng.gen_range(l + 1..10001);
             assert_eq!(
                 dsp.fold(l..r),
-                (l..r).fold(Am(std::i32::MAX), |sum, x| sum + a[x].clone())
+                (l..r).fold(std::i32::MAX, |sum, x| sum.min(a[x]))
             );
         }
     }

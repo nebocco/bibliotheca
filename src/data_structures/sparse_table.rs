@@ -8,80 +8,57 @@ use crate::utils::bounds::bounds_within;
 
 // ------------ SparseTable start ------------
 
-use std::ops;
+use std::ops::{Range, RangeBounds};
+
+pub trait IdempotenceSemiGroup {
+    type Val: Clone;
+    fn op(left: &Self::Val, right: &Self::Val) -> Self::Val;
+}
+
+enum ArgMin {}
+
+impl IdempotenceSemiGroup for ArgMin {
+    type Val = (usize, i64);
+    fn op(left: &Self::Val, right: &Self::Val) -> Self::Val {
+        if left.1 > right.1 {
+            *right
+        } else {
+            *left
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
-pub struct SparseTableArgmin<T> {
-    table: Vec<Vec<usize>>,
-    seq: Vec<T>,
-}
+pub struct SparseTable<T: IdempotenceSemiGroup>(Vec<Vec<T::Val>>);
 
-impl<T: Ord> SparseTableArgmin<T> {
-    pub fn query(&self, range: impl ops::RangeBounds<usize>) -> Option<usize> {
-        let ops::Range { start, end } = bounds_within(range, self.seq.len());
-        assert!(start <= end);
-        if start == end {
-            None
-        } else {
-            Some(if start + 1 == end {
-                start
-            } else {
-                let d = (end - start).next_power_of_two() / 2;
-                let row = &self.table[d.trailing_zeros() as usize];
-                let u = row[start];
-                let v = row[end - d];
-                if self.seq[u] <= self.seq[v] {
-                    u
-                } else {
-                    v
-                }
-            })
-        }
-    }
-
-    #[inline]
-    pub fn min(&self, range: impl ops::RangeBounds<usize>) -> Option<&T> {
-        self.query(range).map(|i| &self.seq[i])
-    }
-
-    #[inline]
-    pub fn get<I>(&self, index: I) -> Option<&I::Output>
-    where
-        I: std::slice::SliceIndex<[T]>,
-    {
-        self.seq.get(index)
+impl<T: IdempotenceSemiGroup> SparseTable<T> {
+    pub fn query(&self, range: impl RangeBounds<usize>) -> T::Val {
+        let Range { start, end } = bounds_within(range, self.0[0].len());
+        let d = (end - start).next_power_of_two() >> 1;
+        let row = &self.0[d.trailing_zeros() as usize];
+        T::op(&row[start], &row[end - d])
     }
 }
 
-impl<I, T> ops::Index<I> for SparseTableArgmin<T>
+impl<T> std::iter::FromIterator<T::Val> for SparseTable<T>
 where
-    I: std::slice::SliceIndex<[T]>,
-    T: Clone,
+    T: IdempotenceSemiGroup,
 {
-    type Output = I::Output;
-
-    fn index(&self, index: I) -> &I::Output {
-        self.seq.index(index)
-    }
-}
-
-impl<T: Ord> From<Vec<T>> for SparseTableArgmin<T> {
-    fn from(seq: Vec<T>) -> Self {
+    fn from_iter<I: IntoIterator<Item = T::Val>>(iter: I) -> Self {
+        let seq: Vec<T::Val> = iter.into_iter().collect();
         let n = seq.len();
-        let mut table = vec![(0..n).collect::<Vec<_>>()];
+        let mut table = Vec::with_capacity(n.next_power_of_two().trailing_zeros() as usize + 1);
+        table.push(seq);
         let mut d = 1;
-        while 2 * d < n {
-            let prv = table.last().unwrap();
-            let mut crr = prv.clone();
+        while (d << 1) < n {
+            let mut seq = table.last().unwrap().clone();
             for i in 0..n - d {
-                if seq[crr[i + d]] < seq[crr[i]] {
-                    crr[i] = crr[i + d];
-                }
+                seq[i] = T::op(&seq[i], &seq[i + d]);
             }
-            table.push(crr);
-            d *= 2;
+            table.push(seq);
+            d <<= 1;
         }
-        Self { table, seq }
+        Self(table)
     }
 }
 
@@ -90,55 +67,18 @@ impl<T: Ord> From<Vec<T>> for SparseTableArgmin<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::iter::FromIterator;
 
     #[test]
     fn test_hand() {
-        let a = vec![4, 3, 5, 1, 3, 2];
-        let spt = SparseTableArgmin::from(a);
-        assert_eq!(spt.query(3..3), None);
-        assert_eq!(spt.query(5..6), Some(5));
-        assert_eq!(spt.query(1..3), Some(1));
-        assert_eq!(spt.query(1..5), Some(3));
-        assert_eq!(spt.query(0..6), Some(3));
-        assert_eq!(spt.query(0..=3), Some(3));
-        assert_eq!(spt.query(0..=2), Some(1));
-        assert_eq!(spt.query(..), Some(3));
-    }
-
-    #[test]
-    fn test_random() {
-        const LEN_MAX: usize = 40;
-        const VALUE_MAX: u32 = 16;
-        const NUMBER_OF_INSTANCE: usize = 80;
-        const NUMBER_OF_QUERIES: usize = 80;
-
-        for _ in 0..NUMBER_OF_INSTANCE {
-            let a = std::iter::repeat_with(|| rand::random::<u32>() % VALUE_MAX)
-                .take(LEN_MAX)
-                .collect::<Vec<_>>();
-            let spt = SparseTableArgmin::from(a.clone());
-
-            for _ in 0..NUMBER_OF_QUERIES {
-                let (l, r) = {
-                    let mut l = rand::random::<usize>() % LEN_MAX;
-                    let mut r = rand::random::<usize>() % LEN_MAX;
-                    if l > r {
-                        std::mem::swap(&mut l, &mut r);
-                    }
-                    r += 1;
-                    (l, r)
-                };
-                let expected = a
-                    .iter()
-                    .enumerate()
-                    .skip(l)
-                    .take(r - l)
-                    .map(|(i, &x)| (x, i))
-                    .min()
-                    .map(|(_, i)| i);
-                let result = spt.query(l..r);
-                assert_eq!(expected, result);
-            }
-        }
+        let a: &[i64] = &[4, 3, 5, 1, 3, 2];
+        let spt = SparseTable::<ArgMin>::from_iter(a.iter().copied().enumerate());
+        assert_eq!(spt.query(5..6), (5, 2));
+        assert_eq!(spt.query(1..3), (1, 3));
+        assert_eq!(spt.query(1..5), (3, 1));
+        assert_eq!(spt.query(0..6), (3, 1));
+        assert_eq!(spt.query(0..=3), (3, 1));
+        assert_eq!(spt.query(0..=2), (1, 3));
+        assert_eq!(spt.query(..), (3, 1));
     }
 }
