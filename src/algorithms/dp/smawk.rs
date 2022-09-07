@@ -29,7 +29,7 @@ fn smawk_inner<T: Element + Ord, F: Fn(usize, usize) -> T>(
     matrix: &F,
     rows: &[usize],
     cols: &[usize],
-    mut minima: &mut [usize],
+    minima: &mut [usize],
 ) {
     if cols.is_empty() {
         return;
@@ -55,7 +55,7 @@ fn smawk_inner<T: Element + Ord, F: Fn(usize, usize) -> T>(
         .step_by(2)
         .collect::<Vec<usize>>();
 
-    smawk_inner(matrix, &odd_rows, cols, &mut minima);
+    smawk_inner(matrix, &odd_rows, cols, minima);
 
     let mut c = 0;
     for (r, &row) in rows.iter().enumerate().step_by(2) {

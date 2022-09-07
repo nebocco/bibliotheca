@@ -18,11 +18,11 @@ impl UnionFind {
         self._climb(i).1
     }
 
-    pub fn unite(&mut self, u: usize, v: usize) -> Result<(), ()> {
+    pub fn unite(&mut self, u: usize, v: usize) -> Result<(), &'static str> {
         let (mut u, su) = self._climb(u);
         let (mut v, sv) = self._climb(v);
         if u == v {
-            return Err(());
+            return Err("Already united");
         }
         if su < sv {
             std::mem::swap(&mut u, &mut v);
@@ -84,11 +84,15 @@ impl<T: Group> PotentializedUnionFind<T> {
 
     /// potential[v] - potential[u] = w
     /// keep potential[u] unchanged
-    pub fn unite(&mut self, u: usize, v: usize, mut w: T) -> Result<(), ()> {
+    pub fn unite(&mut self, u: usize, v: usize, mut w: T) -> Result<(), &'static str> {
         let (u, su, wu) = self._climb(u);
         let (v, sv, wv) = self._climb(v);
         if u == v {
-            return if w == -wu + wv { Ok(()) } else { Err(()) };
+            return if w == -wu + wv {
+                Ok(())
+            } else {
+                return Err("Already united with different weight");
+            };
         }
         w = -self.ws[u].clone() + wu + w + self.ws[v].clone() + -wv;
         if su < sv {
@@ -162,11 +166,11 @@ impl IterativeUnionFind {
         self._climb(i).1
     }
 
-    pub fn unite(&mut self, u: usize, v: usize) -> Result<(), ()> {
+    pub fn unite(&mut self, u: usize, v: usize) -> Result<(), &'static str> {
         let (mut u, su) = self._climb(u);
         let (mut v, sv) = self._climb(v);
         if u == v {
-            return Err(());
+            return Err("Already united");
         }
         if su < sv {
             std::mem::swap(&mut u, &mut v);

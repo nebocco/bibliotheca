@@ -11,16 +11,17 @@ pub fn chromatic_number(g: &[usize]) -> usize {
 
     // a randomly chosen large prime
     const MOD: i64 = 1_077_563_119;
-    let all = 1 << n;
+    let all: usize = 1 << n;
+    let mut s: Vec<i64> = (0..all)
+        .map(|i| {
+            if (n - i.count_ones() as usize) & 1 == 1 {
+                -1
+            } else {
+                1
+            }
+        })
+        .collect();
     let mut ind = vec![1; all];
-    let mut s = vec![0; all];
-    for i in 0..all {
-        s[i] = if (n - i.count_ones() as usize) & 1 == 1 {
-            -1
-        } else {
-            1
-        };
-    }
     for i in 1..all {
         let ctz = i.trailing_zeros() as usize;
         ind[i] = ind[i - (1 << ctz)] + ind[(i - (1 << ctz)) & !g[ctz]];

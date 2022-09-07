@@ -73,12 +73,12 @@ impl WaveletMatrix {
         let mut matrix = vec![SuccinctIndexableDictionary::new(length + 1); Self::MAXLOG];
         let mut mid = vec![0; Self::MAXLOG];
         for level in (0..Self::MAXLOG).rev() {
-            for i in 0..length {
-                if vec[i] >> level & 1 == 1 {
+            for (i, &v) in vec.iter().enumerate() {
+                if v >> level & 1 == 1 {
                     matrix[level].set(i);
-                    r.push(vec[i]);
+                    r.push(v);
                 } else {
-                    l.push(vec[i]);
+                    l.push(v);
                 }
             }
             matrix[level].build();
@@ -202,15 +202,15 @@ pub struct CompressedWaveletMatrix<T: Clone + Ord> {
 }
 
 impl<T: Clone + Ord> CompressedWaveletMatrix<T> {
-    pub fn new(vec: &Vec<T>) -> Self {
-        let mut ys = vec.clone();
+    pub fn new(vec: &[T]) -> Self {
+        let mut ys = vec.to_owned();
         ys.sort();
         ys.dedup();
         let vec: Vec<u32> = vec
             .iter()
             .map(|x| ys.binary_search(x).unwrap() as u32)
             .collect();
-        let matrix = WaveletMatrix::new(vec.clone());
+        let matrix = WaveletMatrix::new(vec);
         Self { matrix, vec: ys }
     }
 

@@ -29,7 +29,7 @@ impl<G: SemiGroup> SwagQueue<G> {
 
     pub fn push(&mut self, v: G::Val) {
         let s = if let Some((_, x)) = self.back.last() {
-            G::op(&x, &v)
+            G::op(x, &v)
         } else {
             v.clone()
         };
@@ -38,10 +38,10 @@ impl<G: SemiGroup> SwagQueue<G> {
 
     pub fn pop(&mut self) -> Option<G::Val> {
         if self.front.is_empty() {
-            let back = std::mem::replace(&mut self.back, Vec::new());
+            let back = std::mem::take(&mut self.back);
             for (v, _) in back.into_iter().rev() {
                 let s = if let Some((_, x)) = self.front.last() {
-                    G::op(&v, &x)
+                    G::op(&v, x)
                 } else {
                     v.clone()
                 };

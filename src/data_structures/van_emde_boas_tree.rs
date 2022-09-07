@@ -78,7 +78,7 @@ impl VEBTree {
     }
 
     fn small_predecessor(&self, val: i64) -> i64 {
-        let tmp = self.data & (1 << val) - 1;
+        let tmp = self.data & ((1 << val) - 1);
         if tmp != 0 {
             Self::msb(tmp)
         } else {
@@ -121,10 +121,7 @@ impl VEBTree {
         let child_val = val - self.sum(idx);
         let child = self.children[idx as usize].as_mut().unwrap();
         if child.insert(child_val) {
-            if child.is_one() {
-                self.summary.as_mut().unwrap().insert(idx);
-            }
-            true
+            self.summary.as_mut().unwrap().insert(idx)
         } else {
             false
         }
@@ -166,10 +163,12 @@ impl VEBTree {
         let child = self.children[idx as usize].as_ref().unwrap();
         if val > sm + child.min {
             Some(sm + child.predecessor(val - sm).unwrap())
-        } else if let Some(idx) = self.summary.as_ref().unwrap().predecessor(idx) {
-            Some(self.sum(idx) + self.children[idx as usize].as_ref().unwrap().max)
         } else {
-            Some(self.min)
+            self.summary
+                .as_ref()
+                .unwrap()
+                .predecessor(idx)
+                .map(|idx| self.sum(idx) + self.children[idx as usize].as_ref().unwrap().max)
         }
     }
 
@@ -187,10 +186,12 @@ impl VEBTree {
         let child = self.children[idx as usize].as_ref().unwrap();
         if val < sm + child.max {
             Some(sm + child.successor(val - sm).unwrap())
-        } else if let Some(idx) = self.summary.as_ref().unwrap().successor(idx) {
-            Some(self.sum(idx) + self.children[idx as usize].as_ref().unwrap().min)
         } else {
-            None
+            self.summary
+                .as_ref()
+                .unwrap()
+                .successor(idx)
+                .map(|idx| self.sum(idx) + self.children[idx as usize].as_ref().unwrap().min)
         }
     }
 }

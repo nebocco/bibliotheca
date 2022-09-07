@@ -72,9 +72,9 @@ mod tests {
             let x = rng.gen::<i64>() % MOD;
             let y = rng.gen::<i64>() % MOD;
             let r = discrete_logarithm(x, y, MOD);
-            if r.is_some() {
-                f.push(r.unwrap());
-                assert_eq!(modpow(x, r.unwrap(), MOD), y);
+            if let Some(r) = r {
+                f.push(r);
+                assert_eq!(modpow(x, r, MOD), y);
             }
         }
     }

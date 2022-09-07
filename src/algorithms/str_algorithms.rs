@@ -52,7 +52,7 @@ pub fn kmp_table<T: PartialEq>(pattern: &[T]) -> Vec<usize> {
 pub fn kmp_search<T: PartialEq>(pattern: &[T], target: &[T]) -> Vec<usize> {
     let n = pattern.len();
     let m = target.len();
-    let table = kmp_table(&pattern);
+    let table = kmp_table(pattern);
     let (mut j, mut k) = (0, 0);
     let mut res = Vec::new();
     while j < m {
@@ -82,7 +82,7 @@ where
     T: PartialEq + Copy,
 {
     let mut res = Vec::new();
-    if l.len() == 0 {
+    if l.is_empty() {
         return res;
     }
     let mut cur = l[0];

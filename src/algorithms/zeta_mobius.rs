@@ -119,10 +119,10 @@ mod tests {
     {
         let n = a.len();
         let mut c = vec![R::zero(); n];
-        for i in 0..n {
-            for j in 0..n {
+        for (i, &x) in a.iter().enumerate() {
+            for (j, &y) in b.iter().enumerate() {
                 if let Some(k) = func(i, j) {
-                    c[k] += a[i] * b[j];
+                    c[k] += x * y;
                 }
             }
         }

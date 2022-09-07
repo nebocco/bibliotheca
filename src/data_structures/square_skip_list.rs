@@ -55,7 +55,7 @@ impl SquareSkipList {
     }
 
     // if x not in list ...
-    pub fn remove(&mut self, x: i64) -> Result<(), ()> {
+    pub fn remove(&mut self, x: i64) -> Result<(), &'static str> {
         let idx1 = self.layer1.binary_search(&x).unwrap_or_else(|s| s);
         let idx0 = self.layer0[idx1].binary_search(&x).unwrap_or_else(|s| s);
         if idx0 == self.layer0[idx1].len() {
@@ -65,13 +65,13 @@ impl SquareSkipList {
                 self.layer1.remove(idx1);
                 Ok(())
             } else {
-                Err(())
+                Err("Not found")
             }
         } else if self.layer0[idx1][idx0] == x {
             self.layer0[idx1].remove(idx0);
             Ok(())
         } else {
-            Err(())
+            Err("Not found")
         }
     }
 
@@ -160,8 +160,8 @@ mod tests {
         assert_eq!(sl.search_lower_equal(15), Some(15));
         assert_eq!(sl.search_lower_equal(16), Some(15));
         assert_eq!(sl.search_lower_equal(17), Some(15));
-        assert_eq!(sl.remove(2000), Err(()));
-        assert_eq!(sl.remove(2001), Ok(()));
+        assert!(sl.remove(2000).is_err());
+        assert!(sl.remove(2001).is_ok());
         assert_eq!(sl.search_higher_equal(1999), Some(2004));
     }
 

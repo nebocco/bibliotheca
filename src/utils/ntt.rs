@@ -90,10 +90,10 @@ pub mod independent_ntt {
         assert!(k <= N::ORDER as usize);
         let mut f = Vec::with_capacity(k);
         let mut g = Vec::with_capacity(k);
-        f.extend(a.into_iter().map(|x| x.rem_euclid(N::MOD)));
+        f.extend(a.iter().map(|x| x.rem_euclid(N::MOD)));
         f.resize(k, 0);
         ntt::<N>(&mut f);
-        g.extend(b.into_iter().map(|x| x.rem_euclid(N::MOD)));
+        g.extend(b.iter().map(|x| x.rem_euclid(N::MOD)));
         g.resize(k, 0);
         ntt::<N>(&mut g);
         for (f, g) in f.iter_mut().zip(g.iter()) {
@@ -128,9 +128,9 @@ pub mod independent_ntt {
             const ZETA: i64 = 3;
         }
 
-        let f1 = multiply::<N1>(&a, &b);
-        let f2 = multiply::<N2>(&a, &b);
-        let f3 = multiply::<N3>(&a, &b);
+        let f1 = multiply::<N1>(a, b);
+        let f2 = multiply::<N2>(a, b);
+        let f3 = multiply::<N3>(a, b);
         let f: Vec<i64> = f1
             .into_iter()
             .zip(std::iter::repeat(N1::MOD))

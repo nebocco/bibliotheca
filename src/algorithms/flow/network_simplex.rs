@@ -76,7 +76,14 @@ impl NetworkSimplex {
         }
     }
 
-    pub fn add_edge(&mut self, src: usize, dst: usize, lower: i64, upper: i64, cost: i64) -> EdgeId {
+    pub fn add_edge(
+        &mut self,
+        src: usize,
+        dst: usize,
+        lower: i64,
+        upper: i64,
+        cost: i64,
+    ) -> EdgeId {
         assert!(
             lower <= upper,
             "lower {} should be less or equal to upper {}",
@@ -197,9 +204,10 @@ impl NetworkSimplex {
             data.vertices[x].tree_edges.insert(eid);
             data.vertices[y].tree_edges.insert(eid.rev());
         }
-        data.block_size = self.edges.len().min(
-            (self.edges.len() as f64).sqrt() as usize + 10
-        );
+        data.block_size = self
+            .edges
+            .len()
+            .min((self.edges.len() as f64).sqrt() as usize + 10);
         self.update_tree(&mut data, root);
         data
     }
@@ -263,11 +271,11 @@ impl NetworkSimplex {
             }
         }
         enum LeavingSide {
-            SRi64,
-            DST,
-            ENTER,
+            Source,
+            Distination,
+            EntryPoint,
         }
-        let mut leaving_side = LeavingSide::ENTER;
+        let mut leaving_side = LeavingSide::EntryPoint;
         let top = a;
         let mut leaving_edge_id = None;
         a = src;
@@ -276,13 +284,13 @@ impl NetworkSimplex {
             let down_edge = v_data.parent_edge.unwrap().rev();
             if self.add_flow(down_edge, f) && leaving_edge_id.is_none() {
                 leaving_edge_id = Some(down_edge);
-                leaving_side = LeavingSide::SRi64;
+                leaving_side = LeavingSide::Source;
             }
             a = v_data.parent.unwrap();
         }
         if self.add_flow(eid, f) {
             leaving_edge_id = Some(eid);
-            leaving_side = LeavingSide::ENTER;
+            leaving_side = LeavingSide::EntryPoint;
         }
         b = dst;
         while b != top {
@@ -290,7 +298,7 @@ impl NetworkSimplex {
             let up_edge = v_data.parent_edge.unwrap();
             if self.add_flow(up_edge, f) {
                 leaving_edge_id = Some(up_edge);
-                leaving_side = LeavingSide::DST;
+                leaving_side = LeavingSide::Distination;
             }
             b = v_data.parent.unwrap();
         }
@@ -308,9 +316,9 @@ impl NetworkSimplex {
             .tree_edges
             .remove(&leaving_edge_id.rev()));
         match leaving_side {
-            LeavingSide::SRi64 => self.update_tree(data, dst),
-            LeavingSide::DST => self.update_tree(data, src),
-            LeavingSide::ENTER => (),
+            LeavingSide::Source => self.update_tree(data, dst),
+            LeavingSide::Distination => self.update_tree(data, src),
+            LeavingSide::EntryPoint => (),
         }
     }
 
@@ -343,14 +351,16 @@ mod test {
     #[test]
     fn test() {
         let mut ns = NetworkSimplex::new();
-        let mut edges = Vec::new();
         ns.add_supply(0, 1);
         ns.add_demand(1, 1);
-        edges.push(ns.add_edge(0, 1, 1, 2, 1));
-        edges.push(ns.add_edge(1, 2, 0, 2, 2));
-        edges.push(ns.add_edge(2, 0, -3, 5, 1));
-        edges.push(ns.add_edge(0, 2, 0, 3, -2));
-        edges.push(ns.add_edge(2, 1, 0, 1, 0));
+
+        let edges = vec![
+            ns.add_edge(0, 1, 1, 2, 1),
+            ns.add_edge(1, 2, 0, 2, 2),
+            ns.add_edge(2, 0, -3, 5, 1),
+            ns.add_edge(0, 2, 0, 3, -2),
+            ns.add_edge(2, 1, 0, 1, 0),
+        ];
         let ret = ns.run();
         assert!(ret.is_some());
         let ret = ret.unwrap();

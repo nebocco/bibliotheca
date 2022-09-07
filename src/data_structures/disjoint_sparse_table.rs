@@ -39,11 +39,11 @@ impl<G: SemiGroup> From<&[G::Val]> for DisjointSparseTable<G> {
             for j in successors(Some(i), |&x| Some(x + (i << 1))).take_while(|&x| x < size) {
                 l.push(table[0][j - 1].clone());
                 for k in 2..=i {
-                    l.push(G::op(&table[0][j - k], &l.last().unwrap()));
+                    l.push(G::op(&table[0][j - k], l.last().unwrap()));
                 }
                 l.push(table[0][j].clone());
                 for k in (1..i).take_while(|x| x + j < size) {
-                    l.push(G::op(&l.last().unwrap(), &table[0][j + k]));
+                    l.push(G::op(l.last().unwrap(), &table[0][j + k]));
                 }
             }
             table.push(l);

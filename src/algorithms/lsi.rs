@@ -66,7 +66,7 @@ mod tests {
     impl Add for Xor {
         type Output = Self;
         fn add(self, rhs: Self) -> Self {
-            Self(self.0 ^ rhs.0)
+            Self(<bool as std::ops::BitXor>::bitxor(self.0, rhs.0))
         }
     }
 

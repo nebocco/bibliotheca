@@ -69,7 +69,7 @@ impl HeavyLightDecomposition {
                     head[u] = u;
                     st.push(u);
                 }
-                if let Some(&u) = graph[v].get(0) {
+                if let Some(&u) = graph[v].first() {
                     head[u] = head[v];
                     st.push(u);
                 }

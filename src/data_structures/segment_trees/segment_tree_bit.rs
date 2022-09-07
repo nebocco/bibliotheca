@@ -3,7 +3,7 @@ use crate::data_structures::fenwick_tree::{FenwickTree, Monoid};
 // https://ei1333.github.io/algorithm/segment-tree.html
 pub struct SegmentTreeBIT<G: Monoid> {
     size: usize,
-    seg: Vec<Box<FenwickTree<G>>>,
+    seg: Vec<FenwickTree<G>>,
     beet: Vec<Vec<usize>>,
 }
 
@@ -28,7 +28,7 @@ impl<G: Monoid> SegmentTreeBIT<G> {
         self.beet.iter_mut().for_each(|lis| {
             lis.sort();
             lis.dedup();
-            seg.push(Box::new(FenwickTree::new(lis.len())))
+            seg.push(FenwickTree::new(lis.len()));
         });
         self.seg = seg;
     }

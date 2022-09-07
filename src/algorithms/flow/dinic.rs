@@ -200,15 +200,16 @@ mod test {
     #[test]
     fn test() {
         let mut dinic: Dinic<i32> = Dinic::new();
-        let mut edges = Vec::new();
-        edges.push(dinic.add_edge(0, 1, 3));
-        edges.push(dinic.add_edge(0, 2, 3));
-        edges.push(dinic.add_edge(1, 2, 2));
-        edges.push(dinic.add_edge(1, 3, 3));
-        edges.push(dinic.add_edge(2, 4, 2));
-        edges.push(dinic.add_edge(3, 4, 4));
-        edges.push(dinic.add_edge(3, 5, 2));
-        edges.push(dinic.add_edge(4, 5, 3));
+        let edges = vec![
+            dinic.add_edge(0, 1, 3),
+            dinic.add_edge(0, 2, 3),
+            dinic.add_edge(1, 2, 2),
+            dinic.add_edge(1, 3, 3),
+            dinic.add_edge(2, 4, 2),
+            dinic.add_edge(3, 4, 4),
+            dinic.add_edge(3, 5, 2),
+            dinic.add_edge(4, 5, 3),
+        ];
         let ret = dinic.max_flow(0, 5);
         assert_eq!(5, ret.0);
         assert_eq!(vec![0, 2], ret.1);

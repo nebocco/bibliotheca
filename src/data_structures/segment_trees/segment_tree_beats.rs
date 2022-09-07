@@ -185,7 +185,7 @@ pub mod chmin_chmax {
         }
     }
 
-    #[derive(Clone, PartialEq)]
+    #[derive(Clone, PartialEq, Eq)]
     pub struct Data {
         lo: i64,
         hi: i64,
@@ -220,7 +220,7 @@ pub mod chmin_chmax {
         }
     }
 
-    #[derive(Clone, PartialEq)]
+    #[derive(Clone, PartialEq, Eq)]
     pub struct Op {
         lb: i64,
         ub: i64,
@@ -255,6 +255,8 @@ pub mod chmin_chmax {
 
     pub struct ChminChmaxAddSum;
 
+    use std::cmp::Ordering;
+
     impl Operation for ChminChmaxAddSum {
         type Val = Data;
         type Eff = Op;
@@ -282,19 +284,15 @@ pub mod chmin_chmax {
                 hi2: second_highest(left.hi, left.hi2, right.hi, right.hi2),
                 sum: left.sum + right.sum,
                 size: left.size + right.size,
-                nlo: if left.lo < right.lo {
-                    left.nlo
-                } else if left.lo > right.lo {
-                    right.nlo
-                } else {
-                    left.nlo + right.nlo
+                nlo: match left.lo.cmp(&right.lo) {
+                    Ordering::Less => left.nlo,
+                    Ordering::Greater => right.nlo,
+                    Ordering::Equal => left.nlo + right.nlo,
                 },
-                nhi: if left.hi > right.hi {
-                    left.nhi
-                } else if left.hi < right.hi {
-                    right.nhi
-                } else {
-                    left.nhi + right.nhi
+                nhi: match left.hi.cmp(&right.hi) {
+                    Ordering::Greater => left.nhi,
+                    Ordering::Less => right.nhi,
+                    Ordering::Equal => left.nhi + right.nhi,
                 },
                 fail: left.fail | right.fail,
             }

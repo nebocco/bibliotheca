@@ -45,19 +45,17 @@ impl AssignmentProblem {
             }
         }
         // reduction transfer
-        for row in 0..self.row_size {
-            if transferrable[row] {
-                let col = self.row_match[row].unwrap();
-                let c = (0..self.col_size)
-                    .filter(|&c| c != col)
-                    .min_by(|&c1, &c2| {
-                        self.residual(row, c1)
-                            .partial_cmp(&self.residual(row, c2))
-                            .unwrap()
-                    })
-                    .unwrap();
-                self.potential[col] -= self.residual(row, c);
-            }
+        for (row, _) in transferrable.iter().enumerate().filter(|&(_, &t)| t) {
+            let col = self.row_match[row].unwrap();
+            let c = (0..self.col_size)
+                .filter(|&c| c != col)
+                .min_by(|&c1, &c2| {
+                    self.residual(row, c1)
+                        .partial_cmp(&self.residual(row, c2))
+                        .unwrap()
+                })
+                .unwrap();
+            self.potential[col] -= self.residual(row, c);
         }
         // augmenting row reduction
         for _ in 0..2 {

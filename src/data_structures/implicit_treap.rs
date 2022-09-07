@@ -234,7 +234,7 @@ impl<T: Monoid + Mul<E, Output = T>, E: Monoid + Pow> Node<T, E> {
 
     fn bisect(self: &mut Box<Node<T, E>>, val: T, offset: usize) -> Option<usize> {
         if self.accumulate() + val.clone() == val {
-            return None;
+            None
         } else {
             let left_count = self.left.as_ref().map(|node| node.count()).unwrap_or(0);
 
@@ -295,6 +295,10 @@ impl<T: Monoid + Mul<E, Output = T>, E: Monoid + Pow> Treap<T, E> {
             Some(ref node) => node.count(),
             None => 0,
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.root.is_none()
     }
 
     pub fn insert(&mut self, pos: usize, val: T) {
@@ -449,7 +453,7 @@ mod test {
         let n = 10;
         let mut lis: Vec<MinT> = vec![3, 1, 4, 1, 5, 9, 2, 6, 5, 3]
             .into_iter()
-            .map(|v| MinT(v))
+            .map(MinT)
             .collect();
         let mut treap = Treap::<MinT, UpdE>::from(lis.clone());
         assert_eq!(treap.dump(), lis);

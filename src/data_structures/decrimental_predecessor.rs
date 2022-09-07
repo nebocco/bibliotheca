@@ -143,12 +143,12 @@ mod tests {
         while let Some(v) = indice.pop() {
             assert_eq!(dec.predecessor(v + 1), Some(v));
             assert_eq!(dec.successor(v), Some(v));
-            assert_eq!(dec.erase(v), true);
+            assert!(dec.erase(v));
             let p = indice.iter().filter(|&&x| x < v).max().cloned();
             let s = indice.iter().filter(|&&x| x > v).min().cloned();
             assert_eq!(dec.predecessor(v), p);
             assert_eq!(dec.successor(v), s);
-            assert_eq!(dec.erase(v), false);
+            assert!(!dec.erase(v));
         }
     }
 }

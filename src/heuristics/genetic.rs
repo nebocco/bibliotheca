@@ -50,7 +50,7 @@ pub fn genetics<S: State, T: Metaheuristics<S>>(problem: &mut T, runtime: Durati
             .iter_mut()
             .map(|s| problem.evaluate(s))
             .collect::<Vec<f64>>();
-        scores.sort_by(|a, b| a.partial_cmp(&b).unwrap());
+        scores.sort_by(|a, b| a.partial_cmp(b).unwrap());
         scores.reverse();
         current_generation = next_generation;
     }

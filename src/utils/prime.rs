@@ -221,8 +221,8 @@ pub fn mod_sqrt(mut a: i64, p: i64) -> Option<i64> {
 pub fn count_primes(n: usize) -> usize {
     let n_sqrt = sqrt_floor(n as i64) as usize;
     let mut larges = vec![0; n_sqrt + 1];
-    for i in 1..=n_sqrt {
-        larges[i] = n / i - 1;
+    for (i, v) in larges.iter_mut().enumerate().skip(1) {
+        *v = n / i - 1;
     }
     let mut smalls: Vec<_> = (0..n / n_sqrt).map(|x| x.saturating_sub(1)).collect();
 
@@ -231,10 +231,8 @@ pub fn count_primes(n: usize) -> usize {
             if smalls[p] <= smalls[p - 1] {
                 continue;
             }
-        } else {
-            if larges[n / p] <= smalls[p - 1] {
-                continue;
-            }
+        } else if larges[n / p] <= smalls[p - 1] {
+            continue;
         }
         let pc = smalls[p - 1];
         let q = p * p;
